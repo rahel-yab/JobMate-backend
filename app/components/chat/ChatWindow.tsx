@@ -5,6 +5,11 @@ import ChatMessage from "./ChatMessage";
 import { useLanguage } from "@/context/language-provider";
 import QuickActions from "./QuickActions";
 import { CVProgressive } from "../cv/CVProgressive";
+import toast from "react-hot-toast";
+import {
+  useUploadCVMutation,
+  useAnalyzeCVMutation,
+} from "@/lib/redux/api/cvApi";
 
 const formatTime = () => {
   return new Date().toLocaleTimeString([], {
@@ -29,7 +34,10 @@ export default function ChatWindow() {
     "cv" | "jobs" | "interview" | "skills" | "chat"
   >("chat");
 
-  const sendMessage = () => {
+  const [uploadCV] = useUploadCVMutation();
+  const [analyzeCV] = useAnalyzeCVMutation();
+
+  const sendMessage = async () => {
     if (!input.trim()) return;
 
     const newMsg = {
@@ -38,9 +46,7 @@ export default function ChatWindow() {
       sender: "user",
       time: formatTime(),
     };
-    setMessages([...messages, newMsg]);
-
-    // Decide AI response based on input content
+    setMessages((prev) => [...prev, newMsg]);
 
     let currentMode = mode;
     const lowerInput = input.toLowerCase();
@@ -51,17 +57,29 @@ export default function ChatWindow() {
       else if (lowerInput.includes("interview")) currentMode = "interview";
       else if (lowerInput.includes("skill")) currentMode = "skills";
     }
-
     setMode(currentMode);
-
     let aiResponse = "";
-    // const lowerInput = input.toLowerCase();
 
-    if (lowerInput.includes("cv")) {
-      aiResponse =
-        language === "en"
-          ? "Sure! Please share your descriptions, skills, and projects, and I’ll help you improve your CV."
-          : "እሺ! መግለጫዎችዎን፣ ችሎታዎችን፣ እና ያደረጉትን ፕሮጀክቶች ያካፍሉኝ፣ እኔም CVዎን ልሻሻልላችሁ እረዳለሁ።";
+    // CV Mode
+    if (currentMode === "cv") {
+      try {
+        // Upload CV
+        const res = await uploadCV({
+          userId: "user123",
+          rawText: input,
+        }).unwrap();
+
+        // ✅ Show popup for upload result
+        toast.success(res.message);
+
+        // Now trigger analysis
+        const analysis = await analyzeCV(res.details.cvId).unwrap();
+
+        // Add analysis feedback as AI message
+        aiResponse = `📊 CV Analysis:\n\n**Summary**: ${analysis.details.suggestions.CVs.summary}\n\n**Strengths**: ${analysis.details.suggestions.CVFeedback.strengths}\n\n**Weaknesses**: ${analysis.details.suggestions.CVFeedback.weaknesses}\n\n**Improvement**: ${analysis.details.suggestions.CVFeedback.improvementSuggestions}`;
+      } catch (err: any) {
+        toast.error("Failed to upload CV. Please try again.");
+      }
     } else if (lowerInput.includes("job")) {
       aiResponse =
         language === "en"
@@ -172,7 +190,7 @@ export default function ChatWindow() {
       {/* Input */}
       {/* Input / Mode-specific UI */}
       <div className="px-4 py-4 bg-[#BEE3DC] text-black justify-center">
-        {mode === "cv" ? (
+        {mode === "skills" ? (
           // Show CV progressive input instead of normal chat
           <CVProgressive language={language} />
         ) : (

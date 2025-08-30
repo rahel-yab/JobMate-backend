@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { Noto_Sans_Ethiopic } from "next/font/google";
 import { LanguageProvider } from "@/context/language-provider";
+import ReduxProvider from "../providers/ReduxProvider";
 import "./globals.css";
 
 const notoSansEthiopic = Noto_Sans_Ethiopic({
@@ -38,7 +39,9 @@ html {
         `}</style>
       </head>
       <body>
-        <LanguageProvider>{children}</LanguageProvider>
+        <ReduxProvider>
+          <LanguageProvider>{children}</LanguageProvider>
+        </ReduxProvider>
       </body>
     </html>
   );
