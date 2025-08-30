@@ -63,8 +63,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       ] || key
     );
   };
+
   if (!mounted) {
-    // prevent mismatch on first render (SSR vs client)
     return null;
   }
 
