@@ -1,6 +1,6 @@
 "use client";
 import { FileText, Briefcase, MessageCircle } from "lucide-react";
-import { Button } from "../ui/Button"; // adjust if your Button path is different
+import { Button } from "../ui/Button";
 import { useLanguage } from "@/context/language-provider";
 
 interface QuickActionsProps {
