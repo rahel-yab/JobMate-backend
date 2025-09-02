@@ -129,27 +129,17 @@ func main() {
 		c.Next()
 	})
 
-	// get port from config or environment variable
-	port := cfg.AppPort
-
-	// prefer Render's PORT env var
-	if port == "" {
-		port = os.Getenv("PORT")
-	}
+	// get port from Render's environment variable
+	port := os.Getenv("PORT")
 	
-	// fallback to APP_PORT for local dev
+	// fallback just in case (local dev or safety)
 	if port == "" {
-		port = os.Getenv("APP_PORT")
-	}
-	
-	// final fallback
-	if port == "" {
-		port = "8080"
+	    port = "8080"
 	}
 	
 	// start server
 	log.Printf("Server starting on port %s...", port)
-	if err := router.Run("0.0.0.0:" + port); err != nil {    // bind to all interfaces
-		log.Fatalf("Failed to start server: %v", err)
+	if err := router.Run("0.0.0.0:" + port); err != nil {      // bind to all interfaces
+	    log.Fatalf("Failed to start server: %v", err)
 	}
 }
