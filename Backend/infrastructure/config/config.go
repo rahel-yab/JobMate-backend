@@ -1,7 +1,6 @@
 package infrastructure
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -86,7 +85,7 @@ func LoadConfig() (*Config, error) {
 	viper.AutomaticEnv()
 
 	// Read the config file
-	_ := viper.ReadInConfig()
+	_ = viper.ReadInConfig()
 
 	// Now populate your config struct
 	cfg := &Config{
