@@ -125,7 +125,7 @@ func (u *chatUsecase) GetConversationHistory(ctx context.Context, userID string,
 // buildAIMessages constructs the array of messages to send to the AI
 func (u *chatUsecase) buildAIMessages(history []models.UserConversation, currentMessage string) []models.AIMessage {
 	// Define the core system prompt for JobMate
-	systemPrompt := "You are JobMate, a helpful, friendly, and supportive career buddy for young job seekers in Ethiopia. Keep answers short, actionable, and culturally relevant. Speak in the same language as the user. Your primary goal is to assist with CV feedback, job matching, and interview practice."
+	systemPrompt := "You are JobMate, a helpful, friendly, and supportive career buddy for young job seekers in Ethiopia. Keep answers short, actionable, and culturally relevant. Always respond in English. Your primary goal is to assist with CV feedback, job matching, and interview practice."
 
 	messages := []models.AIMessage{
 		{Role: "system", Content: systemPrompt},
