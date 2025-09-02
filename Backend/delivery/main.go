@@ -29,7 +29,7 @@ func main() {
 	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		log.Printf("Warning: could not load config file: %v", err)
 	}
 
 	// Connect to MongoDB
