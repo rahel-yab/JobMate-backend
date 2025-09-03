@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"path"
@@ -27,13 +28,16 @@ func NewCVController(u usecase.ICVUsecase) *CVController {
 }
 
 type CVUploadRequest struct {
-	UserID  string                `json:"userId" form:"userId" binding:"required"`
+	
 	RawText string                `json:"rawText" form:"rawText"`
 	File    *multipart.FileHeader `form:"file"`
 }
 
 // POST /cv
 func (c *CVController) UploadCV(ctx *gin.Context) {
+
+	userID:=ctx.GetString("userID")
+	log.Println("This is the user id: ", userID)
 	// Limit request size
 	ctx.Request.Body = http.MaxBytesReader(ctx.Writer, ctx.Request.Body, maxUploadBytes)
 
@@ -92,7 +96,7 @@ func (c *CVController) UploadCV(ctx *gin.Context) {
 		req.File.Filename = path.Base(req.File.Filename)
 	}
 
-	createdCV, err := c.cvUsecase.Upload(ctx, req.UserID, req.RawText, req.File)
+	createdCV, err := c.cvUsecase.Upload(ctx,userID, req.RawText, req.File)
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrCVNotFound):
