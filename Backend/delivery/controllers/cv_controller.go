@@ -3,13 +3,13 @@ package controllers
 import (
 	"errors"
 	"io"
-	"log"
-	"mime/multipart"
+
 	"net/http"
 	"path"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/tsigemariamzewdu/JobMate-backend/delivery/dto"
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/utils"
 	"github.com/tsigemariamzewdu/JobMate-backend/domain"
 	usecase "github.com/tsigemariamzewdu/JobMate-backend/domain/interfaces/usecases"
@@ -27,21 +27,20 @@ func NewCVController(u usecase.ICVUsecase) *CVController {
 	return &CVController{cvUsecase: u}
 }
 
-type CVUploadRequest struct {
+// type CVUploadRequest struct {
 	
-	RawText string                `json:"rawText" form:"rawText"`
-	File    *multipart.FileHeader `form:"file"`
-}
+// 	RawText string                `json:"rawText" form:"rawText"`
+// 	File    *multipart.FileHeader `form:"file"`
+// }
 
 // POST /cv
 func (c *CVController) UploadCV(ctx *gin.Context) {
 
 	userID:=ctx.GetString("userID")
-	log.Println("This is the user id: ", userID)
 	// Limit request size
 	ctx.Request.Body = http.MaxBytesReader(ctx.Writer, ctx.Request.Body, maxUploadBytes)
 
-	var req CVUploadRequest
+	var req dto.CVUploadRequest
 	if err := ctx.ShouldBind(&req); err != nil {
 		if strings.Contains(err.Error(), "request body too large") {
 			ctx.JSON(http.StatusRequestEntityTooLarge, utils.ErrorPayload("File exceeds max size of 10MB", nil))
