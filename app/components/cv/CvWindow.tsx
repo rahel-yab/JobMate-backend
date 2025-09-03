@@ -5,12 +5,10 @@ import QuickActions from "../QuickActions";
 
 export default function ChatWindow({
   messages,
-  onQuickAction,
   renderMessage,
 }: {
   messages: any[];
 
-  onQuickAction?: () => void;
   renderMessage: (msg: any) => React.ReactNode;
 }) {
   const { language, setLanguage, t } = useLanguage();
@@ -44,7 +42,7 @@ export default function ChatWindow({
       </div>
 
       <div className="px-4 py-0.5 bg-[#BEE3DC] text-black justify-center">
-        <QuickActions onQuickAction={onQuickAction} />
+        <QuickActions />
       </div>
     </div>
   );

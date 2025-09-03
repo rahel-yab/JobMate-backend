@@ -16,7 +16,12 @@ export default function ChatInput({ input, setInput, onSend }: ChatInputProps) {
         className="flex-1 bg-white shadow-md rounded-md px-4 py-2.5 focus:outline-none focus:shadow-[0_0_8px_2px_rgba(40,149,127,0.7)]"
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && onSend}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onSend();
+          }
+        }}
         placeholder={language === "en" ? "Type a message..." : "መልእክት ያድርጉ..."}
       />
       <button

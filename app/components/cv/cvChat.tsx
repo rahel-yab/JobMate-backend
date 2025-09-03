@@ -3,7 +3,7 @@
 import { useState } from "react";
 import React from "react";
 import { formatTime } from "@/lib/utils";
-import CvWindow from "./CvWindow"; // 👈 Capitalized
+import CvWindow from "./CvWindow";
 import CVMessage from "./CVMessage";
 import ChatMessage from "../ChatMessage";
 import CvAnalysisCard from "./CvAnalysis";
@@ -14,16 +14,13 @@ import {
 import { useLanguage } from "@/providers/language-provider";
 
 export default function CvChat() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const [messages, setMessages] = useState<any[]>([
     {
       id: Date.now(),
       sender: "ai",
-      text:
-        language === "en"
-          ? "Great! I'd be happy to help you with your CV. You can upload your current CV or describe your background below, and I'll provide detailed feedback to help you improve it."
-          : "የእርስዎን CV በመልእክት ይላኩ ወይም ፋይሉን ጫኑ።",
+      text: t("cvWelcomeMessage"),
       time: formatTime(),
     },
   ]);
@@ -74,12 +71,9 @@ export default function CvChat() {
     setMessages((prev) => [...prev, cvMsg]);
   };
 
-  const handleQuickAction = () => {};
-
   return (
     <CvWindow
       messages={messages}
-      onQuickAction={handleQuickAction}
       renderMessage={(msg) =>
         msg.type === "cv-analysis" ? (
           <CVMessage

@@ -4,9 +4,19 @@ import { formatTime } from "@/lib/utils";
 import ChatWindow from "@/app/components/ChatWindow";
 import { useSendMessageMutation } from "@/lib/redux/api/generalApi";
 import ChatMessage from "../ChatMessage";
+import { useLanguage } from "@/providers/language-provider";
 
 export default function GeneralChat() {
-  const [messages, setMessages] = useState<any[]>([]);
+  const { t } = useLanguage();
+  const [messages, setMessages] = useState<any[]>([
+    {
+      id: Date.now(),
+      type: "text",
+      sender: "ai",
+      text: t("generalWelcomeMessage"),
+      time: formatTime(),
+    },
+  ]);
   const [input, setInput] = useState("");
   const [sendMessage] = useSendMessageMutation();
 
@@ -54,12 +64,9 @@ export default function GeneralChat() {
     }
   };
 
-  const handleQuickAction = () => {};
-
   return (
     <ChatWindow
       messages={messages}
-      onQuickAction={handleQuickAction}
       input={input}
       setInput={setInput}
       onSend={handleSend}

@@ -35,7 +35,7 @@ export default function CvAnalysisCard({
             onClick={() => setMode("paste")}
             className={`px-4 py-1 rounded-md shadow-md border text-sm ${
               mode === "paste"
-                ? "bg-[#217C6A] text-white border-[#217C6A]"
+                ? "bg-[#217C6A] text-white border-[#217C6A] hover:bg-[#195d50]"
                 : "bg-white text-gray-700 border-gray-300"
             }`}
           >
@@ -45,7 +45,7 @@ export default function CvAnalysisCard({
             onClick={() => setMode("upload")}
             className={`px-4 py-1 rounded-md border shadow-md text-sm ${
               mode === "upload"
-                ? "bg-[#217C6A] text-white border-[#217C6A]"
+                ? "bg-[#217C6A] text-white border-[#217C6A] hover:bg-[#195d50]"
                 : "bg-white text-gray-700 border-gray-300"
             }`}
           >
@@ -84,7 +84,12 @@ export default function CvAnalysisCard({
 
         <button
           onClick={() => onAnalyze(text)}
-          className="w-full mt-4 bg-[#217C6A] hover:bg-[#195d50] text-white font-semibold py-3 rounded-md transition"
+          disabled={text.length <= 10}
+          className={`w-full mt-4 font-semibold py-3 rounded-md transition ${
+            text.length <= 10
+              ? "bg-[#369784] text-gray-200 cursor-not-allowed"
+              : "hover:bg-[#217C6A] bg-[#195d50] text-white"
+          }`}
         >
           Analyze My CV
         </button>
