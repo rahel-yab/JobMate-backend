@@ -79,6 +79,7 @@ require (
 )
 
 require (
+	github.com/abadojack/whatlanggo v1.0.1
 	github.com/ledongthuc/pdf v0.0.0-20250511090121-5959a4027728
 	github.com/spf13/viper v1.20.1
 	go.mongodb.org/mongo-driver v1.17.4
