@@ -2,7 +2,7 @@ import type React from "react";
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { Noto_Sans_Ethiopic } from "next/font/google";
-import { LanguageProvider } from "@/context/language-provider";
+import { LanguageProvider } from "@/providers/language-provider";
 import ReduxProvider from "../providers/ReduxProvider";
 import "./globals.css";
 
