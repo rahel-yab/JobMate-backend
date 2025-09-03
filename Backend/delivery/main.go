@@ -29,7 +29,7 @@ func main() {
 	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		log.Printf("Warning: could not load config file: %v", err)
 	}
 
 	// Connect to MongoDB
@@ -129,18 +129,14 @@ func main() {
 		c.Next()
 	})
 
-	// Get port from config or environment variable
-	port := cfg.AppPort
+	// get port from Render's environment variable
+	port := os.Getenv("PORT")
 	if port == "" {
-		port = os.Getenv("PORT")
-		if port == "" {
-			port = "8080"
-		}
+	    log.Fatal("PORT environment variable not set")
 	}
-
-	// Start server
+	
 	log.Printf("Server starting on port %s...", port)
-	if err := router.Run(":" + port); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	if err := router.Run("0.0.0.0:" + port); err != nil {
+	    log.Fatalf("Failed to start server: %v", err)
 	}
 }
