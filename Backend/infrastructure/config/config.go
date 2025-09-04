@@ -1,7 +1,6 @@
-package infrastructure
+package config
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -79,17 +78,14 @@ type Config struct {
 // LoadConfig loads config.env from project root (if present) and also supports environment variables.
 // If config.env is missing, it falls back to environment variables.
 func LoadConfig() (*Config, error) {
-	// Tell viper to look for "config.env" in the root folder
+	// Tell viper to look for config file in the root folder
 	viper.AddConfigPath(".") 
 	viper.SetConfigName("config")
 	viper.SetConfigType("env")
 	viper.AutomaticEnv()
 
 	// Read the config file
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
-	}
-
+	_ = viper.ReadInConfig()
 
 	// Now populate your config struct
 	cfg := &Config{

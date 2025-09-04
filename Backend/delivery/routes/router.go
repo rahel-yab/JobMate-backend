@@ -37,7 +37,7 @@ func SetupRouter(authMiddleware *auth.AuthMiddleware,
 
 	//cv routes
 	cvGroup := router.Group("/cv")
-	NewCVRouter(*cvController, *cvGroup)
+	NewCVRouter(*cvController, authMiddleware,*cvGroup)
 
 	// CV Chat routes (protected with auth middleware)
 	cvChatRoutes := router.Group("/cv/chat", authMiddleware.Middleware())
@@ -94,9 +94,9 @@ func NewAuthRouter(authController controllers.AuthController, authMiddleware *au
 	group.POST("/refresh", authController.RefreshToken)
 }
 
-func NewCVRouter(cvController controllers.CVController, group gin.RouterGroup) {
-	group.POST("/", cvController.UploadCV)
-	group.POST("/:id/analye", cvController.AnalyzeCV)
+func NewCVRouter(cvController controllers.CVController,authMiddleware *auth.AuthMiddleware, group gin.RouterGroup) {
+	group.POST("/",authMiddleware.Middleware(), cvController.UploadCV)
+	group.POST("/:id/analyze",authMiddleware.Middleware(), cvController.AnalyzeCV)
 }
 
 func RegisterOAuthRoutes(

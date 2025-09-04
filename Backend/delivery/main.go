@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/controllers"
@@ -12,9 +11,10 @@ import (
 	groqpkg "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/ai"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/ai_service"
 	authinfra "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/auth"
-	config "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/config"
+	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/config"
 	emailinfra "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/email"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/job_service"
+	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/middlewares"
 
 	mongoclient "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/db/mongo"
 	// utils "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/util"
@@ -28,7 +28,7 @@ func main() {
 	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		log.Printf("Warning: could not load config file: %v", err)
 	}
 
 	// Connect to MongoDB
@@ -70,7 +70,7 @@ func main() {
 	passwordService := authinfra.NewPasswordService()
 	authMiddleware := authinfra.NewAuthMiddleware(jwtService)
 	oauthService, err := authinfra.NewOAuth2Service(providersConfigs)
-	aiService := ai_service.NewGeminiAISuggestionService("gemini-1.5-flash", cfg.AIApiKey) // to be loaded from config later
+	aiService := ai_service.NewGeminiAISuggestionService("gemini-1.5-flash", cfg.AIApiKey) 
 
 	textExtractor := file_parser.NewFileTextExtractor()
 
@@ -115,20 +115,17 @@ func main() {
 	interviewStructuredController := controllers.NewInterviewStructuredController(interviewStructuredUsecase)
 
 	// Setup router (add more controllers as you add features)
-	router := routes.SetupRouter(authMiddleware, userController, authController, otpController, oauthController, cvController, cvChatController, interviewFreeformController, interviewStructuredController, jobController)
 
-	// Get port from config or environment variable
-	port := cfg.AppPort
-	if port == "" {
-		port = os.Getenv("PORT")
-		if port == "" {
-			port = "8080"
-		}
-	}
+	router := routes.SetupRouter(authMiddleware, userController, authController, otpController, oauthController, cvController, chatController, jobController)
 
-	// Start server
+	router.Use(middlewares.CORS())
+	router.Use(middlewares.SecurityHeaders())
+
+	port := config.GetServerPort()
+
+
 	log.Printf("Server starting on port %s...", port)
-	if err := router.Run(":" + port); err != nil {
+	if err := router.Run("0.0.0.0:" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
