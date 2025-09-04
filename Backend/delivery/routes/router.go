@@ -12,7 +12,9 @@ func SetupRouter(authMiddleware *auth.AuthMiddleware,
 	otpController *controllers.OtpController,
 	oauthController *controllers.OAuth2Controller,
 	cvController *controllers.CVController,
-	chatController *controllers.ChatController,
+	cvChatController *controllers.CVChatController,
+	interviewFreeformController *controllers.InterviewFreeformController,
+	interviewStructuredController *controllers.InterviewStructuredController,
 	jobController *controllers.JobController,
 ) *gin.Engine {
 
@@ -29,20 +31,40 @@ func SetupRouter(authMiddleware *auth.AuthMiddleware,
 
 	// Auth routes
 	authGroup := router.Group("/auth")
-	NewAuthRouter(*authController, authMiddleware,*authGroup)
+	NewAuthRouter(*authController, authMiddleware, *authGroup)
 
 	RegisterOAuthRoutes(router, oauthController)
-
-	// Chat routes
-	chatRoutes := router.Group("/chat", authMiddleware.Middleware())
-	{
-		chatRoutes.POST("", chatController.SendMessage)
-		chatRoutes.GET("/history", chatController.GetConversationHistory)
-	}
 
 	//cv routes
 	cvGroup := router.Group("/cv")
 	NewCVRouter(*cvController, *cvGroup)
+
+	// CV Chat routes (protected with auth middleware)
+	cvChatRoutes := router.Group("/cv/chat", authMiddleware.Middleware())
+	{
+		cvChatRoutes.POST("/session", cvChatController.CreateSession)
+		cvChatRoutes.POST("/message", cvChatController.SendMessage)
+		cvChatRoutes.GET("/:chat_id/history", cvChatController.GetChatHistory)
+		cvChatRoutes.GET("/user", cvChatController.GetUserChats)
+	}
+
+	// Free-form Interview Chat Routes
+	freeformRoutes := router.Group("/interview/freeform", authMiddleware.Middleware())
+	{
+		freeformRoutes.POST("/session", interviewFreeformController.CreateSession)
+		freeformRoutes.POST("/message", interviewFreeformController.SendMessage)
+		freeformRoutes.GET("/:chat_id/history", interviewFreeformController.GetChatHistory)
+		freeformRoutes.GET("/user/chats", interviewFreeformController.GetUserChats)
+	}
+
+	// Structured Interview Routes
+	structuredRoutes := router.Group("/interview/structured", authMiddleware.Middleware())
+	{
+		structuredRoutes.POST("/start", interviewStructuredController.StartInterview)
+		structuredRoutes.POST("/:chat_id/answer", interviewStructuredController.SubmitAnswer)
+		structuredRoutes.GET("/:chat_id/history", interviewStructuredController.GetChatHistory)
+		structuredRoutes.GET("/user/chats", interviewStructuredController.GetUserChats)
+	}
 
 	// Job suggestion route
 	jobRoutes := router.Group("/jobs")
@@ -61,14 +83,14 @@ func registerUserRoutes(router *gin.Engine, authMiddleware *auth.AuthMiddleware,
 	}
 
 	// refresh token
-	
+
 }
 
 func NewAuthRouter(authController controllers.AuthController, authMiddleware *auth.AuthMiddleware, group gin.RouterGroup) {
 
 	group.POST("/register", authController.Register)
 	group.POST("/login", authController.Login)
-	group.POST("/logout", authMiddleware.Middleware(),authController.Logout)
+	group.POST("/logout", authMiddleware.Middleware(), authController.Logout)
 	group.POST("/refresh", authController.RefreshToken)
 }
 
