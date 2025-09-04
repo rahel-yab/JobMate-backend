@@ -7,7 +7,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/controllers"
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/routes"
 	groqpkg "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/ai"
@@ -48,8 +47,9 @@ func main() {
 	cvRepo := repositories.NewCVRepository(db)
 	feedbackRepo := repositories.NewFeedbackRepository(db)
 	skillGapRepo := repositories.NewSkillGapRepository(db)
-	// use the name conversationRepo because feature branch used it
-	conversationRepo := repositories.NewConversationRepository(db)
+	cvChatRepo := repositories.NewCVChatRepository(db)
+	interviewFreeformRepo := repositories.NewInterviewFreeformRepository(db)
+	interviewStructuredRepo := repositories.NewInterviewStructuredRepository(db)
 
 	providersConfigs, err := config.BuildProviderConfigs()
 	if err != nil {
@@ -85,18 +85,18 @@ func main() {
 	// Feature branch expected emailService as an extra arg for NewOTPUsecase
 	otpUsecase := usecases.NewOTPUsecase(otpRepo, phoneValidator, otpSenderTyped, emailService)
 	// Feature branch expected otpRepo in the auth usecase constructor
-	authUsecase := usecases.NewAuthUsecase(authRepo, passwordService, jwtService, cfg.BaseURL, otpRepo, time.Second*10,emailService)
+	authUsecase := usecases.NewAuthUsecase(authRepo, passwordService, jwtService, cfg.BaseURL, otpRepo, time.Second*10, emailService)
 	userUsecase := usecases.NewUserUsecase(userRepo, time.Second*10)
 
 	cvUsecase := usecases.NewCVUsecase(cvRepo, feedbackRepo, skillGapRepo, aiService, textExtractor, time.Second*15)
-	chatUsecase := usecases.NewChatUsecase(conversationRepo, groqClient, cfg)
+	jobUsecaseImpl := usecases.NewJobUsecase(job_service.NewJobService(cfg.JobDataApiKey), repositories.NewJobChatRepository(db), groqClient)
+
+	// Initialize AI service adapter for interview and CV chat usecases
+	interviewAIService := groqpkg.NewGroqServiceAdapter(groqClient)
+	cvChatUsecase := usecases.NewCVChatUsecase(cvChatRepo, cvUsecase, interviewAIService)
 
 	// Job Matching Feature
-	jobRepo := job_service.NewJobService(cfg.JobDataApiKey)
-	jobChatRepo := repositories.NewJobChatRepository(db)
-	// usecase expects job service and jobChatRepo + groq client
-	jobUsecase := usecases.NewJobUsecase(jobRepo, jobChatRepo, groqClient)
-	jobController := controllers.NewJobController(jobUsecase, jobChatRepo, groqClient)
+	jobController := controllers.NewJobController(jobUsecaseImpl, repositories.NewJobChatRepository(db), groqClient)
 
 	// Initialize controllers
 	otpController := controllers.NewOtpController(otpUsecase)
@@ -104,30 +104,18 @@ func main() {
 	userController := controllers.NewUserController(userUsecase)
 	oauthController := controllers.NewOAuth2Controller(oauthService, authUsecase)
 	cvController := controllers.NewCVController(cvUsecase)
-	chatController := controllers.NewChatController(chatUsecase)
+
+	cvChatController := controllers.NewCVChatController(cvChatUsecase)
+
+	// Initialize separated interview controllers
+	interviewFreeformUsecase := usecases.NewInterviewFreeformUsecase(interviewFreeformRepo, interviewAIService)
+	interviewStructuredUsecase := usecases.NewInterviewStructuredUsecase(interviewStructuredRepo, authRepo, interviewAIService)
+
+	interviewFreeformController := controllers.NewInterviewFreeformController(interviewFreeformUsecase)
+	interviewStructuredController := controllers.NewInterviewStructuredController(interviewStructuredUsecase)
 
 	// Setup router (add more controllers as you add features)
-	router := routes.SetupRouter(authMiddleware, userController, authController, otpController, oauthController, cvController, chatController, jobController)
-
-	// Security: Add CORS and secure headers middleware
-	router.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
-		c.Writer.Header().Set("X-Frame-Options", "DENY")
-		c.Writer.Header().Set("X-XSS-Protection", "1; mode=block")
-		c.Writer.Header().Set("Referrer-Policy", "no-referrer")
-		c.Writer.Header().Set("Content-Security-Policy", "default-src 'self'")
-		c.Next()
-	})
-	router.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	})
+	router := routes.SetupRouter(authMiddleware, userController, authController, otpController, oauthController, cvController, cvChatController, interviewFreeformController, interviewStructuredController, jobController)
 
 	// Get port from config or environment variable
 	port := cfg.AppPort
