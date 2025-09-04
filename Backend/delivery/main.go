@@ -4,18 +4,17 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/controllers"
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/routes"
 	groqpkg "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/ai"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/ai_service"
 	authinfra "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/auth"
-	config "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/config"
+	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/config"
 	emailinfra "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/email"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/job_service"
+	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/middlewares"
 
 	mongoclient "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/db/mongo"
 	// utils "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/util"
@@ -70,7 +69,7 @@ func main() {
 	passwordService := authinfra.NewPasswordService()
 	authMiddleware := authinfra.NewAuthMiddleware(jwtService)
 	oauthService, err := authinfra.NewOAuth2Service(providersConfigs)
-	aiService := ai_service.NewGeminiAISuggestionService("gemini-1.5-flash", cfg.AIApiKey) // to be loaded from config later
+	aiService := ai_service.NewGeminiAISuggestionService("gemini-1.5-flash", cfg.AIApiKey) 
 
 	textExtractor := file_parser.NewFileTextExtractor()
 
@@ -109,34 +108,13 @@ func main() {
 	// Setup router (add more controllers as you add features)
 	router := routes.SetupRouter(authMiddleware, userController, authController, otpController, oauthController, cvController, chatController, jobController)
 
-	// Security: Add CORS and secure headers middleware
-	router.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
-		c.Writer.Header().Set("X-Frame-Options", "DENY")
-		c.Writer.Header().Set("X-XSS-Protection", "1; mode=block")
-		c.Writer.Header().Set("Referrer-Policy", "no-referrer")
-		c.Writer.Header().Set("Content-Security-Policy", "default-src 'self'")
-		c.Next()
-	})
-	router.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	})
+	router.Use(middlewares.CORS())
+	router.Use(middlewares.SecurityHeaders())
 
-	// get port from Render's environment variable
-	port := os.Getenv("PORT")
-	if port == "" {
-	    log.Fatal("PORT environment variable not set")
-	}
-	
+	port := config.GetServerPort()
+
 	log.Printf("Server starting on port %s...", port)
 	if err := router.Run("0.0.0.0:" + port); err != nil {
-	    log.Fatalf("Failed to start server: %v", err)
+		log.Fatalf("Failed to start server: %v", err)
 	}
 }

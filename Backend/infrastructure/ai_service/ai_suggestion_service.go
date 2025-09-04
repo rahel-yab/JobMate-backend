@@ -34,8 +34,8 @@ type aiResponse struct {
 }
 
 type GeminiAISuggestionService struct {
-	model  string
-	apiKey string
+	model           string
+	apiKey          string
 }
 
 func NewGeminiAISuggestionService(model, apiKey string) svc.AISuggestionService {
@@ -43,8 +43,8 @@ func NewGeminiAISuggestionService(model, apiKey string) svc.AISuggestionService 
 		model = "gemini-1.5-flash"
 	}
 	return &GeminiAISuggestionService{
-		model:  model,
-		apiKey: apiKey,
+		model:           model,
+		apiKey:          apiKey,
 	}
 }
 
@@ -56,7 +56,8 @@ func (s *GeminiAISuggestionService) Analyze(ctx context.Context, cvText string) 
 		return nil, fmt.Errorf("failed to create Gemini client: %w", err)
 	}
 
-	prompt := fmt.Sprintf(`You are a career coach AI. Analyze the following CV text and return **only JSON**, strictly matching this structure. Use empty arrays or empty strings if there is no data:
+	
+	prompt := fmt.Sprintf(`You are a career coach AI. Analyze the following CV text and return **only JSON**, strictly matching this structure. Respond in the language it's written in.Use empty arrays or empty strings if there is no data:
 
 {
   "cvs": {
@@ -83,7 +84,7 @@ func (s *GeminiAISuggestionService) Analyze(ctx context.Context, cvText string) 
 
 CV Text:
 %s
-`, cvText)
+`,cvText)
 
 	result, err := client.Models.GenerateContent(ctx, s.model, genai.Text(prompt), nil)
 	if err != nil {
