@@ -80,7 +80,10 @@ func main() {
 		log.Fatalf("Failed to initialize OAuth2 service: %v", err)
 	}
 
-	// Initialize AI client
+
+	// Initialize AI client (avoid alias/variable collision)
+	geminiClient:=groqpkg.NewGeminiService(cfg)
+
 	groqClient := groqpkg.NewGroqClient(cfg)
 	interviewAIService := groqpkg.NewGroqServiceAdapter(groqClient)
 
@@ -91,9 +94,15 @@ func main() {
 	cvUsecase := usecases.NewCVUsecase(cvRepo, feedbackRepo, skillGapRepo, aiService, textExtractor, time.Second*15)
 	//chatUsecase := usecases.NewChatUsecase(conversationRepo, groqClient, cfg)
 
-	cvChatUsecase := usecases.NewCVChatUsecase(cvChatRepo, cvUsecase, interviewAIService)
+
+	// Initialize AI service adapter for interview and CV chat usecases
+	interviewAIService := groqpkg.NewGroqServiceAdapter(groqClient)
+	cvChatUsecase := usecases.NewCVChatUsecase(cvChatRepo, cvUsecase, geminiClient)
+
+
 	interviewFreeformUsecase := usecases.NewInterviewFreeformUsecase(interviewFreeformRepo, interviewAIService)
 	interviewStructuredUsecase := usecases.NewInterviewStructuredUsecase(interviewStructuredRepo, authRepo, interviewAIService)
+
 
 	// Job Matching feature
 	jobRepo := job_service.NewJobService(cfg.JobDataApiKey)

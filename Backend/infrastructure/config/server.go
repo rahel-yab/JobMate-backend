@@ -8,7 +8,7 @@ import (
 // GetServerPort decides which port to use depending on environment
 func GetServerPort() string {
 	appEnv := os.Getenv("APP_ENV")
-	port := os.Getenv("PORT")
+	port := "8080"
 
 	if appEnv == "development" {
 		// fallback to 8080 in dev if no PORT is set
