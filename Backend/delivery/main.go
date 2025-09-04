@@ -79,6 +79,7 @@ func main() {
 	}
 
 	// Initialize AI client (avoid alias/variable collision)
+	geminiClient:=groqpkg.NewGeminiService(cfg)
 	groqClient := groqpkg.NewGroqClient(cfg)
 
 	// Initialize use cases
@@ -93,7 +94,7 @@ func main() {
 
 	// Initialize AI service adapter for interview and CV chat usecases
 	interviewAIService := groqpkg.NewGroqServiceAdapter(groqClient)
-	cvChatUsecase := usecases.NewCVChatUsecase(cvChatRepo, cvUsecase, interviewAIService)
+	cvChatUsecase := usecases.NewCVChatUsecase(cvChatRepo, cvUsecase, geminiClient)
 
 	// Job Matching Feature
 	jobController := controllers.NewJobController(jobUsecaseImpl, repositories.NewJobChatRepository(db), groqClient)
