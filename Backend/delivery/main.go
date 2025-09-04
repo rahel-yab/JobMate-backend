@@ -47,8 +47,9 @@ func main() {
 	cvRepo := repositories.NewCVRepository(db)
 	feedbackRepo := repositories.NewFeedbackRepository(db)
 	skillGapRepo := repositories.NewSkillGapRepository(db)
-	// use the name conversationRepo because feature branch used it
-	conversationRepo := repositories.NewConversationRepository(db)
+	cvChatRepo := repositories.NewCVChatRepository(db)
+	interviewFreeformRepo := repositories.NewInterviewFreeformRepository(db)
+	interviewStructuredRepo := repositories.NewInterviewStructuredRepository(db)
 
 	providersConfigs, err := config.BuildProviderConfigs()
 	if err != nil {
@@ -84,18 +85,18 @@ func main() {
 	// Feature branch expected emailService as an extra arg for NewOTPUsecase
 	otpUsecase := usecases.NewOTPUsecase(otpRepo, phoneValidator, otpSenderTyped, emailService)
 	// Feature branch expected otpRepo in the auth usecase constructor
-	authUsecase := usecases.NewAuthUsecase(authRepo, passwordService, jwtService, cfg.BaseURL, otpRepo, time.Second*10,emailService)
+	authUsecase := usecases.NewAuthUsecase(authRepo, passwordService, jwtService, cfg.BaseURL, otpRepo, time.Second*10, emailService)
 	userUsecase := usecases.NewUserUsecase(userRepo, time.Second*10)
 
 	cvUsecase := usecases.NewCVUsecase(cvRepo, feedbackRepo, skillGapRepo, aiService, textExtractor, time.Second*15)
-	chatUsecase := usecases.NewChatUsecase(conversationRepo, groqClient, cfg)
+	jobUsecaseImpl := usecases.NewJobUsecase(job_service.NewJobService(cfg.JobDataApiKey), repositories.NewJobChatRepository(db), groqClient)
+
+	// Initialize AI service adapter for interview and CV chat usecases
+	interviewAIService := groqpkg.NewGroqServiceAdapter(groqClient)
+	cvChatUsecase := usecases.NewCVChatUsecase(cvChatRepo, cvUsecase, interviewAIService)
 
 	// Job Matching Feature
-	jobRepo := job_service.NewJobService(cfg.JobDataApiKey)
-	jobChatRepo := repositories.NewJobChatRepository(db)
-	// usecase expects job service and jobChatRepo + groq client
-	jobUsecase := usecases.NewJobUsecase(jobRepo, jobChatRepo, groqClient)
-	jobController := controllers.NewJobController(jobUsecase, jobChatRepo, groqClient)
+	jobController := controllers.NewJobController(jobUsecaseImpl, repositories.NewJobChatRepository(db), groqClient)
 
 	// Initialize controllers
 	otpController := controllers.NewOtpController(otpUsecase)
@@ -103,15 +104,25 @@ func main() {
 	userController := controllers.NewUserController(userUsecase)
 	oauthController := controllers.NewOAuth2Controller(oauthService, authUsecase)
 	cvController := controllers.NewCVController(cvUsecase)
-	chatController := controllers.NewChatController(chatUsecase)
+
+	cvChatController := controllers.NewCVChatController(cvChatUsecase)
+
+	// Initialize separated interview controllers
+	interviewFreeformUsecase := usecases.NewInterviewFreeformUsecase(interviewFreeformRepo, interviewAIService)
+	interviewStructuredUsecase := usecases.NewInterviewStructuredUsecase(interviewStructuredRepo, authRepo, interviewAIService)
+
+	interviewFreeformController := controllers.NewInterviewFreeformController(interviewFreeformUsecase)
+	interviewStructuredController := controllers.NewInterviewStructuredController(interviewStructuredUsecase)
 
 	// Setup router (add more controllers as you add features)
+
 	router := routes.SetupRouter(authMiddleware, userController, authController, otpController, oauthController, cvController, chatController, jobController)
 
 	router.Use(middlewares.CORS())
 	router.Use(middlewares.SecurityHeaders())
 
 	port := config.GetServerPort()
+
 
 	log.Printf("Server starting on port %s...", port)
 	if err := router.Run("0.0.0.0:" + port); err != nil {
