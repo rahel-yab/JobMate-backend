@@ -56,6 +56,7 @@ func (ctrl *InterviewFreeformController) CreateSession(c *gin.Context) {
 // SendMessage sends a message in free-form interview chat
 func (ctrl *InterviewFreeformController) SendMessage(c *gin.Context) {
 	var req dto.SendInterviewMessageRequest
+	ChatID:=c.Param("chat_id")
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.ErrorResponse(c, http.StatusBadRequest, "Invalid request format", err.Error())
 		return
@@ -67,7 +68,7 @@ func (ctrl *InterviewFreeformController) SendMessage(c *gin.Context) {
 		return
 	}
 
-	aiResponse, err := ctrl.InterviewFreeformUsecase.SendMessage(c.Request.Context(), userID.(string), req.Message, req.ChatID)
+	aiResponse, err := ctrl.InterviewFreeformUsecase.SendMessage(c.Request.Context(), userID.(string), req.Message, ChatID)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to process message", err.Error())
 		return
