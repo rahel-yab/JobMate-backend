@@ -85,6 +85,7 @@ func main() {
 	geminiClient:=groqpkg.NewGeminiService(cfg)
 
 	groqClient := groqpkg.NewGroqClient(cfg)
+	// groqService:=groqpkg.NewGroqServiceAdapter(groqClient)
 	
 
 	// Initialize use cases
@@ -106,7 +107,7 @@ func main() {
 
 	// Job Matching feature
 	jobRepo := job_service.NewJobService(cfg.JobDataApiKey)
-	jobUsecase := usecases.NewJobUsecase(jobRepo, jobChatRepo, groqClient)
+	jobUsecase := usecases.NewJobUsecase(jobRepo, jobChatRepo, geminiClient)
 
 	// Initialize controllers
 	otpController := controllers.NewOtpController(otpUsecase)
