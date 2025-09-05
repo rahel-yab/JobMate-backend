@@ -137,7 +137,10 @@ func main() {
 	router.Use(middlewares.SetupCORS())
 	router.Use(middlewares.SecurityHeaders())
 
-	port := config.GetServerPort()
+	port := cfg.Port
+	if port == "" {
+		log.Fatal("PORT environment variable not set.")
+	}
 
 	log.Printf("Server starting on port %s...", port)
 	if err := router.Run(":" + port); err != nil {
