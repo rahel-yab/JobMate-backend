@@ -143,3 +143,28 @@ func (uc *CVUsecase) Analyze(ctx context.Context, cvID string) (*model.AISuggest
 
 	return suggestions, nil
 }
+
+func (uc *CVUsecase) GenerateSuggestions(ctx context.Context, userID string) (*model.Suggestion, error) {
+	c, cancel := context.WithTimeout(ctx, uc.timeout)
+	defer cancel()
+
+	// Get latest CV
+	cv, err := uc.cvRepo.GetLatestByUserID(c, userID)
+	if err != nil {
+		return nil, domain.ErrCVNotFound
+	}
+
+	// Get skill gaps
+	skillGaps, err := uc.skillGapRepo.GetByUserID(c, userID)
+	if err != nil {
+		skillGaps = []*model.SkillGap{} 
+	}
+
+	// Use AI to generate suggestions
+	suggestions, err := uc.aiService.GenerateSuggestions(c, cv, skillGaps)
+	if err != nil {
+		return nil, err
+	}
+
+	return suggestions, nil
+}
