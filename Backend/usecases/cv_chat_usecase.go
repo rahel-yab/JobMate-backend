@@ -68,23 +68,24 @@ func NewCVChatUsecase(
 	}
 }
 
-func (u *cvChatUsecase) SendMessage(ctx context.Context, userID string, message string, cvID string) (*models.CVChatMessage, error) {
+func (u *cvChatUsecase) SendMessage(ctx context.Context, userID string, message string, cvID string, chatID string) (*models.CVChatMessage, error) {
 	// Find or create CV chat session
 	chats, err := u.CVChatRepository.GetCVChatsByUserID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user CV chats: %w", err)
 	}
 
-	var chatID string
-	if len(chats) == 0 || cvID != "" {
-		// Create new chat session
-		chatID, err = u.CVChatRepository.CreateCVChat(ctx, userID, cvID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create CV chat: %w", err)
+	if chatID == "" {
+		if len(chats) == 0 {
+			// Create new chat session
+			chatID, err = u.CVChatRepository.CreateCVChat(ctx, userID, cvID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create CV chat: %w", err)
+			}
+		} else {
+			// Use the most recent chat
+			chatID = chats[len(chats)-1].ID
 		}
-	} else {
-		// Use the most recent chat
-		chatID = chats[len(chats)-1].ID
 	}
 
 	// Save user message
@@ -107,6 +108,7 @@ func (u *cvChatUsecase) SendMessage(ctx context.Context, userID string, message 
 
 	// Build AI messages with CV-specific system prompt
 	aiMessages := u.buildCVAIMessages(chat.Messages, cvID)
+	fmt.Print("cvID", cvID)
 
 	// Call AI with CV-specific tools
 	aiResponse, err := u.AIService.GetChatCompletion(ctx, aiMessages, cvChatTools)
@@ -178,8 +180,9 @@ func (u *cvChatUsecase) GetUserCVChats(ctx context.Context, userID string) ([]*m
 }
 
 // buildCVAIMessages creates AI messages with CV-specific system prompt
+// buildCVAIMessages creates AI messages with CV-specific system prompt including CV ID
 func (u *cvChatUsecase) buildCVAIMessages(messages []models.CVChatMessage, cvID string) []services.AIMessage {
-	// CV-specific system prompt
+	// CV-specific system prompt with CV ID context
 	systemPrompt := `You are JobMate's CV Expert, a specialized AI assistant focused on CV review, optimization, and career guidance for young job seekers in Ethiopia. 
 
 Your expertise includes:
@@ -197,7 +200,9 @@ Guidelines:
 - Speak in the same language as the user
 - Reference Ethiopian job market context when relevant
 
-If a CV is attached (cv_id provided), prioritize analysis and feedback on that specific CV.`
+Current CV Context: The user is discussing their CV with ID: ` + cvID + `
+
+If the user asks to analyze their CV, you MUST use the 'analyze_cv' tool with the provided CV ID so that it can call the dedicated endpooitn for `
 
 	aiMessages := []services.AIMessage{
 		{Role: "system", Content: systemPrompt},

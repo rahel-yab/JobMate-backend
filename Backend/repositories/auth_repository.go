@@ -11,12 +11,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
+	"github.com/tsigemariamzewdu/JobMate-backend/domain"
 	repo "github.com/tsigemariamzewdu/JobMate-backend/domain/interfaces/repositories"
 	models "github.com/tsigemariamzewdu/JobMate-backend/domain/models"
 )
 
 var ErrInvalidUserID = errors.New("invalid user ID")
-var ErrUserNotFound = errors.New("user not found")
 var ErrRefreshTokenNotFound = errors.New("refresh token not found")
 var ErrUserCreationFailed = errors.New("user creation failed")
 var ErrDecodingDocument = errors.New("failed to decode document")
@@ -405,7 +405,7 @@ func (ur *AuthRepository) UpdateUser(ctx context.Context, user *models.User) err
 		return err
 	}
 	if result.MatchedCount == 0 {
-		return ErrUserNotFound
+		return domain.ErrUserNotFound
 	}
 	return nil
 }
@@ -474,7 +474,7 @@ func (ur *AuthRepository) UpdateTokens(ctx context.Context, userID string, acces
 	}
 
 	if result.MatchedCount == 0 {
-		return ErrUserNotFound
+		return domain.ErrUserNotFound
 	}
 
 	return nil
@@ -493,7 +493,7 @@ func consolidateUserError(err error) error {
 		return nil
 	}
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		return ErrUserNotFound
+		return domain.ErrUserNotFound
 	}
 	return err
 }

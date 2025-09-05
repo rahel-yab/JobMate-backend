@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type cvModel struct {
@@ -135,4 +136,23 @@ func (r *cvRepository) Update(ctx context.Context, cv *models.CV) error {
 		return domain.ErrCVNotFound
 	}
 	return nil
+}
+
+func (r *cvRepository) GetLatestByUserID(ctx context.Context, userID string) (*models.CV, error) {
+	filter := bson.M{
+		"user_id": userID,
+	}
+
+	opts := options.FindOne().SetSort(bson.M{"created_at": -1})
+
+	var model cvModel
+	err := r.collection.FindOne(ctx, filter, opts).Decode(&model)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, domain.ErrCVNotFound
+		}
+		return nil, err
+	}
+
+	return toDomainCV(model), nil
 }

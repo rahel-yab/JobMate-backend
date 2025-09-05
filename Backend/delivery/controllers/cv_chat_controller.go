@@ -23,6 +23,8 @@ func NewCVChatController(cvChatUsecase usecaseInterfaces.ICVChatUsecase) *CVChat
 
 func (c *CVChatController) SendMessage(gCtx *gin.Context) {
 	var request dto.CVChatRequest
+	chatID := gCtx.Param("chat_id")
+
 
 	if err := gCtx.ShouldBindJSON(&request); err != nil {
 		gCtx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -39,7 +41,7 @@ func (c *CVChatController) SendMessage(gCtx *gin.Context) {
 	ctx, cancel := context.WithTimeout(gCtx.Request.Context(), 30*time.Second)
 	defer cancel()
 
-	message, err := c.CVChatUsecase.SendMessage(ctx, userID.(string), request.Message, request.CVID)
+	message, err := c.CVChatUsecase.SendMessage(ctx, userID.(string), request.Message, request.CVID,chatID)
 	if err != nil {
 		gCtx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
