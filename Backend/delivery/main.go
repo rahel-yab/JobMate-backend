@@ -14,7 +14,6 @@ import (
 	config "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/config"
 	emailinfra "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/email"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/job_service"
-	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/middlewares"
 
 	mongoclient "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/db/mongo"
 	// utils "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/util"
@@ -133,9 +132,6 @@ func main() {
 		interviewStructuredController,
 		jobController,
 	)
-
-	router.Use(middlewares.SetupCORS())
-	router.Use(middlewares.SecurityHeaders())
 
 	port := cfg.Port
 	if port == "" {
