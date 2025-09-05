@@ -97,6 +97,7 @@ func NewAuthRouter(authController controllers.AuthController, authMiddleware *au
 func NewCVRouter(cvController controllers.CVController,authMiddleware *auth.AuthMiddleware, group gin.RouterGroup) {
 	group.POST("/",authMiddleware.Middleware(), cvController.UploadCV)
 	group.POST("/:id/analyze",authMiddleware.Middleware(), cvController.AnalyzeCV)
+	group.GET("/suggestions",authMiddleware.Middleware() ,cvController.GenerateSuggestions) 
 }
 
 func RegisterOAuthRoutes(

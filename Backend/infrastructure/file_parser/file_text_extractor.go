@@ -3,7 +3,6 @@ package fileparser
 import (
 	"fmt"
 	"io"
-	"log"
 	"mime/multipart"
 	"os"
 	"path/filepath"
@@ -126,7 +125,6 @@ func extractDocxText(fileHeader *multipart.FileHeader) (string, error) {
 		}
 	}
 
-	log.Print(text)
 	return text, nil
 }
 
