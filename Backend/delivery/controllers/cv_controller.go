@@ -148,6 +148,8 @@ func (c *CVController) GenerateSuggestions(ctx *gin.Context) {
 		switch {
 		case errors.Is(err, domain.ErrCVNotFound):
 			ctx.JSON(http.StatusNotFound, utils.ErrorPayload("No CV found for user", nil))
+		case errors.Is(err, domain.ErrCVNotAnalyzed):
+			ctx.JSON(http.StatusBadRequest, utils.ErrorPayload("Latest CV must be analyzed before generating suggestions.", nil))
 		default:
 			ctx.JSON(http.StatusInternalServerError, utils.ErrorPayload("Failed to generate suggestions", err.Error()))
 		}
