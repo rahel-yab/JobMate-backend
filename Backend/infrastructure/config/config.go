@@ -8,7 +8,7 @@ import (
 
 type Config struct {
 	AppEnv  string
-	AppPort string
+	Port string
 	BaseURL string
 
 	DBHost     string
@@ -90,7 +90,7 @@ func LoadConfig() (*Config, error) {
 	// Now populate your config struct
 	cfg := &Config{
 		AppEnv:  viper.GetString("APP_ENV"),
-		AppPort: viper.GetString("APP_PORT"),
+		Port: viper.GetString("PORT"),
 		BaseURL: viper.GetString("BASE_URL"),
 
 		DBHost:     viper.GetString("DB_HOST"),
