@@ -125,11 +125,24 @@ func (ctrl *InterviewFreeformController) GetUserChats(c *gin.Context) {
 		return
 	}
 
+	
 	chats, err := ctrl.InterviewFreeformUsecase.GetUserInterviewChats(c.Request.Context(), userID.(string))
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to retrieve user chats", err.Error())
 		return
 	}
 
-	utils.SuccessResponse(c, "User chats retrieved successfully", chats)
+
+	chatSummaries := make([]dto.InterviewChatSummary, 0, len(chats))
+	for _, chat := range chats {
+		chatSummaries = append(chatSummaries, dto.ToInterviewChatSummary(chat))
+	}
+
+	
+	response := dto.UserInterviewChatsResponse{
+		Chats: chatSummaries,
+		Total: len(chatSummaries),
+	}
+
+	utils.SuccessResponse(c, "User chats retrieved successfully", response)
 }

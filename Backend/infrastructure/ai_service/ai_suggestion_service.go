@@ -106,7 +106,6 @@ CV Text:
 	resp = strings.TrimSuffix(resp, "```")
 	resp = strings.TrimSpace(resp)
 
-
 	var aiResp aiResponse
 	if err := json.Unmarshal([]byte(resp), &aiResp); err != nil {
 		return nil, fmt.Errorf("failed to parse AI response: %w\nAI output: %s", err, resp)
@@ -186,15 +185,17 @@ func (s *GeminiAISuggestionService) GenerateSuggestions(ctx context.Context, cv 
 		skillGapText = strings.Join(gaps, "\n")
 	}
 
-	prompt := fmt.Sprintf(`You are a career advisor AI. Based on the following CV analysis and skill gaps, suggest relevant courses and general career advice in language the cv is written with. 
-	Important: For "url", provide a real publicly accessible course link from trusted providers (Coursera, edX, Udemy, LinkedIn Learning, etc).
+
+	prompt := fmt.Sprintf(`You are a career advisor AI. Based on the following CV analysis and skill gaps, suggest relevant courses and general career advice. Reply in the langauge the extracted skills and expreience are written in.
+	Important: For "url", provide a real publicly accessible course link from trusted providers (Coursera, edX, Udemy, LinkedIn Learning, etc). Detect the language of the CV data (skills, experience, education). The entire response (course titles, descriptions, advice) must be written in that language,
+
 - CV Summary: %s
 - Extracted Skills: %v
 - Extracted Experience: %v
 - Extracted Education: %v
 - Skill Gaps: %s
 
-Return the result in JSON with this structure:
+Return the result in **only JSON** with this structure:
 
 {
   "courses": [
@@ -219,7 +220,6 @@ Return the result in JSON with this structure:
 	resp = strings.TrimPrefix(resp, "```")
 	resp = strings.TrimSuffix(resp, "```")
 	resp = strings.TrimSpace(resp)
-
 
 	var aiResp aiSuggestionResponse
 	if err := json.Unmarshal([]byte(resp), &aiResp); err != nil {

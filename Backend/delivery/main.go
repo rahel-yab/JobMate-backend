@@ -134,14 +134,14 @@ func main() {
 		jobController,
 	)
 
-	router.Use(middlewares.CORS())
+	router.Use(middlewares.SetupCORS())
 	router.Use(middlewares.SecurityHeaders())
 
 	port := cfg.Port
 	if port == "" {
-		if port==""{
-			log.Fatal("PORT environment vairable not set.")
-		}
+
+		log.Fatal("PORT environment variable not set.")
+
 	}
 
 	log.Printf("Server starting on port %s...", port)
