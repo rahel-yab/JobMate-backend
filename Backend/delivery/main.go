@@ -134,7 +134,7 @@ func main() {
 		jobController,
 	)
 
-	router.Use(middlewares.SetupCORS())
+	router.Use(middlewares.SetupCORS(cfg.AllowedOrigins))
 	router.Use(middlewares.SecurityHeaders())
 
 	port := cfg.Port
