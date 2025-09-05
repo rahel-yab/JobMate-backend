@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/controllers"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/auth"
+	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/middlewares"
 )
 
 func SetupRouter(authMiddleware *auth.AuthMiddleware,
@@ -19,6 +20,10 @@ func SetupRouter(authMiddleware *auth.AuthMiddleware,
 ) *gin.Engine {
 
 	router := gin.Default()
+
+	router.Use(middlewares.SetupCORS())
+	router.Use(middlewares.SecurityHeaders())
+
 
 	// register user + auth routes
 	registerUserRoutes(router, authMiddleware, uc, authController)
