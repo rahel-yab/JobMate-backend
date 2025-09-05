@@ -8,7 +8,7 @@ require (
 	github.com/gin-gonic/gin v1.10.1
 	golang.org/x/crypto v0.41.0
 	golang.org/x/oauth2 v0.25.0
-	google.golang.org/genai v1.22.0
+	google.golang.org/genai v1.23.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
 
@@ -76,8 +76,8 @@ require (
 )
 
 require (
-	github.com/gin-contrib/cors v1.7.6
 	github.com/abadojack/whatlanggo v1.0.1
+	github.com/gin-contrib/cors v1.7.6
 	github.com/ledongthuc/pdf v0.0.0-20250511090121-5959a4027728
 	github.com/spf13/viper v1.20.1
 	go.mongodb.org/mongo-driver v1.17.4
