@@ -52,7 +52,7 @@ func SetupRouter(authMiddleware *auth.AuthMiddleware,
 	freeformRoutes := router.Group("/interview/freeform", authMiddleware.Middleware())
 	{
 		freeformRoutes.POST("/session", interviewFreeformController.CreateSession)
-		freeformRoutes.POST("/message", interviewFreeformController.SendMessage)
+		freeformRoutes.POST("/:chat_id/message", interviewFreeformController.SendMessage)
 		freeformRoutes.GET("/:chat_id/history", interviewFreeformController.GetChatHistory)
 		freeformRoutes.GET("/user/chats", interviewFreeformController.GetUserChats)
 	}

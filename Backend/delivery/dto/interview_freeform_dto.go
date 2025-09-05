@@ -20,7 +20,7 @@ type CreateInterviewSessionResponse struct {
 
 type SendInterviewMessageRequest struct {
 	Message string `json:"message" binding:"required"`
-	ChatID  string `json:"chat_id" binding:"required"`
+	
 }
 
 type SendInterviewMessageResponse struct {
