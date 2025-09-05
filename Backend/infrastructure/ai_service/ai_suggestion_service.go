@@ -186,7 +186,7 @@ func (s *GeminiAISuggestionService) GenerateSuggestions(ctx context.Context, cv 
 		skillGapText = strings.Join(gaps, "\n")
 	}
 
-	prompt := fmt.Sprintf(`You are a career advisor AI. Based on the following CV analysis and skill gaps, suggest relevant courses and general career advice. 
+	prompt := fmt.Sprintf(`You are a career advisor AI. Based on the following CV analysis and skill gaps, suggest relevant courses and general career advice in language the cv is written with. 
 	Important: For "url", provide a real publicly accessible course link from trusted providers (Coursera, edX, Udemy, LinkedIn Learning, etc).
 - CV Summary: %s
 - Extracted Skills: %v

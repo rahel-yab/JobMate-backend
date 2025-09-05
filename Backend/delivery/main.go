@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/controllers"
@@ -138,11 +137,10 @@ func main() {
 	router.Use(middlewares.CORS())
 	router.Use(middlewares.SecurityHeaders())
 
-	port := cfg.AppPort
+	port := cfg.Port
 	if port == "" {
-		port = os.Getenv("PORT")
-		if port == "" {
-			port = "8080"
+		if port==""{
+			log.Fatal("PORT environment vairable not set.")
 		}
 	}
 
