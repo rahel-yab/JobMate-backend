@@ -85,7 +85,7 @@ func main() {
 	geminiClient:=groqpkg.NewGeminiService(cfg)
 
 	groqClient := groqpkg.NewGroqClient(cfg)
-	interviewAIService := groqpkg.NewGroqServiceAdapter(groqClient)
+	
 
 	// Initialize use cases
 	otpUsecase := usecases.NewOTPUsecase(otpRepo, phoneValidator, otpSenderTyped, emailService)
@@ -96,12 +96,12 @@ func main() {
 
 
 	// Initialize AI service adapter for interview and CV chat usecases
-	interviewAIService := groqpkg.NewGroqServiceAdapter(groqClient)
+	
 	cvChatUsecase := usecases.NewCVChatUsecase(cvChatRepo, cvUsecase, geminiClient)
 
 
-	interviewFreeformUsecase := usecases.NewInterviewFreeformUsecase(interviewFreeformRepo, interviewAIService)
-	interviewStructuredUsecase := usecases.NewInterviewStructuredUsecase(interviewStructuredRepo, authRepo, interviewAIService)
+	interviewFreeformUsecase := usecases.NewInterviewFreeformUsecase(interviewFreeformRepo, geminiClient)
+	interviewStructuredUsecase := usecases.NewInterviewStructuredUsecase(interviewStructuredRepo, authRepo, geminiClient)
 
 
 	// Job Matching feature
