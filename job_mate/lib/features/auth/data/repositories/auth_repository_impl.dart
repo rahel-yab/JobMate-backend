@@ -4,6 +4,8 @@ import 'package:job_mate/core/error/failure.dart';
 import 'package:job_mate/core/network/network_info.dart';
 import 'package:job_mate/features/auth/data/datasources/auth_local_data_source.dart';
 import 'package:job_mate/features/auth/data/datasources/auth_remote_data_source.dart';
+import 'package:job_mate/features/auth/data/models/auth_token_model.dart';
+import 'package:job_mate/features/auth/data/models/user_model.dart';
 import 'package:job_mate/features/auth/domain/entities/auth_token.dart';
 import 'package:job_mate/features/auth/domain/entities/user.dart';
 import 'package:job_mate/features/auth/domain/repositories/auth_repository.dart';
@@ -42,9 +44,15 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, User>> login(String email, String password) async {
     if (await networkInfo.isConnected) {
       try {
-        final userModel = await remoteDataSource.login(email, password);
+        final response = await remoteDataSource.login(email, password);
+        final userModel = response['user'] as UserModel;
+        final authTokenModel = response['authToken'] as AuthTokenModel;
+
+        // Cache the user
         await localDataSource.cacheUser(userModel);
-        return Right(userModel);
+        // Cache the auth token
+        await localDataSource.cacheAuthToken(authTokenModel);
+        return Right(userModel); // Return the user as per the interface
       } on DioException catch (e) {
         return Left(_handleDioException(e));
       } catch (e) {

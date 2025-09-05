@@ -3,7 +3,7 @@ import 'package:job_mate/features/auth/data/models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
 
-  Future<UserModel> login(String email, String password);
+  Future<Map<String, dynamic>> login(String email, String password);
   Future<UserModel> register(String email, String password, String otp);
 
   Future<void> logout();

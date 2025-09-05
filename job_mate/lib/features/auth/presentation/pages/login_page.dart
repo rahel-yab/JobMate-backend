@@ -127,7 +127,7 @@ class _LoginPageState extends State<LoginPage> {
                               obscureText: true,
                               decoration: const InputDecoration(
                                 labelText: "Password",
-                                hintText: "Create a password",
+                                hintText: "Enter your password",
                                 border: OutlineInputBorder(),
                               ),
                               validator: (val) {
@@ -178,7 +178,7 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       const Text("Don’t have an account? "),
                       GestureDetector(
-                        onTap: () => context.go('/signup'),
+                        onTap: () => context.go('/register'),
                         child: const Text(
                           "Sign up",
                           style: TextStyle(

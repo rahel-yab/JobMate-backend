@@ -10,7 +10,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthRemoteDataSourceImpl({required this.dio});
 
   @override
-  Future<UserModel> login(String email, String password) async {
+  Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final response = await dio.post(
         '/auth/login',
@@ -21,7 +21,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
-        return UserModel.fromJson(response.data);
+        final userData = response.data['user'];
+        final user = UserModel.fromJson(userData); // Map to UserModel first
+        final authToken = AuthTokenModel(
+          accessToken: userData['acces_token'],
+          expiresIn: DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3600, // Example: 1 hour expiry
+        );
+        return {
+          'user': user,
+          'authToken': authToken,
+        };
       } else {
         throw DioException(
           requestOptions: response.requestOptions,
@@ -30,7 +39,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         );
       }
     } on DioException catch (e) {
-      // Handle specific error cases
       if (e.response?.statusCode == 401) {
         throw DioException(
           requestOptions: e.requestOptions,
@@ -43,38 +51,40 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<UserModel> register(String email, String password, String otp) async {
-    try {
-      final response = await dio.post(
-        '/auth/register',
-        data: {
-          'email': email,
-          'password': password,
-          'otp': otp,
-        },
-      );
+Future<UserModel> register(String email, String password, String otp) async {
+  try {
+    print('Sending registration request to ${dio.options.baseUrl}/auth/register with email: $email, password: $password, otp: $otp');
+    final response = await dio.post(
+      '/auth/register',
+      data: {
+        'email': email,
+        'password': password,
+        'otp': otp,
+      },
+    );
+    print('Received registration response: ${response.statusCode} - ${response.data}');
 
-      if (response.statusCode == 201) {
-        return UserModel.fromJson(response.data);
-      } else {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Registration failed with status code: ${response.statusCode}',
-        );
-      }
-    } on DioException catch (e) {
-      // Handle specific error cases
-      if (e.response?.statusCode == 400) {
-        throw DioException(
-          requestOptions: e.requestOptions,
-          response: e.response,
-          message: 'Invalid registration data or OTP',
-        );
-      }
-      rethrow;
+    if (response.statusCode == 201) {
+      return UserModel.fromJson(response.data);
+    } else {
+      throw DioException(
+        requestOptions: response.requestOptions,
+        response: response,
+        message: 'Registration failed with status code: ${response.statusCode}',
+      );
     }
+  } on DioException catch (e) {
+    print('DioException during registration: ${e.type} - ${e.message} - Status: ${e.response?.statusCode} - Data: ${e.response?.data}');
+    if (e.response?.statusCode == 400) {
+      throw DioException(
+        requestOptions: e.requestOptions,
+        response: e.response,
+        message: 'Invalid registration data or OTP',
+      );
+    }
+    rethrow;
   }
+}
 
   @override
   Future<void> logout() async {
@@ -96,12 +106,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> requestOtp(String email) async {
     try {
+      print('Sending OTP request to ${dio.options.baseUrl}/auth/request-otp with email: $email');
       final response = await dio.post(
         '/auth/request-otp',
         data: {
           'email': email,
         },
       );
+      print('Received response: ${response.statusCode} - ${response.data}');
 
       if (response.statusCode != 200) {
         throw DioException(
@@ -112,6 +124,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
     } on DioException catch (e) {
       // Handle specific error cases
+      print('DioException: ${e.type} - ${e.message} - Status: ${e.response?.statusCode}');
       if (e.response?.statusCode == 400) {
         throw DioException(
           requestOptions: e.requestOptions,

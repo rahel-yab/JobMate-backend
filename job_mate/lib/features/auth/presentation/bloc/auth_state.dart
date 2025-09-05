@@ -1,6 +1,5 @@
 part of 'auth_bloc.dart';
 
-
 abstract class AuthState {}
 
 final class AuthInitial extends AuthState {}
@@ -11,7 +10,9 @@ final class AuthLoading extends AuthState {
 final class AuthSuccess extends AuthState {
   final String message;
   final dynamic data;
-  AuthSuccess(this.message, [this.data]);
+  final String type; // Required named parameter with default value
+
+  AuthSuccess(this.message, {this.data, this.type = 'default'});
 }
 final class AuthError extends AuthState {
   final String message;

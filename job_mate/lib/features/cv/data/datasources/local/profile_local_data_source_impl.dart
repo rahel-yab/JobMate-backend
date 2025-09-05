@@ -7,7 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileLocalDataSourceImpl extends ProfileLocalDataSource{
   final SharedPreferences preferences;
-  ProfileLocalDataSourceImpl(this.preferences);
+  // ProfileLocalDataSourceImpl(this.preferences);
+  ProfileLocalDataSourceImpl({required this.preferences});
   static const String _profileKey='current_profile';
 
   @override

@@ -2,16 +2,16 @@ import 'package:job_mate/features/auth/domain/entities/user.dart';
 
 class UserModel extends User {
   const UserModel({
-    required String id,
-    required String name,
+    // required String id,
+    // required String name,
     required String userId,
     required String email,
     String? firstName,
     String? lastName,
     required String provider,
   }) : super(
-         id: id,
-         name: name,
+        //  id: id,
+        //  name: name,
          userId: userId,
          email: email,
          firstName: firstName,
@@ -29,8 +29,8 @@ class UserModel extends User {
         firstName: userJson['firstName'] as String?,
         lastName: userJson['lastName'] as String?,
         provider: userJson['provider'] ?? '',
-        id: '',
-        name: '',
+        // id: '',
+        // name: '',
       );
     }
 
@@ -41,8 +41,8 @@ class UserModel extends User {
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
       provider: json['provider'] ?? '',
-      id: '',
-      name: '',
+      // id: '',
+      // name: '',
     );
   }
 
@@ -65,8 +65,8 @@ class UserModel extends User {
       firstName: user.firstName,
       lastName: user.lastName,
       provider: user.provider,
-      id: '',
-      name: '',
+      // id: '',
+      // name: '',
     );
   }
 }

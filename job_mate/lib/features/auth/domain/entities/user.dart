@@ -13,8 +13,7 @@ class User extends Equatable {
     this.firstName,
     this.lastName,
     required this.provider,
-    required String id,
-    required String name,
+    
   });
 
   @override

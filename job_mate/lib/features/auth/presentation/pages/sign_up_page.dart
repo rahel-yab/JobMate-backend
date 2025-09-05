@@ -60,12 +60,22 @@ class _SignupPageState extends State<SignupPage> {
     return Scaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
+          print('State changed to: $state');
           if (state is AuthSuccess) {
-            context.go('/cv-analysis');
-          } else if (state is AuthError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            if (state.type == 'register') {
+              context.go('/login'); // Navigate to login after successful registration
+            } else if (state.type == 'login') {
+              context.go('/cv-analysis'); // Navigate to CV analysis after successful login
+            }
+          }
+          if (state is AuthError) { // Separate check for AuthError
+            print('Showing error: ${state.message}'); // Debug log
+            final errorMessage = state.message.contains('500')
+                ? 'Registration failed: Server error. Please try again later.'
+                : state.message.contains('400')
+                    ? 'Registration failed: Invalid email, password, or OTP.'
+                    : 'Registration failed: An unexpected error occurred.';
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMessage)));
           }
         },
         builder: (context, state) {
@@ -98,7 +108,6 @@ class _SignupPageState extends State<SignupPage> {
                     ],
                   ),
                   const SizedBox(height: 32),
-
                   const Text(
                     "Welcome to JobMate",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -109,7 +118,6 @@ class _SignupPageState extends State<SignupPage> {
                     style: TextStyle(color: Colors.black54),
                   ),
                   const SizedBox(height: 24),
-
                   Card(
                     elevation: 2,
                     shape: RoundedRectangleBorder(
@@ -130,7 +138,6 @@ class _SignupPageState extends State<SignupPage> {
                               ),
                             ),
                             const SizedBox(height: 20),
-
                             TextFormField(
                               controller: _firstNameController,
                               decoration: const InputDecoration(
@@ -138,14 +145,9 @@ class _SignupPageState extends State<SignupPage> {
                                 hintText: "Enter your first name",
                                 border: OutlineInputBorder(),
                               ),
-                              validator:
-                                  (val) =>
-                                      val == null || val.isEmpty
-                                          ? "Required"
-                                          : null,
+                              validator: (val) => val == null || val.isEmpty ? "Required" : null,
                             ),
                             const SizedBox(height: 16),
-
                             TextFormField(
                               controller: _lastNameController,
                               decoration: const InputDecoration(
@@ -153,14 +155,9 @@ class _SignupPageState extends State<SignupPage> {
                                 hintText: "Enter your last name",
                                 border: OutlineInputBorder(),
                               ),
-                              validator:
-                                  (val) =>
-                                      val == null || val.isEmpty
-                                          ? "Required"
-                                          : null,
+                              validator: (val) => val == null || val.isEmpty ? "Required" : null,
                             ),
                             const SizedBox(height: 16),
-
                             TextFormField(
                               controller: _emailController,
                               decoration: const InputDecoration(
@@ -168,30 +165,27 @@ class _SignupPageState extends State<SignupPage> {
                                 hintText: "Enter your email",
                                 border: OutlineInputBorder(),
                               ),
-                              validator:
-                                  (val) =>
-                                      val == null || val.isEmpty
-                                          ? "Required"
-                                          : null,
+                              validator: (val) => val == null || val.isEmpty ? "Required" : null,
                             ),
                             const SizedBox(height: 16),
-
                             TextFormField(
                               controller: _passwordController,
                               obscureText: true,
                               decoration: const InputDecoration(
                                 labelText: "Password",
-                                hintText: "Create a password",
+                                hintText: "Create a password (min 8 chars, e.g., Tsige@123)",
                                 border: OutlineInputBorder(),
                               ),
-                              validator:
-                                  (val) =>
-                                      val == null || val.isEmpty
-                                          ? "Required"
-                                          : null,
+                              validator: (val) {
+                                if (val == null || val.isEmpty) return "Required";
+                                if (val.length < 8) return "Password must be at least 8 characters";
+                                if (!val.contains(RegExp(r'[A-Z]'))) return "Password must contain an uppercase letter";
+                                if (!val.contains(RegExp(r'[0-9]'))) return "Password must contain a number";
+                                if (!val.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) return "Password must contain a special character";
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 16),
-
                             TextFormField(
                               controller: _confirmPasswordController,
                               obscureText: true,
@@ -211,7 +205,6 @@ class _SignupPageState extends State<SignupPage> {
                               },
                             ),
                             const SizedBox(height: 16),
-
                             Row(
                               children: [
                                 Expanded(
@@ -222,11 +215,7 @@ class _SignupPageState extends State<SignupPage> {
                                       hintText: "#OTP Code",
                                       border: OutlineInputBorder(),
                                     ),
-                                    validator:
-                                        (val) =>
-                                            val == null || val.isEmpty
-                                                ? "Required"
-                                                : null,
+                                    validator: (val) => val == null || val.isEmpty ? "Required" : null,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -247,7 +236,6 @@ class _SignupPageState extends State<SignupPage> {
                               ],
                             ),
                             const SizedBox(height: 24),
-
                             SizedBox(
                               width: double.infinity,
                               height: 48,
@@ -256,15 +244,14 @@ class _SignupPageState extends State<SignupPage> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.teal,
                                 ),
-                                child:
-                                    isLoading
-                                        ? const CircularProgressIndicator(
-                                          color: Colors.white,
-                                        )
-                                        : const Text(
-                                          "Sign up",
-                                          style: TextStyle(color: Colors.white),
-                                        ),
+                                child: isLoading
+                                    ? const CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
+                                    : const Text(
+                                        "Sign up",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
                               ),
                             ),
                           ],
@@ -273,7 +260,6 @@ class _SignupPageState extends State<SignupPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
