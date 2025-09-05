@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/controllers"
@@ -11,7 +12,7 @@ import (
 	groqpkg "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/ai"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/ai_service"
 	authinfra "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/auth"
-	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/config"
+	config "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/config"
 	emailinfra "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/email"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/job_service"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/middlewares"
@@ -24,11 +25,10 @@ import (
 )
 
 func main() {
-
 	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Printf("Warning: could not load config file: %v", err)
+		log.Fatalf("Failed to load config: %v", err)
 	}
 
 	// Connect to MongoDB
@@ -47,8 +47,12 @@ func main() {
 	cvRepo := repositories.NewCVRepository(db)
 	feedbackRepo := repositories.NewFeedbackRepository(db)
 	skillGapRepo := repositories.NewSkillGapRepository(db)
+	cvChatRepo := repositories.NewCVChatRepository(db)
+	interviewFreeformRepo := repositories.NewInterviewFreeformRepository(db)
+	interviewStructuredRepo := repositories.NewInterviewStructuredRepository(db)
+	jobChatRepo := repositories.NewJobChatRepository(db)
 	// use the name conversationRepo because feature branch used it
-	conversationRepo := repositories.NewConversationRepository(db)
+	//conversationRepo := repositories.NewConversationRepository(db)
 
 	providersConfigs, err := config.BuildProviderConfigs()
 	if err != nil {
@@ -57,7 +61,6 @@ func main() {
 
 	// Initialize services
 	phoneValidator := &authinfra.PhoneValidatorImpl{}
-	// email service (feature branch addition)
 	emailService := emailinfra.NewSMTPService(cfg.SMTPHost, cfg.SMTPPort, cfg.SMTPUsername, cfg.SMTPPassword, cfg.EmailFrom)
 
 	otpSender, err := authinfra.NewOTPSenderFromEnv(cfg)
@@ -69,7 +72,7 @@ func main() {
 	passwordService := authinfra.NewPasswordService()
 	authMiddleware := authinfra.NewAuthMiddleware(jwtService)
 	oauthService, err := authinfra.NewOAuth2Service(providersConfigs)
-	aiService := ai_service.NewGeminiAISuggestionService("gemini-1.5-flash", cfg.AIApiKey) // to be loaded from config later
+	aiService := ai_service.NewGeminiAISuggestionService("gemini-1.5-flash", cfg.AIApiKey)
 
 	textExtractor := file_parser.NewFileTextExtractor()
 
@@ -77,25 +80,34 @@ func main() {
 		log.Fatalf("Failed to initialize OAuth2 service: %v", err)
 	}
 
+
 	// Initialize AI client (avoid alias/variable collision)
+	geminiClient:=groqpkg.NewGeminiService(cfg)
+
 	groqClient := groqpkg.NewGroqClient(cfg)
+	// groqService:=groqpkg.NewGroqServiceAdapter(groqClient)
+	
 
 	// Initialize use cases
-	// Feature branch expected emailService as an extra arg for NewOTPUsecase
 	otpUsecase := usecases.NewOTPUsecase(otpRepo, phoneValidator, otpSenderTyped, emailService)
-	// Feature branch expected otpRepo in the auth usecase constructor
-	authUsecase := usecases.NewAuthUsecase(authRepo, passwordService, jwtService, cfg.BaseURL, otpRepo, time.Second*10,emailService)
+	authUsecase := usecases.NewAuthUsecase(authRepo, passwordService, jwtService, cfg.BaseURL, otpRepo, time.Second*10, emailService)
 	userUsecase := usecases.NewUserUsecase(userRepo, time.Second*10)
-
 	cvUsecase := usecases.NewCVUsecase(cvRepo, feedbackRepo, skillGapRepo, aiService, textExtractor, time.Second*15)
-	chatUsecase := usecases.NewChatUsecase(conversationRepo, groqClient, cfg)
+	//chatUsecase := usecases.NewChatUsecase(conversationRepo, groqClient, cfg)
 
-	// Job Matching Feature
+
+	// Initialize AI service adapter for interview and CV chat usecases
+	
+	cvChatUsecase := usecases.NewCVChatUsecase(cvChatRepo, cvUsecase, geminiClient)
+
+
+	interviewFreeformUsecase := usecases.NewInterviewFreeformUsecase(interviewFreeformRepo, geminiClient)
+	interviewStructuredUsecase := usecases.NewInterviewStructuredUsecase(interviewStructuredRepo, authRepo, geminiClient)
+
+
+	// Job Matching feature
 	jobRepo := job_service.NewJobService(cfg.JobDataApiKey)
-	jobChatRepo := repositories.NewJobChatRepository(db)
-	// usecase expects job service and jobChatRepo + groq client
-	jobUsecase := usecases.NewJobUsecase(jobRepo, jobChatRepo, groqClient)
-	jobController := controllers.NewJobController(jobUsecase, jobChatRepo, groqClient)
+	jobUsecase := usecases.NewJobUsecase(jobRepo, jobChatRepo, geminiClient)
 
 	// Initialize controllers
 	otpController := controllers.NewOtpController(otpUsecase)
@@ -103,18 +115,39 @@ func main() {
 	userController := controllers.NewUserController(userUsecase)
 	oauthController := controllers.NewOAuth2Controller(oauthService, authUsecase)
 	cvController := controllers.NewCVController(cvUsecase)
-	chatController := controllers.NewChatController(chatUsecase)
+	//chatController := controllers.NewChatController(chatUsecase)
+	cvChatController := controllers.NewCVChatController(cvChatUsecase)
+	interviewFreeformController := controllers.NewInterviewFreeformController(interviewFreeformUsecase)
+	interviewStructuredController := controllers.NewInterviewStructuredController(interviewStructuredUsecase)
+	jobController := controllers.NewJobController(jobUsecase, jobChatRepo, groqClient)
 
-	// Setup router (add more controllers as you add features)
-	router := routes.SetupRouter(authMiddleware, userController, authController, otpController, oauthController, cvController, chatController, jobController)
+	// Setup router (add all controllers)
+	router := routes.SetupRouter(
+		authMiddleware,
+		userController,
+		authController,
+		otpController,
+		oauthController,
+		cvController,
+		cvChatController,
+		interviewFreeformController,
+		interviewStructuredController,
+		jobController,
+	)
 
 	router.Use(middlewares.SetupCORS())
 	router.Use(middlewares.SecurityHeaders())
 
-	port := config.GetServerPort()
+	port := cfg.AppPort
+	if port == "" {
+		port = os.Getenv("PORT")
+		if port == "" {
+			port = "8080"
+		}
+	}
 
 	log.Printf("Server starting on port %s...", port)
-	if err := router.Run("0.0.0.0:" + port); err != nil {
+	if err := router.Run(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
