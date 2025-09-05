@@ -8,4 +8,5 @@ import (
 
 type FeedbackRepository interface {
 	Create(ctx context.Context, f *models.CVFeedback) (string, error)
+	GetLatestByCVID(ctx context.Context, cvID string) (*models.CVFeedback, error)
 }
