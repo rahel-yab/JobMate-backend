@@ -43,7 +43,7 @@ func SetupRouter(authMiddleware *auth.AuthMiddleware,
 	cvChatRoutes := router.Group("/cv/chat", authMiddleware.Middleware())
 	{
 		cvChatRoutes.POST("/session", cvChatController.CreateSession)
-		cvChatRoutes.POST("/message", cvChatController.SendMessage)
+		cvChatRoutes.POST("/:chat_id/message", cvChatController.SendMessage)
 		cvChatRoutes.GET("/:chat_id/history", cvChatController.GetChatHistory)
 		cvChatRoutes.GET("/user", cvChatController.GetUserChats)
 	}
