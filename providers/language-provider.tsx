@@ -28,6 +28,33 @@ const translations = {
       "Hello! I’m JobMate, your AI career buddy. This space is for open conversation, ask questions, share ideas, or chat about your career journey",
     cvWelcomeMessage:
       "Great! I'd be happy to help you with your CV. You can upload your current CV or describe your background below, and I'll provide detailed feedback to help you improve it.",
+      // login
+      l_welcome: "Welcome Back",
+      l_subtitle: "Sign in to continue your career journey",
+      email: "Email Address",
+      password: "Password",
+      l_signIn: "Sign In",
+      l_signingIn: "Signing In...",
+      l_noAccount: "Don't have an account? ",
+      l_register: "Sign up",
+
+      
+      // register
+      r_join: "Join JobMate",
+      r_create: "Create your account to get started",
+      r_fullName: "Full Name",
+      r_createAccount: "Sign Up",
+      r_noAccount: " Already have an account? ",
+      r_login:"Sign in",
+      // otp
+      otp_title: "Verify OTP",
+      otp_subtitle1: "We’ve sent an OTP to",
+      otp_subtitle2: "Please enter it below to complete your registration.",
+      otp_placeholder: "Enter OTP",
+      otp_button: "Verify & Register",
+      otp_verifying: "Verifying...",
+      otp_failed: "Registration failed. Please try again."
+    
   },
   am: {
     // Header
@@ -42,6 +69,33 @@ const translations = {
       "ሰላም! እኔ JobMate ነኝ፣ የእርስዎ AI የሙያ ጓደኛ። ይህ ቦታ ለክፍት ውይይት ነው፤ ጥያቄዎችን ይጠይቁ፣ ሃሳቦችን ያካፍሉ፣ ወይም ስራዎ ላይ ያለውን ጉዞ ይወያዩ።",
     cvWelcomeMessage:
       "በጣም ጥሩ! በCVዎ ላይ ልረዳዎት ደስ ይለኛል። የአሁኑን CVዎን መስቀል ወይም ዳራዎን ከዚህ በታች መግለጽ ይችላሉ፣ እና እንዲያሻሽሉት ለመርዳት ዝርዝር ግብረመልስ እሰጣለሁ።",
+      // login 
+      l_welcome: "እንኳን በደህና መጡ",
+      l_subtitle: "የሥራ ጉዞዎን ለመቀጠል ግባ",
+      email: "ኢሜይል አድራሻ",
+      password: "የይለፍ ቃል",
+      l_signIn: "ግባ",
+      l_signingIn: "በመግባት ላይ...",
+      l_noAccount: "መለያ የለህም? አዲስ መለያ ፍጠር",
+      l_register: "ተመዝገብ ",
+
+    
+    // register
+      r_join: "JobMate ጋር ተቀላቀል",
+      r_create: "መለያህን ፍጠር እና ጀምር",
+      r_fullName: "ሙሉ ስም",
+      r_createAccount: "ተመዝገብ",
+      r_haveAccount: "መለያ አለህ? ግባ",
+       
+      // otp 
+      otp_title: "ኦቲፒ ያረጋግጡ",
+      otp_subtitle1: "ኦቲፒ ኮድ ወደ ",
+      otp_subtitle2: "ተልኳል እባክዎ ምዝገባውን ለመጨረስ ከታች ባለው ላይ ኮዱን ያስገቡ",
+      otp_placeholder: "ኦቲፒ ያስገቡ",
+      otp_button: "ያረጋግጡ እና ይመዝገቡ",
+      otp_verifying: "በመረጋገጥ ላይ...",
+      otp_failed: "ምዝገባው አልተሳካም። እባክዎ ደግመው ይሞክሩ።"
+    
   },
 };
 
