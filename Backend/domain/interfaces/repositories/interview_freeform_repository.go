@@ -7,7 +7,7 @@ import (
 
 type IInterviewFreeformRepository interface {
 	CreateInterviewChat(ctx context.Context, userID string, sessionType string) (string, error)
-	AppendMessage(ctx context.Context, chatID string, message models.InterviewFreeformMessage) error
+	AppendMessage(ctx context.Context, chatID string, message models.InterviewFreeformMessage) (*models.InterviewFreeformMessage, error)
 	GetInterviewChatByID(ctx context.Context, chatID string) (*models.InterviewFreeformChat, error)
 	GetInterviewChatByIDWithLimit(ctx context.Context, chatID string, limit, offset int) (*models.InterviewFreeformChat, error)
 	GetInterviewChatsByUserIDWithLimit(ctx context.Context, userID string, limit, offset int) ([]*models.InterviewFreeformChat, error)

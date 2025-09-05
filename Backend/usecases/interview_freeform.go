@@ -70,6 +70,7 @@ func NewInterviewFreeformUsecase(
 }
 
 func (u *InterviewFreeformUsecase) SendMessage(ctx context.Context, userID string, message string, chatID string) (*models.InterviewFreeformMessage, error) {
+	// Get chat history for context
 	chat, err := u.InterviewFreeformRepository.GetInterviewChatByID(ctx, chatID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get chat: %w", err)
@@ -87,11 +88,12 @@ func (u *InterviewFreeformUsecase) SendMessage(ctx context.Context, userID strin
 		Timestamp: time.Now(),
 	}
 
-	err = u.InterviewFreeformRepository.AppendMessage(ctx, chatID, userMessage)
+	_, err = u.InterviewFreeformRepository.AppendMessage(ctx, chatID, userMessage)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save user message: %w", err)
 	}
 
+	// Build AI messages with interview context
 	aiMessages := u.buildInterviewAIMessages(chat.Messages, chat.SessionType, 0)
 	aiMessages = append(aiMessages, services.AIMessage{
 		Role:    "user",
@@ -104,6 +106,7 @@ func (u *InterviewFreeformUsecase) SendMessage(ctx context.Context, userID strin
 		return u.createFallbackResponse(ctx, chatID, err)
 	}
 
+	// Handle tool calls if present
 	if len(response.ToolCalls) > 0 {
 		return u.handleInterviewToolCalls(ctx, chatID, response.ToolCalls, chat.Messages, chat.SessionType, 0)
 	}
@@ -115,12 +118,12 @@ func (u *InterviewFreeformUsecase) SendMessage(ctx context.Context, userID strin
 		Timestamp: time.Now(),
 	}
 
-	err = u.InterviewFreeformRepository.AppendMessage(ctx, chatID, aiMessage)
+	savedAIMessage, err := u.InterviewFreeformRepository.AppendMessage(ctx, chatID, aiMessage)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save AI response: %w", err)
 	}
 
-	return &aiMessage, nil
+	return savedAIMessage, nil
 }
 
 func (u *InterviewFreeformUsecase) CreateInterviewSession(ctx context.Context, userID string, sessionType string) (string, error) {
@@ -144,10 +147,11 @@ func (u *InterviewFreeformUsecase) GetNextQuestion(ctx context.Context, chatID s
 }
 
 func (u *InterviewFreeformUsecase) CompleteSession(ctx context.Context, chatID string) error {
+
 	return nil
 }
 
-
+// buildInterviewAIMessages creates AI messages with interview-specific system prompt
 func (u *InterviewFreeformUsecase) buildInterviewAIMessages(messages []models.InterviewFreeformMessage, sessionType string, currentQuestion int) []services.AIMessage {
 	systemPrompt := fmt.Sprintf(`You are JobMate's Interview Coach, a specialized AI assistant focused on interview preparation and practice for young job seekers in Ethiopia.
 
@@ -242,15 +246,16 @@ func (u *InterviewFreeformUsecase) handleInterviewToolCalls(ctx context.Context,
 	aiMessage := models.InterviewFreeformMessage{
 		Role:    "assistant",
 		Content: strings.TrimSpace(finalResponse.Content),
+		// QuestionIndex not needed for freeform messages
 		Timestamp: time.Now(),
 	}
 
-	err = u.InterviewFreeformRepository.AppendMessage(ctx, chatID, aiMessage)
+	savedMessage, err := u.InterviewFreeformRepository.AppendMessage(ctx, chatID, aiMessage)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save AI response: %w", err)
 	}
 
-	return &aiMessage, nil
+	return savedMessage, nil
 }
 
 func (u *InterviewFreeformUsecase) evaluateAnswer(answer, question, sessionType string) string {
@@ -285,7 +290,8 @@ func (u *InterviewFreeformUsecase) createFallbackResponse(ctx context.Context, c
 		Timestamp: time.Now(),
 	}
 
-	_ = u.InterviewFreeformRepository.AppendMessage(ctx, chatID, aiMessage)
+	savedMessage, _ := u.InterviewFreeformRepository.AppendMessage(ctx, chatID, aiMessage)
 
-	return &aiMessage, nil
+	return savedMessage, nil
 }
+

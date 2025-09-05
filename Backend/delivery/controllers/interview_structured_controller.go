@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/dto"
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/utils"
+	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
 	usecaseInterfaces "github.com/tsigemariamzewdu/JobMate-backend/domain/interfaces/usecases"
 )
 
@@ -33,8 +34,6 @@ func (ctrl *InterviewStructuredController) StartInterview(c *gin.Context) {
 		utils.ErrorResponse(c, http.StatusUnauthorized, "User not authenticated", "")
 		return
 	}
-
-	// Start the structured interview session (usecase will fetch user profile automatically)
 	chatID, firstQuestion, totalQuestions, err := ctrl.InterviewStructuredUsecase.StartStructuredInterview(c.Request.Context(), userID.(string), req.Field)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to start interview session", err.Error())
@@ -105,7 +104,7 @@ func (ctrl *InterviewStructuredController) GetChatHistory(c *gin.Context) {
 		return
 	}
 
-	var chat interface{}
+	var chat *models.InterviewStructuredChat
 	if limit > 0 {
 		chat, err = ctrl.InterviewStructuredUsecase.GetChatHistoryWithLimit(c.Request.Context(), chatID, limit, offset)
 	} else {
@@ -117,7 +116,9 @@ func (ctrl *InterviewStructuredController) GetChatHistory(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(c, "Chat history retrieved successfully", chat)
+	
+	response := dto.ToStructuredInterviewSessionResponse(chat)
+	utils.SuccessResponse(c, "Chat history retrieved successfully", response)
 }
 
 // GetUserChats retrieves all structured interview chat sessions for a user

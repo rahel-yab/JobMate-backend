@@ -45,6 +45,7 @@ func (r *InterviewFreeformRepository) CreateInterviewChat(ctx context.Context, u
 }
 
 func (r *InterviewFreeformRepository) GetInterviewChatByID(ctx context.Context, chatID string) (*models.InterviewFreeformChat, error) {
+	
 	var filter bson.M
 	if objectID, err := primitive.ObjectIDFromHex(chatID); err == nil {
 		filter = bson.M{"_id": objectID}
@@ -67,32 +68,32 @@ func (r *InterviewFreeformRepository) GetInterviewChatByID(ctx context.Context, 
 func (r *InterviewFreeformRepository) convertToChat(result bson.M) *models.InterviewFreeformChat {
 	chat := &models.InterviewFreeformChat{}
 
-	// Convert ID
+
 	if id, ok := result["_id"].(primitive.ObjectID); ok {
 		chat.ID = id.Hex()
 	}
 
-	// Convert UserID
+
 	if userID, ok := result["user_id"].(string); ok {
 		chat.UserID = userID
 	}
 
-	// Convert SessionType
+
 	if sessionType, ok := result["session_type"].(string); ok {
 		chat.SessionType = sessionType
 	}
 
-	// Convert CreatedAt
+
 	if createdAt, ok := result["created_at"].(primitive.DateTime); ok {
 		chat.CreatedAt = createdAt.Time()
 	}
 
-	// Convert UpdatedAt
+	
 	if updatedAt, ok := result["updated_at"].(primitive.DateTime); ok {
 		chat.UpdatedAt = updatedAt.Time()
 	}
 
-	// Convert messages
+	
 	if messagesData, ok := result["messages"].(primitive.A); ok {
 		for _, msgData := range messagesData {
 			if msgMap, ok := msgData.(bson.M); ok {
@@ -125,6 +126,7 @@ func (r *InterviewFreeformRepository) convertToChat(result bson.M) *models.Inter
 }
 
 func (r *InterviewFreeformRepository) GetInterviewChatByIDWithLimit(ctx context.Context, chatID string, limit, offset int) (*models.InterviewFreeformChat, error) {
+	// Try to convert chatID to ObjectID first, if it fails, use as string
 	var matchFilter bson.M
 	if objectID, err := primitive.ObjectIDFromHex(chatID); err == nil {
 		matchFilter = bson.M{"_id": objectID}
@@ -166,7 +168,7 @@ func (r *InterviewFreeformRepository) GetInterviewChatByIDWithLimit(ctx context.
 	return r.convertToChat(results[0]), nil
 }
 
-func (r *InterviewFreeformRepository) AppendMessage(ctx context.Context, chatID string, message models.InterviewFreeformMessage) error {
+func (r *InterviewFreeformRepository) AppendMessage(ctx context.Context, chatID string, message models.InterviewFreeformMessage) (*models.InterviewFreeformMessage, error) {
 	
 	var filter bson.M
 	if objectID, err := primitive.ObjectIDFromHex(chatID); err == nil {
@@ -175,9 +177,12 @@ func (r *InterviewFreeformRepository) AppendMessage(ctx context.Context, chatID 
 		filter = bson.M{"_id": chatID}
 	}
 	
-	// Convert message to BSON format
+
+	messageID := primitive.NewObjectID()
+	
+
 	dbMessage := bson.M{
-		"_id":       primitive.NewObjectID(),
+		"_id":       messageID,
 		"role":      message.Role,
 		"content":   message.Content,
 		"timestamp": message.Timestamp,
@@ -190,14 +195,22 @@ func (r *InterviewFreeformRepository) AppendMessage(ctx context.Context, chatID 
 
 	result, err := r.collection.UpdateOne(ctx, filter, update)
 	if err != nil {
-		return fmt.Errorf("failed to append message: %w", err)
+		return nil, fmt.Errorf("failed to append message: %w", err)
 	}
 
 	if result.MatchedCount == 0 {
-		return fmt.Errorf("interview chat not found")
+		return nil, fmt.Errorf("interview chat not found")
 	}
 
-	return nil
+	
+	savedMessage := &models.InterviewFreeformMessage{
+		ID:        messageID.Hex(),
+		Role:      message.Role,
+		Content:   message.Content,
+		Timestamp: message.Timestamp,
+	}
+
+	return savedMessage, nil
 }
 
 
