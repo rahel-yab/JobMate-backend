@@ -108,7 +108,7 @@ func main() {
 	// Setup router (add more controllers as you add features)
 	router := routes.SetupRouter(authMiddleware, userController, authController, otpController, oauthController, cvController, chatController, jobController)
 
-	router.Use(middlewares.CORS())
+	router.Use(middlewares.SetupCORS())
 	router.Use(middlewares.SecurityHeaders())
 
 	port := config.GetServerPort()
