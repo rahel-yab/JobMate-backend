@@ -3,10 +3,12 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/dto"
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/utils"
+	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
 	usecaseInterfaces "github.com/tsigemariamzewdu/JobMate-backend/domain/interfaces/usecases"
 )
 
@@ -42,8 +44,10 @@ func (ctrl *InterviewFreeformController) CreateSession(c *gin.Context) {
 
 	response := dto.CreateInterviewSessionResponse{
 		ChatID:      chatID,
+		UserID:      userID.(string),
 		SessionType: req.SessionType,
 		Message:     "Free-form interview chat session created successfully. You can now ask questions and practice with the AI interview coach.",
+		CreatedAt:   time.Now(),
 	}
 
 	utils.SuccessResponse(c, "Interview session created successfully", response)
@@ -102,7 +106,7 @@ func (ctrl *InterviewFreeformController) GetChatHistory(c *gin.Context) {
 		return
 	}
 
-	var chat interface{}
+	var chat *models.InterviewFreeformChat
 	if limit > 0 {
 		chat, err = ctrl.InterviewFreeformUsecase.GetChatHistoryWithLimit(c.Request.Context(), chatID, limit, offset)
 	} else {
@@ -114,7 +118,8 @@ func (ctrl *InterviewFreeformController) GetChatHistory(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(c, "Chat history retrieved successfully", chat)
+	response := dto.ToInterviewChatHistoryResponse(chat)
+	utils.SuccessResponse(c, "Chat history retrieved successfully", response)
 }
 
 // GetUserChats retrieves all interview chat sessions for a user
@@ -131,5 +136,15 @@ func (ctrl *InterviewFreeformController) GetUserChats(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(c, "User chats retrieved successfully", chats)
+	chatSummaries := make([]dto.InterviewChatSummary, 0, len(chats))
+	for _, chat := range chats {
+		chatSummaries = append(chatSummaries, dto.ToInterviewChatSummary(chat))
+	}
+
+	response := dto.UserInterviewChatsResponse{
+		Chats: chatSummaries,
+		Total: len(chatSummaries),
+	}
+
+	utils.SuccessResponse(c, "User chats retrieved successfully", response)
 }
