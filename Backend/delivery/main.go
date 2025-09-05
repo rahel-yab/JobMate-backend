@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/controllers"
@@ -138,13 +137,7 @@ func main() {
 	router.Use(middlewares.SetupCORS())
 	router.Use(middlewares.SecurityHeaders())
 
-	port := cfg.AppPort
-	if port == "" {
-		port = os.Getenv("PORT")
-		if port == "" {
-			port = "8080"
-		}
-	}
+	port := config.GetServerPort()
 
 	log.Printf("Server starting on port %s...", port)
 	if err := router.Run(":" + port); err != nil {
