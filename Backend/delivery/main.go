@@ -135,7 +135,7 @@ func main() {
 		jobController,
 	)
 
-	router.Use(middlewares.CORS())
+	router.Use(middlewares.SetupCORS())
 	router.Use(middlewares.SecurityHeaders())
 
 	port := cfg.AppPort
