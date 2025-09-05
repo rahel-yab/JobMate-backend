@@ -134,5 +134,15 @@ func (ctrl *InterviewStructuredController) GetUserChats(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(c, "User chats retrieved successfully", chats)
+	var chatSummaries []dto.StructuredInterviewChatSummary
+	for _, chat := range chats {
+		chatSummaries = append(chatSummaries, dto.ToStructuredInterviewChatSummary(chat))
+	}
+
+	response := dto.UserStructuredInterviewChatsResponse{
+		Chats: chatSummaries,
+		Total: len(chatSummaries),
+	}
+
+	utils.SuccessResponse(c, "User chats retrieved successfully", response)
 }
