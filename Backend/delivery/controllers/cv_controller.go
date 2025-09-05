@@ -138,3 +138,24 @@ func (c *CVController) AnalyzeCV(ctx *gin.Context) {
 		"suggestions": suggestions,
 	}))
 }
+
+// GET /cv/suggestions
+func (c *CVController) GenerateSuggestions(ctx *gin.Context) {
+	userID := ctx.GetString("userID")
+
+	suggestions, err := c.cvUsecase.GenerateSuggestions(ctx, userID)
+	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrCVNotFound):
+			ctx.JSON(http.StatusNotFound, utils.ErrorPayload("No CV found for user", nil))
+		default:
+			ctx.JSON(http.StatusInternalServerError, utils.ErrorPayload("Failed to generate suggestions", err.Error()))
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusOK, utils.SuccessPayload("Suggestions generated successfully", gin.H{
+		"userId":      userID,
+		"suggestions": suggestions,
+	}))
+}

@@ -33,9 +33,20 @@ type aiResponse struct {
 	} `json:"skill_gaps"`
 }
 
+type aiSuggestionResponse struct {
+	Courses []struct {
+		Title       string `json:"title"`
+		Provider    string `json:"provider"`
+		URL         string `json:"url"`
+		Description string `json:"description"`
+		Skill       string `json:"skill"`
+	} `json:"courses"`
+	GeneralAdvice []string `json:"general_advice"`
+}
+
 type GeminiAISuggestionService struct {
-	model           string
-	apiKey          string
+	model  string
+	apiKey string
 }
 
 func NewGeminiAISuggestionService(model, apiKey string) svc.AISuggestionService {
@@ -43,8 +54,8 @@ func NewGeminiAISuggestionService(model, apiKey string) svc.AISuggestionService 
 		model = "gemini-1.5-flash"
 	}
 	return &GeminiAISuggestionService{
-		model:           model,
-		apiKey:          apiKey,
+		model:  model,
+		apiKey: apiKey,
 	}
 }
 
@@ -56,8 +67,7 @@ func (s *GeminiAISuggestionService) Analyze(ctx context.Context, cvText string) 
 		return nil, fmt.Errorf("failed to create Gemini client: %w", err)
 	}
 
-	
-	prompt := fmt.Sprintf(`You are a career coach AI. Analyze the following CV text and return **only JSON**, strictly matching this structure. Respond in the language it's written in.Use empty arrays or empty strings if there is no data:
+	prompt := fmt.Sprintf(`You are a career coach AI. Analyze the following CV text and return **only JSON**, strictly matching this structure.Do not leave "skill_gaps" empty unless absolutely nothing can be inferred.  Respond in the language it's written in.Use empty arrays or empty strings if there is no data:
 
 {
   "cvs": {
@@ -84,7 +94,7 @@ func (s *GeminiAISuggestionService) Analyze(ctx context.Context, cvText string) 
 
 CV Text:
 %s
-`,cvText)
+`, cvText)
 
 	result, err := client.Models.GenerateContent(ctx, s.model, genai.Text(prompt), nil)
 	if err != nil {
@@ -95,6 +105,7 @@ CV Text:
 	resp = strings.TrimPrefix(resp, "```")
 	resp = strings.TrimSuffix(resp, "```")
 	resp = strings.TrimSpace(resp)
+
 
 	var aiResp aiResponse
 	if err := json.Unmarshal([]byte(resp), &aiResp); err != nil {
@@ -154,4 +165,88 @@ CV Text:
 	}
 
 	return suggestions, nil
+}
+
+func (s *GeminiAISuggestionService) GenerateSuggestions(ctx context.Context, cv *model.CV, skillGaps []*model.SkillGap) (*model.Suggestion, error) {
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{
+		APIKey: s.apiKey,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Gemini client: %w", err)
+	}
+
+	// Build the input for AI
+	skillGapText := "No skill gaps."
+	if len(skillGaps) > 0 {
+		var gaps []string
+		for _, g := range skillGaps {
+			gaps = append(gaps, fmt.Sprintf("%s (current: %d, recommended: %d). Suggestion: %s",
+				g.SkillName, g.CurrentLevel, g.RecommendedLevel, g.ImprovementSuggestions))
+		}
+		skillGapText = strings.Join(gaps, "\n")
+	}
+
+	prompt := fmt.Sprintf(`You are a career advisor AI. Based on the following CV analysis and skill gaps, suggest relevant courses and general career advice. 
+	Important: For "url", provide a real publicly accessible course link from trusted providers (Coursera, edX, Udemy, LinkedIn Learning, etc).
+- CV Summary: %s
+- Extracted Skills: %v
+- Extracted Experience: %v
+- Extracted Education: %v
+- Skill Gaps: %s
+
+Return the result in JSON with this structure:
+
+{
+  "courses": [
+    {
+      "title": "Course Name",
+      "provider": "Provider Name",
+      "url": "https://example.com",
+      "description": "Why this course is relevant",
+      "skill": "Related skill"
+    }
+  ],
+  "general_advice": ["Advice 1", "Advice 2"]
+}
+`, cv.Summary, cv.ExtractedSkills, cv.ExtractedExperience, cv.ExtractedEducation, skillGapText)
+
+	result, err := client.Models.GenerateContent(ctx, s.model, genai.Text(prompt), nil)
+	if err != nil {
+		return nil, fmt.Errorf("AI generation failed: %w", err)
+	}
+	resp := strings.TrimSpace(result.Text())
+	resp = strings.TrimPrefix(resp, "```json")
+	resp = strings.TrimPrefix(resp, "```")
+	resp = strings.TrimSuffix(resp, "```")
+	resp = strings.TrimSpace(resp)
+
+
+	var aiResp aiSuggestionResponse
+	if err := json.Unmarshal([]byte(resp), &aiResp); err != nil {
+		return nil, fmt.Errorf("failed to parse AI suggestions: %w\nAI output: %s", err, resp)
+	}
+
+	// Map AI JSON to domain model
+	suggestion := mapAISuggestionToDomain(aiResp)
+	return suggestion, nil
+
+}
+
+func mapAISuggestionToDomain(resp aiSuggestionResponse) *model.Suggestion {
+	s := &model.Suggestion{
+		Courses:       make([]model.CourseSuggestion, len(resp.Courses)),
+		GeneralAdvice: resp.GeneralAdvice,
+	}
+
+	for i, c := range resp.Courses {
+		s.Courses[i] = model.CourseSuggestion{
+			Title:       c.Title,
+			Provider:    c.Provider,
+			URL:         c.URL,
+			Description: c.Description,
+			Skill:       c.Skill,
+		}
+	}
+
+	return s
 }
