@@ -45,13 +45,10 @@ var (
 	ErrOAuthProviderMismatch            = errors.New("OAuth provider mismatch for this account")
 
 	// Cv-related errors
-
-
-
 	ErrCVUpdateFailed = errors.New("cv update failed")
-
 	ErrCVNotFound  = errors.New("cv not found")
 	ErrInvalidCVID = errors.New("invalid cv id")
+	ErrCVNotAnalyzed = errors.New("latest CV has not been analyzed yet")
 
 	//otp realted errors
 	ErrMissingOTP=errors.New("otp not found")

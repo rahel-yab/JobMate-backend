@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"mime/multipart"
 	"time"
@@ -153,6 +154,12 @@ func (uc *CVUsecase) GenerateSuggestions(ctx context.Context, userID string) (*m
 	if err != nil {
 		return nil, domain.ErrCVNotFound
 	}
+
+	//check if cv has been analyzed
+	 if len(cv.ExtractedSkills) == 0 && len(cv.ExtractedExperience) == 0 &&
+       len(cv.ExtractedEducation) == 0 && strings.TrimSpace(cv.Summary) == "" {
+        return nil, domain.ErrCVNotAnalyzed
+    }
 
 	// Get skill gaps
 	skillGaps, err := uc.skillGapRepo.GetByUserID(c, userID)
