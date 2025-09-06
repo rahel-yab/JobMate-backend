@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_mate/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -35,6 +36,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -60,31 +63,31 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       Image.asset('assets/logo.png', height: 100),
                       const SizedBox(height: 8),
-                      const Text(
-                        "JOBMATE",
-                        style: TextStyle(
+                      Text(
+                        l10n.appTitle,
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.teal,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        "Your AI Career Buddy",
-                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                      Text(
+                        l10n.yourAiCareerBuddy,
+                        style: const TextStyle(fontSize: 12, color: Colors.black54),
                       ),
                     ],
                   ),
                   const SizedBox(height: 32),
 
-                  const Text(
-                    "Welcome Back",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  Text(
+                    l10n.welcomeBack,
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    "Sign in to continue your career journey",
-                    style: TextStyle(color: Colors.black54),
+                  Text(
+                    l10n.signInToContinue,
+                    style: const TextStyle(color: Colors.black54),
                   ),
                   const SizedBox(height: 24),
                   Card(
@@ -99,9 +102,9 @@ class _LoginPageState extends State<LoginPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              "Sign in",
-                              style: TextStyle(
+                            Text(
+                              l10n.signIn,
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -109,14 +112,14 @@ class _LoginPageState extends State<LoginPage> {
                             const SizedBox(height: 20),
                             TextFormField(
                               controller: _emailController,
-                              decoration: const InputDecoration(
-                                labelText: "Email Address",
-                                hintText: "Enter your email",
-                                border: OutlineInputBorder(),
+                              decoration: InputDecoration(
+                                labelText: l10n.emailAddress,
+                                hintText: l10n.enterYourEmail,
+                                border: const OutlineInputBorder(),
                               ),
                               validator: (val) {
                                 if (val == null || val.isEmpty) {
-                                  return "Please enter your email";
+                                  return l10n.pleaseEnterYourEmail;
                                 }
                                 return null;
                               },
@@ -125,14 +128,14 @@ class _LoginPageState extends State<LoginPage> {
                             TextFormField(
                               controller: _passwordController,
                               obscureText: true,
-                              decoration: const InputDecoration(
-                                labelText: "Password",
-                                hintText: "Enter your password",
-                                border: OutlineInputBorder(),
+                              decoration: InputDecoration(
+                                labelText: l10n.password,
+                                hintText: l10n.enterYourPassword,
+                                border: const OutlineInputBorder(),
                               ),
                               validator: (val) {
                                 if (val == null || val.isEmpty) {
-                                  return "Please enter your password";
+                                  return l10n.pleaseEnterYourPassword;
                                 }
                                 return null;
                               },
@@ -144,7 +147,7 @@ class _LoginPageState extends State<LoginPage> {
                                 onPressed: () {
                                   // TODO: navigate to forgot password
                                 },
-                                child: const Text("Forgot Password?"),
+                                child: Text(l10n.forgotPassword),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -161,9 +164,9 @@ class _LoginPageState extends State<LoginPage> {
                                         ? const CircularProgressIndicator(
                                           color: Colors.white,
                                         )
-                                        : const Text(
-                                          "Sign in",
-                                          style: TextStyle(color: Colors.white),
+                                        : Text(
+                                          l10n.signIn,
+                                          style: const TextStyle(color: Colors.white),
                                         ),
                               ),
                             ),
@@ -176,12 +179,12 @@ class _LoginPageState extends State<LoginPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don’t have an account? "),
+                      Text("${l10n.dontHaveAccount} "),
                       GestureDetector(
                         onTap: () => context.go('/register'),
-                        child: const Text(
-                          "Sign up",
-                          style: TextStyle(
+                        child: Text(
+                          l10n.signUp,
+                          style: const TextStyle(
                             color: Colors.teal,
                             fontWeight: FontWeight.bold,
                           ),
