@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_mate/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -50,13 +51,15 @@ class _SignupPageState extends State<SignupPage> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter your email first")),
+        SnackBar(content: Text(AppLocalizations.of(context)!.pleaseEnterEmailFirst)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -71,10 +74,10 @@ class _SignupPageState extends State<SignupPage> {
           if (state is AuthError) { // Separate check for AuthError
             print('Showing error: ${state.message}'); // Debug log
             final errorMessage = state.message.contains('500')
-                ? 'Registration failed: Server error. Please try again later.'
+                ? l10n.registrationFailedServer
                 : state.message.contains('400')
-                    ? 'Registration failed: Invalid email, password, or OTP.'
-                    : 'Registration failed: An unexpected error occurred.';
+                    ? l10n.registrationFailedInvalid
+                    : l10n.registrationFailedUnexpected;
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMessage)));
           }
         },
@@ -92,30 +95,30 @@ class _SignupPageState extends State<SignupPage> {
                     children: [
                       Image.asset('assets/logo.png', height: 100),
                       const SizedBox(height: 8),
-                      const Text(
-                        "JOBMATE",
-                        style: TextStyle(
+                      Text(
+                        l10n.appTitle,
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.teal,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        "Your AI Career Buddy",
-                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                      Text(
+                        l10n.yourAiCareerBuddy,
+                        style: const TextStyle(fontSize: 12, color: Colors.black54),
                       ),
                     ],
                   ),
                   const SizedBox(height: 32),
-                  const Text(
-                    "Welcome to JobMate",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  Text(
+                    l10n.welcomeToJobmate,
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    "Create your account to start your career journey",
-                    style: TextStyle(color: Colors.black54),
+                  Text(
+                    l10n.createAccountToStart,
+                    style: const TextStyle(color: Colors.black54),
                   ),
                   const SizedBox(height: 24),
                   Card(
@@ -130,9 +133,9 @@ class _SignupPageState extends State<SignupPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              "Sign Up",
-                              style: TextStyle(
+                            Text(
+                              l10n.register,
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -140,48 +143,48 @@ class _SignupPageState extends State<SignupPage> {
                             const SizedBox(height: 20),
                             TextFormField(
                               controller: _firstNameController,
-                              decoration: const InputDecoration(
-                                labelText: "First Name",
-                                hintText: "Enter your first name",
-                                border: OutlineInputBorder(),
+                              decoration: InputDecoration(
+                                labelText: l10n.firstName,
+                                hintText: l10n.enterYourFirstName,
+                                border: const OutlineInputBorder(),
                               ),
-                              validator: (val) => val == null || val.isEmpty ? "Required" : null,
+                              validator: (val) => val == null || val.isEmpty ? l10n.required : null,
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _lastNameController,
-                              decoration: const InputDecoration(
-                                labelText: "Last Name",
-                                hintText: "Enter your last name",
-                                border: OutlineInputBorder(),
+                              decoration: InputDecoration(
+                                labelText: l10n.lastName,
+                                hintText: l10n.enterYourLastName,
+                                border: const OutlineInputBorder(),
                               ),
-                              validator: (val) => val == null || val.isEmpty ? "Required" : null,
+                              validator: (val) => val == null || val.isEmpty ? l10n.required : null,
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _emailController,
-                              decoration: const InputDecoration(
-                                labelText: "Email Address",
-                                hintText: "Enter your email",
-                                border: OutlineInputBorder(),
+                              decoration: InputDecoration(
+                                labelText: l10n.emailAddress,
+                                hintText: l10n.enterYourEmail,
+                                border: const OutlineInputBorder(),
                               ),
-                              validator: (val) => val == null || val.isEmpty ? "Required" : null,
+                              validator: (val) => val == null || val.isEmpty ? l10n.required : null,
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _passwordController,
                               obscureText: true,
-                              decoration: const InputDecoration(
-                                labelText: "Password",
-                                hintText: "Create a password (min 8 chars, e.g., Tsige@123)",
-                                border: OutlineInputBorder(),
+                              decoration: InputDecoration(
+                                labelText: l10n.password,
+                                hintText: l10n.createPassword,
+                                border: const OutlineInputBorder(),
                               ),
                               validator: (val) {
-                                if (val == null || val.isEmpty) return "Required";
-                                if (val.length < 8) return "Password must be at least 8 characters";
-                                if (!val.contains(RegExp(r'[A-Z]'))) return "Password must contain an uppercase letter";
-                                if (!val.contains(RegExp(r'[0-9]'))) return "Password must contain a number";
-                                if (!val.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) return "Password must contain a special character";
+                                if (val == null || val.isEmpty) return l10n.required;
+                                if (val.length < 8) return l10n.passwordMinLength;
+                                if (!val.contains(RegExp(r'[A-Z]'))) return l10n.passwordUppercase;
+                                if (!val.contains(RegExp(r'[0-9]'))) return l10n.passwordNumber;
+                                if (!val.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) return l10n.passwordSpecialChar;
                                 return null;
                               },
                             ),
@@ -189,17 +192,17 @@ class _SignupPageState extends State<SignupPage> {
                             TextFormField(
                               controller: _confirmPasswordController,
                               obscureText: true,
-                              decoration: const InputDecoration(
-                                labelText: "Confirm Password",
-                                hintText: "Confirm your password",
-                                border: OutlineInputBorder(),
+                              decoration: InputDecoration(
+                                labelText: l10n.confirmPassword,
+                                hintText: l10n.confirmYourPassword,
+                                border: const OutlineInputBorder(),
                               ),
                               validator: (val) {
                                 if (val == null || val.isEmpty) {
-                                  return "Required";
+                                  return l10n.required;
                                 }
                                 if (val != _passwordController.text) {
-                                  return "Passwords do not match";
+                                  return l10n.passwordsDoNotMatch;
                                 }
                                 return null;
                               },
@@ -210,12 +213,12 @@ class _SignupPageState extends State<SignupPage> {
                                 Expanded(
                                   child: TextFormField(
                                     controller: _otpController,
-                                    decoration: const InputDecoration(
-                                      labelText: "One Time Password",
-                                      hintText: "#OTP Code",
-                                      border: OutlineInputBorder(),
+                                    decoration: InputDecoration(
+                                      labelText: l10n.oneTimePassword,
+                                      hintText: l10n.otpCode,
+                                      border: const OutlineInputBorder(),
                                     ),
-                                    validator: (val) => val == null || val.isEmpty ? "Required" : null,
+                                    validator: (val) => val == null || val.isEmpty ? l10n.required : null,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -228,9 +231,9 @@ class _SignupPageState extends State<SignupPage> {
                                       vertical: 18,
                                     ),
                                   ),
-                                  child: const Text(
-                                    "Send Code",
-                                    style: TextStyle(color: Colors.white),
+                                  child: Text(
+                                    l10n.sendCode,
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                 ),
                               ],
@@ -248,9 +251,9 @@ class _SignupPageState extends State<SignupPage> {
                                     ? const CircularProgressIndicator(
                                         color: Colors.white,
                                       )
-                                    : const Text(
-                                        "Sign up",
-                                        style: TextStyle(color: Colors.white),
+                                    : Text(
+                                        l10n.signUp,
+                                        style: const TextStyle(color: Colors.white),
                                       ),
                               ),
                             ),
@@ -263,12 +266,12 @@ class _SignupPageState extends State<SignupPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Already have an account? "),
+                      Text("${l10n.alreadyHaveAccount} "),
                       GestureDetector(
                         onTap: () => context.go('/login'),
-                        child: const Text(
-                          "Sign in",
-                          style: TextStyle(
+                        child: Text(
+                          l10n.signIn,
+                          style: const TextStyle(
                             color: Colors.teal,
                             fontWeight: FontWeight.bold,
                           ),
