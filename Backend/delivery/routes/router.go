@@ -68,6 +68,7 @@ func SetupRouter(authMiddleware *auth.AuthMiddleware,
 	{
 		structuredRoutes.POST("/start", interviewStructuredController.StartInterview)
 		structuredRoutes.POST("/:chat_id/answer", interviewStructuredController.SubmitAnswer)
+		structuredRoutes.GET("/continue/:chat_id", interviewStructuredController.ResumeInterview)
 		structuredRoutes.GET("/:chat_id/history", interviewStructuredController.GetChatHistory)
 		structuredRoutes.GET("/user/chats", interviewStructuredController.GetUserChats)
 	}

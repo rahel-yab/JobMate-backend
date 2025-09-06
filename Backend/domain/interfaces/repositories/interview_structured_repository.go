@@ -2,11 +2,12 @@ package interfaces
 
 import (
 	"context"
+
 	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
 )
 
 type IInterviewStructuredRepository interface {
-	StartInterview(ctx context.Context, userID, field string, userProfile map[string]interface{}, questions []string) (string, error)
+	StartInterview(ctx context.Context, userID, field, preferredLanguage string, userProfile map[string]interface{}, questions []string) (string, error)
 	AppendMessage(ctx context.Context, chatID string, message models.InterviewStructuredMessage) error
 	GetInterviewChatByID(ctx context.Context, chatID string) (*models.InterviewStructuredChat, error)
 	GetInterviewChatByIDWithLimit(ctx context.Context, chatID string, limit, offset int) (*models.InterviewStructuredChat, error)

@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/dto"
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/utils"
-	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
 	usecaseInterfaces "github.com/tsigemariamzewdu/JobMate-backend/domain/interfaces/usecases"
+	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
 )
 
 type InterviewStructuredController struct {
@@ -34,21 +34,63 @@ func (ctrl *InterviewStructuredController) StartInterview(c *gin.Context) {
 		utils.ErrorResponse(c, http.StatusUnauthorized, "User not authenticated", "")
 		return
 	}
-	chatID, firstQuestion, totalQuestions, err := ctrl.InterviewStructuredUsecase.StartStructuredInterview(c.Request.Context(), userID.(string), req.Field)
+	chatID, firstQuestion, totalQuestions, err := ctrl.InterviewStructuredUsecase.StartStructuredInterview(c.Request.Context(), userID.(string), req.Field, req.PreferredLanguage)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to start interview session", err.Error())
 		return
 	}
 
 	response := dto.StartStructuredInterviewResponse{
-		ChatID:         chatID,
-		Field:          req.Field,
-		TotalQuestions: totalQuestions,
-		FirstQuestion:  firstQuestion,
-		Message:        "Structured interview started successfully. Answer each question and receive feedback before proceeding to the next.",
+		ChatID:            chatID,
+		Field:             req.Field,
+		PreferredLanguage: req.PreferredLanguage,
+		TotalQuestions:    totalQuestions,
+		FirstQuestion:     firstQuestion,
+		Message:           "Structured interview started successfully. Answer each question and receive feedback before proceeding to the next.",
 	}
 
 	utils.SuccessResponse(c, "Structured interview started successfully", response)
+}
+
+// ResumeInterview resumes a previously saved structured interview
+func (ctrl *InterviewStructuredController) ResumeInterview(c *gin.Context) {
+	chatID := c.Param("chat_id")
+	if chatID == "" {
+		utils.ErrorResponse(c, http.StatusBadRequest, "Chat ID is required", "")
+		return
+	}
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		utils.ErrorResponse(c, http.StatusUnauthorized, "User not authenticated", "")
+		return
+	}
+
+	chat, err := ctrl.InterviewStructuredUsecase.ResumeInterview(c.Request.Context(), userID.(string), chatID)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to resume interview session", err.Error())
+		return
+	}
+
+	// Create a resume-specific response that highlights the next question
+	nextQuestion := ""
+	if !chat.IsCompleted && chat.CurrentQuestion < len(chat.Questions) {
+		nextQuestion = chat.Questions[chat.CurrentQuestion]
+	}
+
+	response := dto.ResumeStructuredInterviewResponse{
+		ChatID:            chat.ID,
+		Field:             chat.Field,
+		PreferredLanguage: chat.PreferredLanguage,
+		CurrentQuestion:   chat.CurrentQuestion,
+		TotalQuestions:    len(chat.Questions),
+		IsCompleted:       chat.IsCompleted,
+		NextQuestion:      nextQuestion,
+		Message:           "Interview resumed successfully. Continue from where you left off.",
+		SessionData:       dto.ToStructuredInterviewSessionResponse(chat),
+	}
+
+	utils.SuccessResponse(c, "Interview session resumed successfully", response)
 }
 
 // SubmitAnswer processes user's answer and provides feedback + next question
