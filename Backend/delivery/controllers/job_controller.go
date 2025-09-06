@@ -36,8 +36,10 @@ func (jc *JobController) SuggestJobs(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
+
+	userID := c.GetString("userID")
 	// input validation
-	if req.UserID == "" || req.Field == "" || req.LookingFor == "" || (req.LookingFor != "local" && req.LookingFor != "remote" && req.LookingFor != "freelance") {
+	if userID == "" || req.Field == "" || req.LookingFor == "" || (req.LookingFor != "local" && req.LookingFor != "remote" && req.LookingFor != "freelance") {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing or invalid field(s) in request"})
 		return
 	}
@@ -106,9 +108,9 @@ func (jc *JobController) Chat(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
-
+ 
 	// Get user ID from authentication middleware
-	userID := c.GetString("user_id")
+	userID := c.GetString("userID")
 	if userID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
 		return
@@ -144,7 +146,7 @@ func (jc *JobController) Chat(c *gin.Context) {
 }
 
 func (jc *JobController) GetUserChats(c *gin.Context) {
-	userID := c.GetString("user_id")
+	userID := c.GetString("userID")
 	if userID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
 		return
