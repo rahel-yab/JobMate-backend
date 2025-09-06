@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface AuthState {
   user: any | null;
-  accessToken: string | null;
+  accessToken: string | null| undefined;
 }
 
 const initialState: AuthState = {
@@ -11,8 +11,12 @@ const initialState: AuthState = {
       ? JSON.parse(localStorage.getItem("user")!)
       : null,
   accessToken:
-    typeof window !== "undefined" ? localStorage.getItem("accessToken") : null,
+    typeof window !== "undefined" && localStorage.getItem("accessToken")
+      ? localStorage.getItem("accessToken")
+      : null, 
 };
+
+
 
 const authSlice = createSlice({
   name: "auth",

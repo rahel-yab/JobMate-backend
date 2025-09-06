@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRegisterMutation } from "@/lib/redux/api/authApi";
 import { useLanguage } from "@/providers/language-provider";
+import toast from "react-hot-toast";
 
 export default function OTPForm({
   fullName,
@@ -23,10 +24,14 @@ export default function OTPForm({
     e.preventDefault();
     setError("");
     try {
-      await registerUser({ fullName, email, password, otp }).unwrap();
+      console.log({ email, password, otp });
+
+      await registerUser({email, password, otp }).unwrap();
+      toast.success("Registered successfully! You can now login.");
+
       window.location.href = "/login"; 
     } catch {
-      setError(t("otp_failed")); // use translations
+      setError(t("otp_failed")); 
     }
   };
 
