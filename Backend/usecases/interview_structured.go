@@ -77,7 +77,7 @@ Return format: ["Question 1", "Question 2", "Question 3", "Question 4", "Questio
 	return questions, nil
 }
 
-func (u *InterviewStructuredUsecase) StartStructuredInterview(ctx context.Context, userID, field string) (chatID, firstQuestion string, totalQuestions int, err error) {
+func (u *InterviewStructuredUsecase) StartStructuredInterview(ctx context.Context, userID, field, preferredLanguage string) (chatID, firstQuestion string, totalQuestions int, err error) {
 	// Fetch user profile from database
 	user, err := u.AuthRepository.FindByID(ctx, userID)
 	if err != nil {
@@ -94,7 +94,7 @@ func (u *InterviewStructuredUsecase) StartStructuredInterview(ctx context.Contex
 	}
 
 	// Start the interview session
-	chatID, err = u.InterviewStructuredRepository.StartInterview(ctx, userID, field, userProfile, questions)
+	chatID, err = u.InterviewStructuredRepository.StartInterview(ctx, userID, field, preferredLanguage, userProfile, questions)
 	if err != nil {
 		return "", "", 0, err
 	}
@@ -125,6 +125,20 @@ Let's begin with the first question:
 	}
 
 	return chatID, questions[0], len(questions), nil
+}
+
+
+func (u *InterviewStructuredUsecase) ResumeInterview(ctx context.Context, userID, chatID string) (*models.InterviewStructuredChat, error) {
+	chat, err := u.InterviewStructuredRepository.GetInterviewChatByID(ctx, chatID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get interview session: %w", err)
+	}
+
+	if chat.UserID != userID {
+		return nil, fmt.Errorf("unauthorized access to interview")
+	}
+
+	return chat, nil
 }
 
 func (u *InterviewStructuredUsecase) ProcessAnswer(ctx context.Context, userID, chatID, answer string) (*dto.InterviewAnswerResponse, error) {
