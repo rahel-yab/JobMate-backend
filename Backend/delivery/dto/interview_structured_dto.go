@@ -1,22 +1,26 @@
 package dto
 
 import (
-	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
 	"time"
+
+	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
 )
 
 // Structured Interview DTOs
 type StartStructuredInterviewRequest struct {
-	Field string `json:"field" binding:"required"` // e.g., "software_engineering"
+	Field            string `json:"field" binding:"required"`            // e.g., "software_engineering"
+	PreferredLanguage string `json:"preferred_language" binding:"required"` // e.g., "en", "am", "or"
 }
 
 type StartStructuredInterviewResponse struct {
-	ChatID         string `json:"chat_id"`
-	Field          string `json:"field"`
-	TotalQuestions int    `json:"total_questions"`
-	FirstQuestion  string `json:"first_question"`
-	Message        string `json:"message"`
+	ChatID            string `json:"chat_id"`
+	Field             string `json:"field"`
+	PreferredLanguage string `json:"preferred_language"`
+	TotalQuestions    int    `json:"total_questions"`
+	FirstQuestion     string `json:"first_question"`
+	Message           string `json:"message"`
 }
+
 
 type SubmitInterviewAnswerRequest struct {
 	Answer string `json:"answer" binding:"required"`
@@ -58,16 +62,17 @@ type StructuredInterviewChatResponse struct {
 }
 
 type StructuredInterviewSessionResponse struct {
-	ChatID          string                            `json:"chat_id"`
-	UserID          string                            `json:"user_id"`
-	Field           string                            `json:"field"`
-	UserProfile     map[string]interface{}            `json:"user_profile"`
-	Questions       []string                          `json:"questions"`
-	Messages        []StructuredInterviewChatResponse `json:"messages"`
-	CurrentQuestion int                               `json:"current_question"`
-	IsCompleted     bool                              `json:"is_completed"`
-	CreatedAt       time.Time                         `json:"created_at"`
-	UpdatedAt       time.Time                         `json:"updated_at"`
+	ChatID            string                            `json:"chat_id"`
+	UserID            string                            `json:"user_id"`
+	Field             string                            `json:"field"`
+	PreferredLanguage string                            `json:"preferred_language"`
+	UserProfile       map[string]interface{}            `json:"user_profile"`
+	Questions         []string                          `json:"questions"`
+	Messages          []StructuredInterviewChatResponse `json:"messages"`
+	CurrentQuestion   int                               `json:"current_question"`
+	IsCompleted       bool                              `json:"is_completed"`
+	CreatedAt         time.Time                         `json:"created_at"`
+	UpdatedAt         time.Time                         `json:"updated_at"`
 }
 
 type StructuredInterviewChatSummary struct {
@@ -87,6 +92,19 @@ type UserStructuredInterviewChatsResponse struct {
 	Total int                              `json:"total"`
 }
 
+type ResumeStructuredInterviewResponse struct {
+	ChatID            string                            `json:"chat_id"`
+	Field             string                            `json:"field"`
+	PreferredLanguage string                            `json:"preferred_language"`
+	CurrentQuestion   int                               `json:"current_question"`
+	TotalQuestions    int                               `json:"total_questions"`
+	IsCompleted       bool                              `json:"is_completed"`
+	NextQuestion      string                            `json:"next_question"`
+	Message           string                            `json:"message"`
+	SessionData       *StructuredInterviewSessionResponse `json:"session_data"`
+}
+
+
 // Conversion functions
 func ToStructuredInterviewChatResponse(message *models.InterviewStructuredMessage) *StructuredInterviewChatResponse {
 	return &StructuredInterviewChatResponse{
@@ -105,16 +123,17 @@ func ToStructuredInterviewSessionResponse(chat *models.InterviewStructuredChat) 
 	}
 
 	return &StructuredInterviewSessionResponse{
-		ChatID:          chat.ID,
-		UserID:          chat.UserID,
-		Field:           chat.Field,
-		UserProfile:     chat.UserProfile,
-		Questions:       chat.Questions,
-		Messages:        messages,
-		CurrentQuestion: chat.CurrentQuestion,
-		IsCompleted:     chat.IsCompleted,
-		CreatedAt:       chat.CreatedAt,
-		UpdatedAt:       chat.UpdatedAt,
+		ChatID:            chat.ID,
+		UserID:            chat.UserID,
+		Field:             chat.Field,
+		PreferredLanguage: chat.PreferredLanguage,
+		UserProfile:       chat.UserProfile,
+		Questions:         chat.Questions,
+		Messages:          messages,
+		CurrentQuestion:   chat.CurrentQuestion,
+		IsCompleted:       chat.IsCompleted,
+		CreatedAt:         chat.CreatedAt,
+		UpdatedAt:         chat.UpdatedAt,
 	}
 }
 
