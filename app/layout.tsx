@@ -5,6 +5,8 @@ import { Noto_Sans_Ethiopic } from "next/font/google";
 import { LanguageProvider } from "@/providers/language-provider";
 import ReduxProvider from "../providers/ReduxProvider";
 import "./globals.css";
+import ProtectedWrapper from "./components/ProtectedWrapper";
+import { Toaster } from "react-hot-toast";
 
 const notoSansEthiopic = Noto_Sans_Ethiopic({
   subsets: ["ethiopic"],
@@ -40,7 +42,7 @@ html {
       </head>
       <body>
         <ReduxProvider>
-          <LanguageProvider>{children}</LanguageProvider>
+          <LanguageProvider><ProtectedWrapper>{children}</ProtectedWrapper><Toaster position="top-right" reverseOrder={false} /></LanguageProvider>
         </ReduxProvider>
       </body>
     </html>

@@ -5,9 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export  const formatTime = () => {
-  return new Date().toLocaleTimeString([], {
-   hour: "2-digit",
-   minute: "2-digit",
+export const formatTime = (dateInput:Date) => {
+  const date = dateInput ? new Date(dateInput) : new Date();
+
+  return date.toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
   });
 };

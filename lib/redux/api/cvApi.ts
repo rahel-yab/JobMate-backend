@@ -1,15 +1,36 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-/* export const cvApi = createApi({
+export const cvApi = createApi({
   reducerPath: "cvApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:8080" }),
+  baseQuery: fetchBaseQuery({
+    baseUrl:  "https://jobmate-api-0d1l.onrender.com", 
+    prepareHeaders: (headers, { getState }) => {
+      
+      const token ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTcxNzk1MDUsImlhdCI6MTc1NzE3ODYwNSwibGFuZyI6ImVuIiwic3ViIjoiNjhiOWEwNmFmZjM2ZmZmM2E4MjBmZDIyIn0.6fkSTkt0rK75v5MrKVtftSJMLfxAWodhbhLDZVI4dYg"
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
+
   endpoints: (builder) => ({
     uploadCV: builder.mutation({
-      query: ({ userId, rawText, file }: any) => {
+      query: ({ rawText, file }: { rawText?: string; file?: File }) => {
         const formData = new FormData();
-        formData.append("userId", userId);
-        if (rawText) formData.append("rawText", rawText);
-        if (file) formData.append("file", file);
+
+        if (rawText && file) {
+          throw new Error("Only one of rawText or file can be provided");
+        }
+
+        if (rawText) {
+          formData.append("rawText", rawText);
+        } else if (file) {
+          formData.append("file", file);
+        } else {
+          throw new Error("Either rawText or file must be provided");
+        }
+
         return {
           url: "/cv",
           method: "POST",
@@ -17,90 +38,54 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
         };
       },
     }),
+
     analyzeCV: builder.mutation({
       query: (cvId: string) => ({
         url: `/cv/${cvId}/analyze`,
         method: "POST",
       }),
     }),
-  }),
-});
- */
 
-
-export const cvApi = createApi({
-    reducerPath: "cvApi",
-    baseQuery: async ({ endpoint, body }) => {
-      // Mock delay
-      await new Promise((res) => setTimeout(res, 1000));
-  
-      if (endpoint === "uploadCV") {
-        return {
-          data: {
-            success: true,
-            message: "CV uploaded successfully",
-            details: {
-              cvId: "abc123",
-              userId: body.userId,
-              fileName: "resume.pdf",
-              createdAt: new Date().toISOString(),
-            },
-          },
-        };
-      }
-  
-      if (endpoint === "analyzeCV") {
-        return {
-          data: {
-            success: true,
-            message: "CV analyzed successfully",
-            details: {
-              cvId: "abc123",
-              suggestions: {
-                CVs: {
-                  extractedSkills: ["Go", "Docker", "Kubernetes"],
-                  extractedExperience: [
-                    "Software Engineer at XYZ",
-                    "DevOps Engineer at ABC",
-                  ],
-                  extractedEducation: ["BSc Computer Science"],
-                  summary: "Experienced software engineer with DevOps expertise.",
-                },
-                CVFeedback: {
-                  strengths: "Strong backend and DevOps skills",
-                  weaknesses: "Limited frontend experience",
-                  improvementSuggestions:
-                    "Gain more experience in React and frontend frameworks",
-                },
-                SkillGaps: [
-                  {
-                    skillName: "React",
-                    currentLevel: 1,
-                    recommendedLevel: 4,
-                    importance: "important",
-                    improvementSuggestions:
-                      "Take React course and build small projects",
-                  },
-                ],
-              },
-            },
-          },
-        };
-      }
-  
-      return { error: { message: "Unknown endpoint" } };
-    },
-    endpoints: (builder) => ({
-      uploadCV: builder.mutation({
-        query: (body) => ({ endpoint: "uploadCV", body }),
-      }),
-      analyzeCV: builder.mutation({
-        query: (cvId) => ({ endpoint: "analyzeCV", body: { cvId } }),
+    startSession: builder.mutation<{ chat_id: string }, { cv_id?: string }>({
+      query: (body) => ({
+        url: "/cv/chat/session",
+        method: "POST",
+        body,
       }),
     }),
-  });
-  
 
+    sendMessage: builder.mutation<
+      { content: string; chat_id: string; timestamp: string },
+      { chat_id: string; message: string; cv_id?: string }
+    >({
+      query: ({ chat_id, ...body }) => ({
+        url: `/cv/chat/${chat_id}/message`,
+        method: "POST",
+        body,
+      }),
+    }),
 
+    getUserChats: builder.query<any[], void>({
+      query: () => ({
+        url: "/cv/chat/user",
+        method: "GET",
+      }),
+    }),
 
-export const { useUploadCVMutation, useAnalyzeCVMutation } = cvApi;
+    getChatHistory: builder.query<any, { chat_id: string }>({
+      query: ({ chat_id }) => ({
+        url: `/cv/chat/${chat_id}/history`,
+        method: "GET",
+      }),
+    }),
+  }),
+});
+
+export const {
+  useUploadCVMutation,
+  useAnalyzeCVMutation,
+  useStartSessionMutation,
+  useSendMessageMutation,
+  useGetUserChatsQuery,
+  useGetChatHistoryQuery,
+} = cvApi;

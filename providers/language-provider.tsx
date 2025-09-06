@@ -44,6 +44,9 @@ const translations = {
       l_signingIn: "Signing In...",
       l_noAccount: "Don't have an account? ",
       l_register: "Sign up",
+      l_forgotPassword: "Forgot password?",
+
+      
       // register
       r_join: "Join JobMate",
       r_create: "Create your account to get started",
@@ -58,8 +61,15 @@ const translations = {
       otp_placeholder: "Enter OTP",
       otp_button: "Verify & Register",
       otp_verifying: "Verifying...",
-      otp_failed: "Registration failed. Please try again."
- 
+      otp_failed: "Registration failed. Please try again.",
+      //forgot and reset 
+      f_title: "Forgot Password?",
+    emailPlaceholder: "Enter your email",
+    cancel: "Cancel",
+    sendOtp: "Send OTP",
+    sending: "Sending...",
+    reset_title: "Reset Password",
+    resetBtn: "Reset Password",
   },
   am: {
     // Header
@@ -93,8 +103,7 @@ const translations = {
       l_signingIn: "በመግባት ላይ...",
       l_noAccount: "መለያ የለህም? አዲስ መለያ ፍጠር",
       l_register: "ተመዝገብ ",
-
-    
+      l_forgotPassword: "የይለፍ ቃል ረስተዋል?",
     // register
       r_join: "JobMate ጋር ተቀላቀል",
       r_create: "መለያህን ፍጠር እና ጀምር",
@@ -109,7 +118,15 @@ const translations = {
       otp_placeholder: "ኦቲፒ ያስገቡ",
       otp_button: "ያረጋግጡ እና ይመዝገቡ",
       otp_verifying: "በመረጋገጥ ላይ...",
-      otp_failed: "ምዝገባው አልተሳካም። እባክዎ ደግመው ይሞክሩ።"
+      otp_failed: "ምዝገባው አልተሳካም። እባክዎ ደግመው ይሞክሩ።",
+      // forgot and reset 
+      f_title: "የይለፍ ቃል ረስተዋል?",
+    emailPlaceholder: "ኢሜይል አስገባ",
+    cancel: "ሰርዝ",
+    sendOtp: "ኦቲፒ ላክ",
+    sending: "በመላክ ላይ...",
+    reset_title: "የይለፍ ቃልዎን ያድሱ",
+    resetBtn: "የይለፍ ቃል አድስ",
   },
 };
 

@@ -5,7 +5,6 @@ import { clearAuth, setCredentials } from "../authSlice";
 // Base query
 const baseQuery = fetchBaseQuery({
   baseUrl: "https://jobmate-api-0d1l.onrender.com",
-  credentials: "include",
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).auth.accessToken;
     if (token) headers.set("authorization", `Bearer ${token}`);
@@ -52,7 +51,7 @@ export const authApi = createApi({
     login: builder.mutation<any, { email: string; password: string }>({
       query: (body) => ({ url: "/auth/login", method: "POST", body }),
     }),
-    register: builder.mutation<any, { fullName: string; email: string; password: string; otp: string }>({
+    register: builder.mutation<any, { email: string; password: string; otp: string }>({
       query: (body) => ({ url: "/auth/register", method: "POST", body }),
     }),
     requestOtp: builder.mutation<any, { email: string }>({
@@ -61,12 +60,31 @@ export const authApi = createApi({
     logout: builder.mutation<void, void>({
       query: () => ({ url: "/auth/logout", method: "POST" }),
     }),
+    
+    requestPasswordReset: builder.mutation<any, { email: string }>({
+      query: (body) => ({
+        url: "/auth/request-password-reset-otp",
+        method: "POST",
+        body,
+      }),
+    }),
+    resetPassword: builder.mutation<any, { email: string; otp: string; new_password: string }>({
+  query: ({ email, otp, new_password }) => ({
+    url: "/auth/reset-password",
+    method: "POST",
+    body: { email, otp, new_password },
   }),
-});
+}),
+
+
+      }),
+    });
 
 export const {
   useLoginMutation,
   useRegisterMutation,
   useRequestOtpMutation,
   useLogoutMutation,
+  useRequestPasswordResetMutation,
+  useResetPasswordMutation,
 } = authApi;
