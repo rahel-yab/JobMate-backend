@@ -30,8 +30,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   cupertino_icons: ^1.0.8
+  intl: any
 
   #state management
   flutter_bloc: ^9.0.0
@@ -42,8 +45,6 @@ dependencies:
   file_picker: ^10.3.2
   #ui & chat experience
   flutter_chat_ui: ^2.9.0
-  #localization
-  easy_localization: ^3.0.7
   #persistence
   shared_preferences: ^2.3.0
   # Functional programming
@@ -88,6 +89,7 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  generate: true
 
   # To add assets to your application, add an assets section, like this:
   assets:
