@@ -47,8 +47,33 @@ var freeformChatTools = []services.AITool{
 						Type:        "string",
 						Description: "The interview question that was asked.",
 					},
+					"session_type": {
+						Type:        "string",
+						Description: "Type of interview session: general, technical, or behavioral.",
+					},
 				},
-				Required: []string{"answer", "question"},
+				Required: []string{"answer", "question", "session_type"},
+			},
+		},
+	},
+	{
+		Type: "function",
+		Function: services.AIToolFunction{
+			Name:        "provide_interview_advice",
+			Description: "Provides interview advice and tips based on the session context.",
+			Parameters: services.AIToolFunctionParameters{
+				Type: "object",
+				Properties: map[string]services.AIToolProperty{
+					"topic": {
+						Type:        "string",
+						Description: "The interview topic to provide advice about.",
+					},
+					"session_context": {
+						Type:        "string",
+						Description: "The session type context: general, technical, or behavioral.",
+					},
+				},
+				Required: []string{"topic", "session_context"},
 			},
 		},
 	},
@@ -153,32 +178,48 @@ func (u *InterviewFreeformUsecase) CompleteSession(ctx context.Context, chatID s
 
 // buildInterviewAIMessages creates AI messages with interview-specific system prompt
 func (u *InterviewFreeformUsecase) buildInterviewAIMessages(messages []models.InterviewFreeformMessage, sessionType string, currentQuestion int) []services.AIMessage {
-	systemPrompt := fmt.Sprintf(`You are JobMate's Interview Coach, a specialized AI assistant focused on interview preparation and practice for young job seekers in Ethiopia.
+	var sessionDescription string
+	switch sessionType {
+	case "technical":
+		sessionDescription = "technical interview practice focusing on programming, system design, and technical problem-solving"
+	case "behavioral":
+		sessionDescription = "behavioral interview practice focusing on STAR method, teamwork, and soft skills"
+	default:
+		sessionDescription = "general interview practice covering common questions and career discussions"
+	}
 
-Current Session: %s interview practice
+	systemPrompt := fmt.Sprintf(`You are JobMate's Interview Coach, a specialized AI assistant for %s with young job seekers in Ethiopia.
+
+Current Session: %s
 Question Progress: %d
 
-Your expertise includes:
-- Conducting realistic mock interviews
-- Providing constructive feedback on answers
-- Teaching STAR method (Situation, Task, Action, Result)
-- Helping with confidence building
+Your dual role:
+1. **Interview Practice**: Ask relevant %s questions and provide feedback on answers
+2. **Interview Advice**: Answer user questions about interview preparation, tips, and strategies
+
+Session-Specific Focus:
+- %s questions and scenarios
+- Relevant advice for %s interview contexts
 - Ethiopian workplace culture insights
 
-Guidelines:
-- Act as a professional interviewer
-- Ask follow-up questions when appropriate
-- Provide specific feedback on answers
-- Be encouraging but honest
-- Help improve communication skills
-- Keep responses concise and focused
-- Speak in the same language as the user
+MANDATORY TOOL USAGE - YOU MUST FOLLOW THESE RULES:
+- If user requests ANY type of question, you MUST call get_next_question tool immediately - DO NOT provide generic advice
+- If user provides an answer to evaluate, you MUST call evaluate_answer tool - DO NOT give feedback without using the tool
+- If user asks for advice or tips, you MUST call provide_interview_advice tool
+- NEVER provide interview questions or advice without using the appropriate tools
+- Your response should ONLY come from tool outputs, not generic knowledge
 
-Interview Flow:
-1. Ask questions one at a time
-2. Listen to answers and provide feedback
-3. Move to next question or ask follow-ups
-4. Conclude with overall feedback`, sessionType, currentQuestion)
+Guidelines:
+- When user asks for advice, provide helpful tips and examples
+- When conducting practice, ask one question at a time and give feedback
+- For behavioral questions only: mention STAR method (Situation, Task, Action, Result)
+- For technical questions: focus on technical skills, no STAR method needed
+- Be encouraging but honest in feedback
+- Keep responses concise and actionable
+- Speak in the same language as the user
+- NEVER mention tool names or internal processes to the user
+- Provide natural, conversational responses
+- Avoid repetitive responses - vary your language and approach`, sessionDescription, sessionType, currentQuestion, sessionType, sessionType, sessionType)
 
 	aiMessages := []services.AIMessage{
 		{Role: "system", Content: systemPrompt},
@@ -204,7 +245,18 @@ func (u *InterviewFreeformUsecase) handleInterviewToolCalls(ctx context.Context,
 
 		switch tc.Function.Name {
 		case "get_next_question":
-			toolOutput = "Here's a good interview question: Tell me about a challenging situation you faced and how you handled it."
+			args, err := tc.Function.GetArgumentsAsMap()
+			if err != nil {
+				toolOutput = "Error parsing function arguments"
+				break
+			}
+			requestedSessionType, _ := args["session_type"].(string)
+			if requestedSessionType == "" {
+				requestedSessionType = sessionType
+			}
+			
+			question := u.generateSessionQuestion(requestedSessionType, messages, currentQuestion)
+			toolOutput = fmt.Sprintf("Here's your next %s interview question: %s", requestedSessionType, question)
 
 		case "evaluate_answer":
 			args, err := tc.Function.GetArgumentsAsMap()
@@ -214,9 +266,28 @@ func (u *InterviewFreeformUsecase) handleInterviewToolCalls(ctx context.Context,
 			}
 			answer, _ := args["answer"].(string)
 			question, _ := args["question"].(string)
+			evalSessionType, _ := args["session_type"].(string)
+			if evalSessionType == "" {
+				evalSessionType = sessionType
+			}
 
-			feedback := u.evaluateAnswer(answer, question, sessionType)
+			feedback := u.evaluateAnswer(answer, question, evalSessionType)
 			toolOutput = fmt.Sprintf("Answer Evaluation:\n%s", feedback)
+
+		case "provide_interview_advice":
+			args, err := tc.Function.GetArgumentsAsMap()
+			if err != nil {
+				toolOutput = "Error parsing function arguments"
+				break
+			}
+			topic, _ := args["topic"].(string)
+			context, _ := args["session_context"].(string)
+			if context == "" {
+				context = sessionType
+			}
+			
+			advice := u.provideContextualAdvice(topic, context)
+			toolOutput = advice
 
 		default:
 			err = fmt.Errorf("unknown interview tool: %s", tc.Function.Name)
@@ -281,6 +352,88 @@ func (u *InterviewFreeformUsecase) evaluateAnswer(answer, question, sessionType 
 	return feedback
 }
 
+func (u *InterviewFreeformUsecase) generateSessionQuestion(sessionType string, messages []models.InterviewFreeformMessage, currentQuestion int) string {
+	generalQuestions := []string{
+		"Tell me about yourself and your career goals.",
+		"Why are you interested in this position?",
+		"What are your greatest strengths?",
+		"Describe a challenging situation you faced and how you handled it.",
+		"Where do you see yourself in 5 years?",
+		"Why should we hire you?",
+		"What motivates you in your work?",
+	}
+	
+	technicalQuestions := []string{
+		"Describe your experience with your primary programming language.",
+		"How do you approach debugging a complex technical issue?",
+		"Tell me about a challenging technical project you've worked on.",
+		"How do you stay updated with new technologies?",
+		"Explain a technical concept to someone without a technical background.",
+		"How do you ensure code quality in your projects?",
+		"Describe your experience with version control and collaboration.",
+	}
+	
+	behavioralQuestions := []string{
+		"Tell me about a time you had to deal with a difficult colleague.",
+		"Describe a situation where you had to meet a tight deadline.",
+		"How do you handle constructive criticism?",
+		"Tell me about a time you made a mistake and how you handled it.",
+		"Describe a situation where you had to adapt to change.",
+		"How do you prioritize tasks when everything seems urgent?",
+		"Tell me about a time you went above and beyond your job requirements.",
+	}
+	
+	var questions []string
+	switch sessionType {
+	case "technical":
+		questions = technicalQuestions
+	case "behavioral":
+		questions = behavioralQuestions
+	default:
+		questions = generalQuestions
+	}
+	
+	questionIndex := currentQuestion % len(questions)
+	return questions[questionIndex]
+}
+
+func (u *InterviewFreeformUsecase) provideContextualAdvice(topic string, sessionContext string) string {
+	contextPrefix := ""
+	switch sessionContext {
+	case "technical":
+		contextPrefix = "For technical interviews: "
+	case "behavioral":
+		contextPrefix = "For behavioral interviews: "
+	default:
+		contextPrefix = "For general interviews: "
+	}
+	
+	switch strings.ToLower(topic) {
+	case "strengths":
+		if sessionContext == "technical" {
+			return contextPrefix + "Focus on technical strengths like problem-solving, debugging skills, or specific technologies. Always provide concrete examples of projects or challenges you've solved."
+		} else if sessionContext == "behavioral" {
+			return contextPrefix + "Emphasize soft skills like leadership, teamwork, communication. Use the STAR method to structure your examples."
+		}
+		return contextPrefix + "Choose 2-3 key strengths relevant to the role. Always back them up with specific examples and explain how they benefit the employer."
+		
+	case "weaknesses":
+		return contextPrefix + "Choose a real weakness that won't disqualify you. Show self-awareness and demonstrate concrete steps you're taking to improve. Always end with progress made."
+		
+	case "star method":
+		return "STAR Method: Situation (context), Task (what needed to be done), Action (what you did), Result (outcome). Use this for all behavioral questions to provide structured, complete answers."
+		
+	case "preparation":
+		if sessionContext == "technical" {
+			return contextPrefix + "Review coding fundamentals, practice problem-solving, prepare to explain your projects in detail, and be ready for technical challenges or whiteboarding."
+		}
+		return contextPrefix + "Research the company, prepare STAR stories, practice common questions, prepare thoughtful questions to ask, and review your resume thoroughly."
+		
+	default:
+		return fmt.Sprintf("%sI can help with specific interview topics like strengths, weaknesses, STAR method, preparation tips, and more. What would you like to know about?", contextPrefix)
+	}
+}
+
 func (u *InterviewFreeformUsecase) createFallbackResponse(ctx context.Context, chatID string, aiErr error) (*models.InterviewFreeformMessage, error) {
 	fallbackMessage := "I'm experiencing technical difficulties. Let's continue with the next question when ready."
 
@@ -294,4 +447,5 @@ func (u *InterviewFreeformUsecase) createFallbackResponse(ctx context.Context, c
 
 	return savedMessage, nil
 }
+
 
