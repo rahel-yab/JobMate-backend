@@ -3,9 +3,9 @@ import { tips } from "./tips";
 import TipProvider from "./tips_provider";
 import { useLanguage } from "@/providers/language-provider";
 const styles:string[] = [
-  `px-4 rounded text-sm cursor-pointer`,
-'bg-gray-200 text-gray-700',
-'bg-[#217C6A] text-white']
+                      `px-4 rounded text-sm cursor-pointer`,
+                      'bg-gray-200 text-gray-700',
+                      'bg-[#217C6A] text-white']
 const Main = () => {
   const [activeTab, setActiveTab] = useState('cv');
   const { language, t } = useLanguage(); 
@@ -30,7 +30,7 @@ const Main = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-wrap gap-2 mb-8">
-          <button
+         <button                                 
             onClick={() => setActiveTab('cv')}
             className={`${styles[0]}
               ${activeTab === 'cv' ? styles[2] : styles[1]}`}>
@@ -67,7 +67,6 @@ const Main = () => {
             {t("motivation")}
           </button>
         </div>
-
         <div className="bg-white rounded-lg p-6">
           {renderTips()}
         </div>
