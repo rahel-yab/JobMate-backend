@@ -223,10 +223,6 @@ func (uc *AuthUsecase) OAuthLogin(ctx context.Context, oauthUser *models.User) (
 		}
 	}
 
-	// ensure this user was created via the same provider
-	if user.Provider != oauthUser.Provider {
-		return nil, domain.ErrOAuthProviderMismatch
-	}
 
 	// generate access token (handle nil PreferredLanguage)
 	lang := "en"
