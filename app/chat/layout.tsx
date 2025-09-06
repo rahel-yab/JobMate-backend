@@ -3,10 +3,8 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { Noto_Sans_Ethiopic } from "next/font/google";
 import { LanguageProvider } from "@/providers/language-provider";
-import ReduxProvider from "../providers/ReduxProvider";
-import "./globals.css";
-import ProtectedWrapper from "./components/ProtectedWrapper";
-import { Toaster } from "react-hot-toast";
+import ReduxProvider from "@/providers/ReduxProvider";
+import Nav from "../components/Nav/Nav";
 
 const notoSansEthiopic = Noto_Sans_Ethiopic({
   subsets: ["ethiopic"],
@@ -31,18 +29,12 @@ export default function RootLayout({
       lang="en"
       className={`${GeistSans.variable} ${notoSansEthiopic.variable}`}
     >
-      <head>
-        <style>{`
-html {
-  font-family: ${GeistSans.style.fontFamily};
-  --font-sans: ${GeistSans.variable};
-  --font-ethiopic: ${notoSansEthiopic.variable};
-}
-        `}</style>
-      </head>
-      <body>
+      <body className="flex h-screen bg-gray-50">
         <ReduxProvider>
-          <LanguageProvider><ProtectedWrapper>{children}</ProtectedWrapper><Toaster position="top-right" reverseOrder={false} /></LanguageProvider>
+          <LanguageProvider>
+            <Nav />
+            <main className="flex-1 overflow-auto ml-16">{children}</main>
+          </LanguageProvider>
         </ReduxProvider>
       </body>
     </html>
