@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"net/http"
-	"fmt"
 
 	
 	svc "github.com/tsigemariamzewdu/JobMate-backend/domain/interfaces/services"
@@ -49,7 +48,6 @@ func (ctrl *OAuth2Controller) HandleCallback(c *gin.Context) {
 	// authenticate with the provider
 	oauthUser, err := ctrl.OAuthService.Authenticate(ctx, provider, code)
 	if err != nil {
-		fmt.Print(provider)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
@@ -61,7 +59,7 @@ func (ctrl *OAuth2Controller) HandleCallback(c *gin.Context) {
 		return
 	}
 
-	// set auth token cookie
+	// store refresh token in HttpOnly cookie
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     "refresh_token",
 		Value:    result.RefreshToken,
@@ -72,7 +70,7 @@ func (ctrl *OAuth2Controller) HandleCallback(c *gin.Context) {
 		MaxAge:   int(result.ExpiresIn.Seconds()),
 	})
 
-	// return safe user response
+	// return access token + safe user response
 	safeUser := gin.H{
 		"user_id":   result.User.UserID,
 		"email":     result.User.Email,
@@ -83,7 +81,9 @@ func (ctrl *OAuth2Controller) HandleCallback(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
+
 		"message": "login successful",
 		"user":    safeUser,
+
 	})
 }
