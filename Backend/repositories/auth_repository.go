@@ -156,8 +156,7 @@ func userFromDomain(u *models.User) (*User, error) {
 		YearsExperience:   fromPtrInt(u.YearsExperience),
 		CareerInterests:   fromPtrString(u.CareerInterests),
 		CareerGoals:       fromPtrString(u.CareerGoals),
-		RefreshToken:      fromPtrString(u.RefreshToken),
-		AccessToken:       fromPtrString(u.AccessToken),
+		
 		OTP:               fromPtrString(u.OTP),
 		CreatedAt:         u.CreatedAt,
 		UpdatedAt:         u.UpdatedAt,
@@ -188,8 +187,7 @@ func (u *User) toDomain() *models.User {
 		YearsExperience:   toPtrInt(u.YearsExperience),
 		CareerInterests:   toPtrString(u.CareerInterests),
 		CareerGoals:       toPtrString(u.CareerGoals),
-		RefreshToken:      toPtrString(u.RefreshToken),
-		AccessToken:       toPtrString(u.AccessToken),
+		
 		OTP:               toPtrString(u.OTP),
 		CreatedAt:         u.CreatedAt,
 		UpdatedAt:         u.UpdatedAt,

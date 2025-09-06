@@ -63,8 +63,8 @@ func (ctrl *OAuth2Controller) HandleCallback(c *gin.Context) {
 
 	// set auth token cookie
 	http.SetCookie(c.Writer, &http.Cookie{
-		Name:     "auth_token",
-		Value:    result.AccessToken,
+		Name:     "refresh_token",
+		Value:    result.RefreshToken,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
@@ -79,10 +79,11 @@ func (ctrl *OAuth2Controller) HandleCallback(c *gin.Context) {
 		"firstName": result.User.FirstName,
 		"lastName":  result.User.LastName,
 		"provider":  result.User.Provider,
+		"access_token":result.AccessToken,
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "OAuth login successful",
+		"message": "login successful",
 		"user":    safeUser,
 	})
 }

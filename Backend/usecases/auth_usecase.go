@@ -97,22 +97,7 @@ if oauthUser == nil {
     }
 }
 
-	// // check if phone already exists
-	// var phone *string
-	// if input != nil {
-	// 	phone = input.Phone
-	// } else if oauthUser != nil {
-	// 	phone = oauthUser.Phone
-	// }
-	// if phone != nil {
-	// 	count, err = uc.AuthRepo.CountByPhone(ctx, *phone)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("%w: %v", domain.ErrDatabaseOperationFailed, err)
-	// 	}
-	// 	if count > 0 {
-	// 		return nil, fmt.Errorf("%w", domain.ErrPhoneAlreadyExists)
-	// 	}
-	// }
+	
 
 	var hashedPassword *string
 	if oauthUser == nil {
@@ -196,10 +181,9 @@ func (uc *AuthUsecase) Login(ctx context.Context, input *models.User) (*models.L
 		return nil, fmt.Errorf("%w: %v", domain.ErrTokenGenerationFailed, err)
 	}
 
-	user.AccessToken = &accessToken
-	user.RefreshToken = &refreshToken
+	
 
-	user.UpdatedAt = time.Now()
+	
 
 	// update the user (save the tokens into database)
 	err = uc.AuthRepo.SaveRefreshToken(ctx, user.UserID, refreshToken)
@@ -241,7 +225,7 @@ func (uc *AuthUsecase) OAuthLogin(ctx context.Context, oauthUser *models.User) (
 
 	// ensure this user was created via the same provider
 	if user.Provider != oauthUser.Provider {
-		return nil, fmt.Errorf("%w: expected %s but got %s", domain.ErrOAuthProviderMismatch, user.Provider, oauthUser.Provider)
+		return nil, domain.ErrOAuthProviderMismatch
 	}
 
 	// generate access token (handle nil PreferredLanguage)
@@ -260,15 +244,13 @@ func (uc *AuthUsecase) OAuthLogin(ctx context.Context, oauthUser *models.User) (
 		return nil, fmt.Errorf("%w: %v", domain.ErrTokenGenerationFailed, err)
 	}
 
-	// update tokens in db
-	err = uc.AuthRepo.UpdateTokens(ctx, user.UserID, accessToken, refreshToken)
-	if err != nil {
-		return nil, domain.ErrDatabaseOperationFailed
+	//save only the refeshtoken
+
+	if err := uc.AuthRepo.SaveRefreshToken(ctx, user.UserID, refreshToken); err != nil {
+		return nil, fmt.Errorf("%w: %v", domain.ErrDatabaseOperationFailed, err)
 	}
 
-	user.AccessToken = &accessToken
-	user.RefreshToken = &refreshToken
-	user.UpdatedAt = time.Now()
+	
 
 	return &models.LoginResult{
 		AccessToken:  accessToken,
