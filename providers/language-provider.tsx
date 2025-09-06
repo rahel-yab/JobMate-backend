@@ -1,15 +1,12 @@
 "use client";
 import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
-
 type Language = "en" | "am";
-
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
 }
-
 const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined
 );
@@ -28,6 +25,16 @@ const translations = {
       "Hello! I’m JobMate, your AI career buddy. This space is for open conversation, ask questions, share ideas, or chat about your career journey",
     cvWelcomeMessage:
       "Great! I'd be happy to help you with your CV. You can upload your current CV or describe your background below, and I'll provide detailed feedback to help you improve it.",
+
+      // offline tips
+      cv_writing:"CV Writing",
+      interview_prep:"Interview Prep",
+      job_boards:"Job Boards",
+      skill_enhancements:"Skillen Enhancements",
+      market_insights:"Market Insights",
+      motivation:"Motivation",
+      start_building:'Start building your AI powered CV',
+      your_offline:"Your offline career resource",
       // login
       l_welcome: "Welcome Back",
       l_subtitle: "Sign in to continue your career journey",
@@ -37,8 +44,6 @@ const translations = {
       l_signingIn: "Signing In...",
       l_noAccount: "Don't have an account? ",
       l_register: "Sign up",
-
-      
       // register
       r_join: "Join JobMate",
       r_create: "Create your account to get started",
@@ -54,7 +59,7 @@ const translations = {
       otp_button: "Verify & Register",
       otp_verifying: "Verifying...",
       otp_failed: "Registration failed. Please try again."
-    
+ 
   },
   am: {
     // Header
@@ -69,6 +74,16 @@ const translations = {
       "ሰላም! እኔ JobMate ነኝ፣ የእርስዎ AI የሙያ ጓደኛ። ይህ ቦታ ለክፍት ውይይት ነው፤ ጥያቄዎችን ይጠይቁ፣ ሃሳቦችን ያካፍሉ፣ ወይም ስራዎ ላይ ያለውን ጉዞ ይወያዩ።",
     cvWelcomeMessage:
       "በጣም ጥሩ! በCVዎ ላይ ልረዳዎት ደስ ይለኛል። የአሁኑን CVዎን መስቀል ወይም ዳራዎን ከዚህ በታች መግለጽ ይችላሉ፣ እና እንዲያሻሽሉት ለመርዳት ዝርዝር ግብረመልስ እሰጣለሁ።",
+
+      // offline tips
+      cv_writing:"CV አጻጻፍ",
+      interview_prep:"ቃለ መጠይቅ ዝግጅት ",
+      job_boards:"የስራ ማስታወቂያ ሰሌዳዎች",
+      skill_enhancements:"ክህሎትን ማሳደግ",
+      market_insights:"የሥራ ገበያ ግንዛቤዎች",
+      motivation:"ራስን ራስን ማንቃት",
+      start_building:'AIን ተጠቅመው CV ያዘጋጁ',
+      your_offline:"ካለ ኢንተርኔት ግንኙነት የሚያገኟቸው አገልግሎቶች",
       // login 
       l_welcome: "እንኳን በደህና መጡ",
       l_subtitle: "የሥራ ጉዞዎን ለመቀጠል ግባ",
@@ -95,7 +110,6 @@ const translations = {
       otp_button: "ያረጋግጡ እና ይመዝገቡ",
       otp_verifying: "በመረጋገጥ ላይ...",
       otp_failed: "ምዝገባው አልተሳካም። እባክዎ ደግመው ይሞክሩ።"
-    
   },
 };
 
