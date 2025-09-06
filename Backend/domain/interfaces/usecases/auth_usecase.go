@@ -31,4 +31,5 @@ type IAuthUsecase interface {
 
 	// OAuthLogin handles login/registration via an external OAuth2 provider.
 	OAuthLogin(ctx context.Context, oauthUser *models.User) (*models.LoginResult, error)
+	ResetPassword(ctx context.Context, email, otp, newPassword string) error
 }

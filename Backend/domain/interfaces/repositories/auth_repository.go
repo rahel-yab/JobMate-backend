@@ -42,4 +42,6 @@ type IAuthRepository interface {
 
 	// IsEmailVerified checks if the user's email is verified.
 	// IsEmailVerified(c context.Context, userID string) (bool, error)
+	UpdatePasswordByEmail(ctx context.Context, email, hashedPassword string) error
 }
+

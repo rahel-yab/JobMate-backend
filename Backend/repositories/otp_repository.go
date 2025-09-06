@@ -152,3 +152,24 @@ func (r *OTPRepositoryImpl) mapToUserVerificationCode(doc bson.M) *models.UserVe
 		CreatedAt:  createdAt,
 	}
 }
+// GetLatestPasswordResetCodeByEmail gets the latest password reset OTP for email
+func (r *OTPRepositoryImpl) GetLatestPasswordResetCodeByEmail(ctx context.Context, email string) (*models.UserVerificationCode, error) {
+	filter := bson.M{
+		"email":      email,
+		"type":       "password_reset",
+		"used":       false,
+		"expires_at": bson.M{"$gt": time.Now()},
+	}
+	opts := options.FindOne().SetSort(bson.M{"created_at": -1})
+
+	var result bson.M
+	err := r.otpCollection.FindOne(ctx, filter, opts).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return r.mapToUserVerificationCode(result), nil
+}

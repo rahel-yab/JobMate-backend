@@ -26,5 +26,6 @@ type IOTPRepository interface {
 
 	// Optional cleanup
 	DeleteExpiredCodes(ctx context.Context) error
+	GetLatestPasswordResetCodeByEmail(ctx context.Context, email string) (*models.UserVerificationCode, error)
 }
 

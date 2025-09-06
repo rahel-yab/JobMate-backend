@@ -2,12 +2,14 @@ package controllers
 
 import (
 	"context"
-	"github.com/tsigemariamzewdu/JobMate-backend/delivery/dto"
-	"github.com/tsigemariamzewdu/JobMate-backend/usecases"
-	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
+	"time"
 
-	"net/http"
+	"github.com/tsigemariamzewdu/JobMate-backend/delivery/dto"
+	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
+	"github.com/tsigemariamzewdu/JobMate-backend/usecases"
+
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -43,4 +45,32 @@ func dtoToDomainOTPRequest(req dto.OTPRequestDTO, ip string) models.OTPRequest {
         Email: req.Email,
         RequestorIP: ip,
     }
+}
+// RequestPasswordResetOTP handles password reset OTP requests
+func (oc *OtpController) RequestPasswordResetOTP(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	var input struct {
+		Email string `json:"email" binding:"required,email"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload", "details": err.Error()})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	err := oc.AuthUsecase.RequestPasswordResetOTP(ctx, input.Email)
+	if err != nil {
+		// Generic error handling - you can customize this based on your needs
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to send password reset OTP",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Password reset OTP sent to your email"})
 }

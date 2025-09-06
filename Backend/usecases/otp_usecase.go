@@ -180,3 +180,67 @@ func validateEmail(email string) bool {
 	return re.MatchString(email)
 
 }
+func (u *OTPUsecase) RequestPasswordResetOTP(ctx context.Context, email string) error {
+	// Validate email format
+	if !validateEmail(email) {
+		return ErrEmailValidationFailed
+	}
+
+	// Generate OTP using existing function
+	otp, err := generateOTP(otpLength)
+	if err != nil {
+		return errors.New("failed to generate OTP")
+	}
+
+	// Hash OTP
+	otpHash, err := bcrypt.GenerateFromPassword([]byte(otp), bcrypt.DefaultCost)
+	if err != nil {
+		return errors.New("failed to hash OTP")
+	}
+
+	// Persist verification code with type "password_reset"
+	code := &models.UserVerificationCode{
+		Email:     &email,
+		CodeHash:  string(otpHash),
+		Type:      "password_reset", // Different from "registration"
+		ExpiresAt: time.Now().Add(otpExpiryMinutes * time.Minute),
+		Used:      false,
+		CreatedAt: time.Now(),
+	}
+
+	if err := u.OTPRepo.CreateVerificationCode(ctx, code); err != nil {
+		return errors.New("failed to save verification code")
+	}
+
+	// Send password reset email using existing function
+	emailBody := generatePasswordResetEmailBody(otp)
+	if err = u.EmailService.SendEmail(email, "Password Reset Verification", emailBody); err != nil {
+		fmt.Println("email sending failed:", err)
+	}
+
+	return nil
+}
+
+// Add this helper function to otp_usecase.go
+func generatePasswordResetEmailBody(otp string) string {
+	return fmt.Sprintf(`
+    <html>
+  <body style="font-family: Arial, sans-serif; line-height: 1.6; background-color: #f9f9f9; padding: 20px;">
+    <div style="max-width: 600px; margin: auto; background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+      <h2 style="color: #333;">Password Reset Request</h2>
+      <p>You requested to reset your password. Please use the following One-Time Password (OTP) to verify your identity:</p>
+      
+      <p style="text-align: center; margin: 30px 0;">
+        <span style="font-size: 24px; font-weight: bold; letter-spacing: 4px; background: #f3f3f3; padding: 10px 20px; border-radius: 6px; display: inline-block;">
+          %s
+        </span>
+      </p>
+      
+      <p>This OTP is valid for <strong>5 minutes</strong> and can only be used once.</p>
+      <p>If you didn't request this password reset, you can safely ignore this email.</p>
+      <p style="margin-top: 40px;">— The Team</p>
+    </div>
+  </body>
+</html>
+  `, otp)
+}

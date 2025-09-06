@@ -497,3 +497,10 @@ func consolidateUserError(err error) error {
 	}
 	return err
 }
+func (r *AuthRepository) UpdatePasswordByEmail(ctx context.Context, email, hashedPassword string) error {
+	filter := bson.M{"email": email}
+	update := bson.M{"$set": bson.M{"password": hashedPassword, "updated_at": time.Now()}}
+
+	_, err := r.userCollection.UpdateOne(ctx, filter, update)
+	return err
+}

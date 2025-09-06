@@ -200,3 +200,34 @@ func (au *AuthController) RefreshToken(c *gin.Context) {
 		"expires_in": int(expiresIn.Seconds()),
 	})
 }
+// ResetPassword handles password reset with OTP verification
+func (ac *AuthController) ResetPassword(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	var input struct {
+		Email       string `json:"email" binding:"required,email"`
+		OTP         string `json:"otp" binding:"required"`
+		NewPassword string `json:"new_password" binding:"required,min=8"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload", "details": err.Error()})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	err := ac.AuthUsecase.ResetPassword(ctx, input.Email, input.OTP, input.NewPassword)
+	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrWeakPassword):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Password does not meet requirements"})
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to reset password", "details": err.Error()})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Password reset successfully"})
+}
