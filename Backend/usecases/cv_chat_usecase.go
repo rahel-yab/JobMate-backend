@@ -3,42 +3,43 @@ package usecases
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
-	repositories "github.com/tsigemariamzewdu/JobMate-backend/domain/interfaces/repositories"
-	services "github.com/tsigemariamzewdu/JobMate-backend/domain/interfaces/services"
-	usecaseInterfaces "github.com/tsigemariamzewdu/JobMate-backend/domain/interfaces/usecases"
-	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
+	repo "github.com/tsigemariamzewdu/JobMate-backend/domain/interfaces/repositories"
+	service "github.com/tsigemariamzewdu/JobMate-backend/domain/interfaces/services"
+	usecase "github.com/tsigemariamzewdu/JobMate-backend/domain/interfaces/usecases"
+	model "github.com/tsigemariamzewdu/JobMate-backend/domain/models"
 )
 
 // CV-specific tools for AI
-var cvChatTools = []services.AITool{
+var cvChatTools = []service.AITool{
 	{
 		Type: "function",
-		Function: services.AIToolFunction{
+		Function: service.AIToolFunction{
 			Name:        "analyze_cv",
-			Description: "Analyzes the user's CV for strengths, weaknesses, and improvement suggestions.",
-			Parameters: services.AIToolFunctionParameters{
+			Description: "Retrieves the existing analysis for the user's CV including strengths, weaknesses, skill gaps, and improvement suggestions.",
+			Parameters: service.AIToolFunctionParameters{
 				Type: "object",
-				Properties: map[string]services.AIToolProperty{
+				Properties: map[string]service.AIToolProperty{
 					"cv_id": {
 						Type:        "string",
-						Description: "The ID of the CV to analyze.",
+						Description: "The ID of the CV to get analysis for. If not provided, uses the current chat's CV.",
 					},
 				},
-				Required: []string{},
+				Required: []string{"cv_id"},
 			},
 		},
 	},
 	{
 		Type: "function",
-		Function: services.AIToolFunction{
+		Function: service.AIToolFunction{
 			Name:        "suggest_cv_improvements",
 			Description: "Provides specific suggestions to improve the CV based on job market trends.",
-			Parameters: services.AIToolFunctionParameters{
+			Parameters: service.AIToolFunctionParameters{
 				Type: "object",
-				Properties: map[string]services.AIToolProperty{
+				Properties: map[string]service.AIToolProperty{
 					"target_field": {
 						Type:        "string",
 						Description: "The target job field for CV optimization.",
@@ -51,24 +52,33 @@ var cvChatTools = []services.AITool{
 }
 
 type cvChatUsecase struct {
-	CVChatRepository repositories.ICVChatRepository
-	CVUsecase        usecaseInterfaces.ICVUsecase
-	AIService        services.IAIService
+	CVChatRepository repo.ICVChatRepository
+	CVUsecase        usecase.ICVUsecase
+	CVRepo           repo.CVRepository       // NEW: To get analyzed CV data
+	FeedbackRepo     repo.FeedbackRepository // NEW: To get existing feedback
+	SkillGapRepo     repo.SkillGapRepository // NEW: To get existing skill gaps
+	AIService        service.IAIService
 }
 
 func NewCVChatUsecase(
-	cvChatRepo repositories.ICVChatRepository,
-	cvUsecase usecaseInterfaces.ICVUsecase,
-	aiService services.IAIService,
-) usecaseInterfaces.ICVChatUsecase {
+	cvChatRepo repo.ICVChatRepository,
+	cvUsecase usecase.ICVUsecase,
+	cvRepo repo.CVRepository, // NEW
+	feedbackRepo repo.FeedbackRepository, // NEW
+	skillGapRepo repo.SkillGapRepository, // NEW
+	aiService service.IAIService,
+) usecase.ICVChatUsecase {
 	return &cvChatUsecase{
 		CVChatRepository: cvChatRepo,
 		CVUsecase:        cvUsecase,
+		CVRepo:           cvRepo,       // NEW
+		FeedbackRepo:     feedbackRepo, // NEW
+		SkillGapRepo:     skillGapRepo, // NEW
 		AIService:        aiService,
 	}
 }
 
-func (u *cvChatUsecase) SendMessage(ctx context.Context, userID string, message string, cvID string, chatID string) (*models.CVChatMessage, error) {
+func (u *cvChatUsecase) SendMessage(ctx context.Context, userID string, message string, cvID string, chatID string) (*model.CVChatMessage, error) {
 	// Find or create CV chat session
 	chats, err := u.CVChatRepository.GetCVChatsByUserID(ctx, userID)
 	if err != nil {
@@ -89,7 +99,7 @@ func (u *cvChatUsecase) SendMessage(ctx context.Context, userID string, message 
 	}
 
 	// Save user message
-	userMessage := models.CVChatMessage{
+	userMessage := model.CVChatMessage{
 		Role:      "user",
 		Content:   message,
 		Timestamp: time.Now(),
@@ -108,12 +118,11 @@ func (u *cvChatUsecase) SendMessage(ctx context.Context, userID string, message 
 
 	// Build AI messages with CV-specific system prompt
 	aiMessages := u.buildCVAIMessages(chat.Messages, cvID)
-	fmt.Print("cvID", cvID)
 
 	// Call AI with CV-specific tools
 	aiResponse, err := u.AIService.GetChatCompletion(ctx, aiMessages, cvChatTools)
 	if err != nil {
-		fmt.Printf("Groq API Error: %v\n", err) // Debug logging
+		fmt.Printf("AI Service Error: %v\n", err)
 		return u.createFallbackResponse(ctx, chatID, err)
 	}
 
@@ -123,7 +132,7 @@ func (u *cvChatUsecase) SendMessage(ctx context.Context, userID string, message 
 	}
 
 	// Save AI response
-	aiMessage := models.CVChatMessage{
+	aiMessage := model.CVChatMessage{
 		Role:      "assistant",
 		Content:   strings.TrimSpace(aiResponse.Content),
 		Timestamp: time.Now(),
@@ -141,11 +150,11 @@ func (u *cvChatUsecase) CreateCVChatSession(ctx context.Context, userID string, 
 	return u.CVChatRepository.CreateCVChat(ctx, userID, cvID)
 }
 
-func (u *cvChatUsecase) GetChatHistory(ctx context.Context, chatID string) (*models.CVChat, error) {
+func (u *cvChatUsecase) GetChatHistory(ctx context.Context, chatID string) (*model.CVChat, error) {
 	return u.CVChatRepository.GetCVChatByID(ctx, chatID)
 }
 
-func (u *cvChatUsecase) GetChatHistoryWithLimit(ctx context.Context, chatID string, limit, offset int) (*models.CVChat, error) {
+func (u *cvChatUsecase) GetChatHistoryWithLimit(ctx context.Context, chatID string, limit, offset int) (*model.CVChat, error) {
 	chat, err := u.CVChatRepository.GetCVChatByID(ctx, chatID)
 	if err != nil {
 		return nil, err
@@ -166,7 +175,7 @@ func (u *cvChatUsecase) GetChatHistoryWithLimit(ctx context.Context, chatID stri
 	end := totalMessages - offset
 	if end <= 0 {
 		// Return empty messages if offset is beyond available messages
-		chat.Messages = []models.CVChatMessage{}
+		chat.Messages = []model.CVChatMessage{}
 		return chat, nil
 	}
 
@@ -175,13 +184,93 @@ func (u *cvChatUsecase) GetChatHistoryWithLimit(ctx context.Context, chatID stri
 	return chat, nil
 }
 
-func (u *cvChatUsecase) GetUserCVChats(ctx context.Context, userID string) ([]*models.CVChat, error) {
+func (u *cvChatUsecase) GetUserCVChats(ctx context.Context, userID string) ([]*model.CVChat, error) {
 	return u.CVChatRepository.GetCVChatsByUserID(ctx, userID)
 }
 
-// buildCVAIMessages creates AI messages with CV-specific system prompt
+// getExistingCVAnalysis fetches the already-generated analysis for a CV and formats it for the AI tool.
+func (u *cvChatUsecase) getExistingCVAnalysis(ctx context.Context, cvID string) (string, error) {
+	if cvID == "" {
+		return "No CV ID provided. Please upload a CV first.", nil
+	}
+
+	// 1. Get the analyzed CV data
+	cv, err := u.CVRepo.GetByID(ctx, cvID)
+	if err != nil {
+		return "", fmt.Errorf("failed to find CV: %w", err)
+	}
+
+	// Check if it has been analyzed
+	if strings.TrimSpace(cv.Summary) == "" {
+		return "The selected CV has not been analyzed yet. Please use the 'Analyze' feature first.", nil
+	}
+
+	// 2. Get the feedback for this CV
+	feedback, err := u.FeedbackRepo.GetLatestByCVID(ctx, cvID)
+	if err != nil {
+		// Log the error but proceed, we can still use the CV data
+		log.Printf("Warning: Could not fetch feedback for CV %s: %v", cvID, err)
+		feedback = &model.CVFeedback{} // Use an empty struct to avoid nil panics
+	}
+
+	// 3. Get skill gaps for the user
+	skillGaps, err := u.SkillGapRepo.GetByUserID(ctx, cv.UserID)
+	if err != nil {
+		log.Printf("Warning: Could not fetch skill gaps for user %s: %v", cv.UserID, err)
+		skillGaps = []*model.SkillGap{}
+	}
+
+	// 4. Format the information into a cohesive summary for the AI tool
+	var sb strings.Builder
+
+	sb.WriteString("=== EXISTING CV ANALYSIS ===\n\n")
+	sb.WriteString(fmt.Sprintf("CV Summary: %s\n\n", cv.Summary))
+
+	if len(cv.ExtractedSkills) > 0 {
+		sb.WriteString("Extracted Skills:\n")
+		for i, skill := range cv.ExtractedSkills {
+			sb.WriteString(fmt.Sprintf("  %d. %s\n", i+1, skill))
+		}
+		sb.WriteString("\n")
+	}
+
+	if len(cv.ExtractedExperience) > 0 {
+		sb.WriteString("Extracted Experience:\n")
+		for i, exp := range cv.ExtractedExperience {
+			sb.WriteString(fmt.Sprintf("  %d. %s\n", i+1, exp))
+		}
+		sb.WriteString("\n")
+	}
+
+	if len(cv.ExtractedEducation) > 0 {
+		sb.WriteString("Extracted Education:\n")
+		for i, edu := range cv.ExtractedEducation {
+			sb.WriteString(fmt.Sprintf("  %d. %s\n", i+1, edu))
+		}
+		sb.WriteString("\n")
+	}
+
+	sb.WriteString("Feedback:\n")
+	sb.WriteString(fmt.Sprintf("  Strengths: %s\n", feedback.Strengths))
+	sb.WriteString(fmt.Sprintf("  Weaknesses: %s\n", feedback.Weaknesses))
+	sb.WriteString(fmt.Sprintf("  Improvement Suggestions: %s\n\n", feedback.ImprovementSuggestions))
+
+	sb.WriteString("Identified Skill Gaps:\n")
+	if len(skillGaps) == 0 {
+		sb.WriteString("  No significant skill gaps identified.\n")
+	} else {
+		for i, gap := range skillGaps {
+			sb.WriteString(fmt.Sprintf("  %d. %s (Current: %s, Recommended: %s, Importance: %s)\n",
+				i+1, gap.SkillName, gap.CurrentLevel, gap.RecommendedLevel, gap.Importance))
+			sb.WriteString(fmt.Sprintf("     Suggestion: %s\n", gap.ImprovementSuggestions))
+		}
+	}
+
+	return sb.String(), nil
+}
+
 // buildCVAIMessages creates AI messages with CV-specific system prompt including CV ID
-func (u *cvChatUsecase) buildCVAIMessages(messages []models.CVChatMessage, cvID string) []services.AIMessage {
+func (u *cvChatUsecase) buildCVAIMessages(messages []model.CVChatMessage, cvID string) []service.AIMessage {
 	// CV-specific system prompt with CV ID context
 	systemPrompt := `You are JobMate's CV Expert, a specialized AI assistant focused on CV review, optimization, and career guidance for young job seekers in Ethiopia. 
 
@@ -202,15 +291,20 @@ Guidelines:
 
 Current CV Context: The user is discussing their CV with ID: ` + cvID + `
 
-If the user asks to analyze their CV, you MUST use the 'analyze_cv' tool with the provided CV ID so that it can call the dedicated endpooitn for `
+IMPORTANT: When the user asks about their CV analysis, use the 'analyze_cv' tool.
+- This tool will NOT re-analyze the CV.
+- It will fetch the existing, pre-generated analysis results (summary, skills, feedback, gaps).
+- Use this information to answer the user's questions about their strengths, weaknesses, and how to improve.
 
-	aiMessages := []services.AIMessage{
+If the user asks for a completely new analysis, instruct them to use the 'Analyze' button/feature in the app.`
+
+	aiMessages := []service.AIMessage{
 		{Role: "system", Content: systemPrompt},
 	}
 
 	// Add conversation history
 	for _, msg := range messages {
-		aiMessages = append(aiMessages, services.AIMessage{
+		aiMessages = append(aiMessages, service.AIMessage{
 			Role:    msg.Role,
 			Content: msg.Content,
 		})
@@ -220,8 +314,8 @@ If the user asks to analyze their CV, you MUST use the 'analyze_cv' tool with th
 }
 
 // handleCVToolCalls processes CV-specific tool calls
-func (u *cvChatUsecase) handleCVToolCalls(ctx context.Context, chatID string, toolCalls []services.ToolCall, messages []models.CVChatMessage, cvID string) (*models.CVChatMessage, error) {
-	var toolResponses []services.AIMessage
+func (u *cvChatUsecase) handleCVToolCalls(ctx context.Context, chatID string, toolCalls []service.ToolCall, messages []model.CVChatMessage, cvID string) (*model.CVChatMessage, error) {
+	var toolResponses []service.AIMessage
 
 	for _, tc := range toolCalls {
 		var toolOutput string
@@ -229,39 +323,40 @@ func (u *cvChatUsecase) handleCVToolCalls(ctx context.Context, chatID string, to
 
 		switch tc.Function.Name {
 		case "analyze_cv":
-			args, err := tc.Function.GetArgumentsAsMap()
-			if err != nil {
-				toolOutput = "Error parsing CV analysis arguments"
+			// We are not re-analyzing, we are fetching the existing analysis.
+			args, parseErr := tc.Function.GetArgumentsAsMap()
+			if parseErr != nil {
+				toolOutput = "Error parsing CV analysis arguments."
+				break
+			}
+
+			// Use the provided CV ID, or fall back to the one from the chat context
+			requestedCvID, _ := args["cv_id"].(string)
+			if requestedCvID == "" {
+				// If no CV ID was provided in the tool call, use the one from the current chat context.
+				// This assumes the chat is already associated with a CV.
+				requestedCvID = cvID
+			}
+
+			// Get the existing, pre-generated analysis
+			analysisSummary, getErr := u.getExistingCVAnalysis(ctx, requestedCvID)
+			if getErr != nil {
+				toolOutput = fmt.Sprintf("Sorry, I couldn't retrieve the analysis for your CV. Please ensure it has been analyzed. Error: %s", getErr.Error())
 			} else {
-				cvID, ok := args["cv_id"].(string)
-				if !ok || cvID == "" {
-					toolOutput = "Please upload a CV first to get personalized analysis and feedback."
-				} else {
-					analysisResult, analyzeErr := u.CVUsecase.Analyze(ctx, cvID)
-					if analyzeErr != nil {
-						err = fmt.Errorf("failed to analyze CV: %w", analyzeErr)
-						toolOutput = "Failed to analyze CV. Please try again."
-					} else {
-						var skillGaps []string
-						for _, sg := range analysisResult.SkillGaps {
-							skillGaps = append(skillGaps, sg.SkillName)
-						}
-						toolOutput = fmt.Sprintf("CV Analysis:\n✅ Strengths: %s\n⚠️ Areas for Improvement: %s\n📚 Skill Gaps: %s",
-							analysisResult.CVFeedback.Strengths,
-							analysisResult.CVFeedback.Weaknesses,
-							strings.Join(skillGaps, ", "))
-					}
-				}
+				toolOutput = analysisSummary
 			}
 
 		case "suggest_cv_improvements":
-			args, err := tc.Function.GetArgumentsAsMap()
-			if err != nil {
+			args, parseErr := tc.Function.GetArgumentsAsMap()
+			if parseErr != nil {
 				toolOutput = "Error parsing improvement suggestions arguments"
-			} else {
-				targetField, _ := args["target_field"].(string)
-				toolOutput = fmt.Sprintf("CV Improvement Suggestions for %s field:\n• Use action verbs and quantifiable achievements\n• Tailor keywords to job descriptions\n• Keep format clean and ATS-friendly\n• Highlight relevant skills and experience\n• Include Ethiopian context and local experience", targetField)
+				break
 			}
+			targetField, _ := args["target_field"].(string)
+			if targetField == "" {
+				targetField = "general"
+			}
+			toolOutput = fmt.Sprintf("CV Improvement Suggestions for %s field:\n• Use action verbs and quantifiable achievements\n• Tailor keywords to job descriptions\n• Keep format clean and ATS-friendly\n• Highlight relevant skills and experience\n• Include Ethiopian context and local experience", targetField)
 
 		default:
 			err = fmt.Errorf("unknown CV tool: %s", tc.Function.Name)
@@ -271,7 +366,7 @@ func (u *cvChatUsecase) handleCVToolCalls(ctx context.Context, chatID string, to
 			toolOutput = fmt.Sprintf("Error: %s", err.Error())
 		}
 
-		toolResponses = append(toolResponses, services.AIMessage{
+		toolResponses = append(toolResponses, service.AIMessage{
 			Role:       "tool",
 			Content:    toolOutput,
 			ToolCallID: tc.ID,
@@ -288,7 +383,7 @@ func (u *cvChatUsecase) handleCVToolCalls(ctx context.Context, chatID string, to
 	}
 
 	// Save final AI response
-	aiMessage := models.CVChatMessage{
+	aiMessage := model.CVChatMessage{
 		Role:      "assistant",
 		Content:   strings.TrimSpace(finalResponse.Content),
 		Timestamp: time.Now(),
@@ -302,10 +397,10 @@ func (u *cvChatUsecase) handleCVToolCalls(ctx context.Context, chatID string, to
 	return &aiMessage, nil
 }
 
-func (u *cvChatUsecase) createFallbackResponse(ctx context.Context, chatID string, aiErr error) (*models.CVChatMessage, error) {
+func (u *cvChatUsecase) createFallbackResponse(ctx context.Context, chatID string, aiErr error) (*model.CVChatMessage, error) {
 	fallbackMessage := "I'm experiencing technical difficulties. Please try again in a moment."
 
-	aiMessage := models.CVChatMessage{
+	aiMessage := model.CVChatMessage{
 		Role:      "assistant",
 		Content:   fallbackMessage,
 		Timestamp: time.Now(),

@@ -96,7 +96,7 @@ func main() {
 
 	// Initialize AI service adapter for interview and CV chat usecases
 	
-	cvChatUsecase := usecases.NewCVChatUsecase(cvChatRepo, cvUsecase, geminiClient)
+	cvChatUsecase := usecases.NewCVChatUsecase(cvChatRepo, cvUsecase,cvRepo,feedbackRepo,skillGapRepo, geminiClient)
 
 
 	interviewFreeformUsecase := usecases.NewInterviewFreeformUsecase(interviewFreeformRepo, geminiClient)
