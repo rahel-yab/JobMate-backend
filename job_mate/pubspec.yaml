@@ -67,6 +67,8 @@ dependencies:
   flutter_screenutil: ^5.9.0
   url_launcher: ^6.3.0
 
+  # flutter_web_auth: ^5.0.0 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

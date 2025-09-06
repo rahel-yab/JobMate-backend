@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => di.sl<AuthBloc>()..add(CheckAuthStatusEvent())), // Check auth on startup
+        BlocProvider(create: (_) => di.sl<AuthBloc>()), // Check auth on startup
         BlocProvider(create: (_) => di.sl<CvBloc>()),
         BlocProvider(create: (_) => di.sl<CvChatBloc>()),
       ],

@@ -7,7 +7,7 @@ class ChatSessionModel extends ChatSession {
     required String chatId,
     required String userId,
     String? cvId,
-    List<ChatMessage>? messages,
+    required List<ChatMessage> messages,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super(
@@ -19,16 +19,19 @@ class ChatSessionModel extends ChatSession {
           updatedAt: updatedAt,
         );
 
-  factory ChatSessionModel.fromJson(Map<String, dynamic> json) {
-    return ChatSessionModel(
-      chatId: json['chat_id'],
-      userId: json['user_id'],
-      cvId: json['cv_id'],
-      messages: (json['messages'] as List?)?.map((e) => ChatMessageModel.fromJson(e)).toList(),
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
-    );
-  }
+  // In your ChatSessionModel.fromJson method
+factory ChatSessionModel.fromJson(Map<String, dynamic> json) {
+  return ChatSessionModel(
+    chatId: json['chat_id'] ?? '',
+    userId: json['user_id'] ?? '',
+    cvId: json['cv_id'],
+    messages: (json['messages'] as List<dynamic>?)
+        ?.map((message) => ChatMessageModel.fromJson(message))
+        .toList() ?? [], // Provide empty list if null
+    createdAt: DateTime.parse(json['created_at']),
+    updatedAt: DateTime.parse(json['updated_at']),
+  );
+}
 
   Map<String, dynamic> toJson() {
     return {

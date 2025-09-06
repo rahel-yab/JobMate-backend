@@ -150,7 +150,66 @@ class CvRemoteDataSourceImpl extends CvRemoteDataSource {
     }
   }
 
-  @override
+//   @override
+// Future<CvFeedback> analyzeCv(String cvId) async {
+//   try {
+//     final token = await authLocalDataSource.getAccessToken();
+//     if (token == null) {
+//       throw ServerFailure('No authentication token available');
+//     }
+
+//     print('Sending analyzeCv request to ${dio.options.baseUrl}/cv/$cvId/analyze with token: $token');
+//     final response = await dio.post(
+//       '/cv/$cvId/analyze',
+//       options: Options(
+//         headers: {'Authorization': 'Bearer $token'},
+//         receiveTimeout: const Duration(seconds: 30),
+//         validateStatus: (status) {
+//           print('analyzeCv status: $status');
+//           return status != null && status < 500;
+//         },
+//       ),
+//     );
+
+//     print('Received analyzeCv response: ${response.statusCode} - ${jsonEncode(response.data)} - Headers: ${response.headers}');
+//     if (response.data == null || response.data is! Map<String, dynamic>) {
+//       throw ServerFailure('Unexpected analyzeCv response format: ${jsonEncode(response.data)}');
+//     }
+
+//     final data = response.data['data'];
+//     if (data == null || data['suggestions'] == null) {
+//       throw ServerFailure('Missing suggestions in response: ${jsonEncode(response.data)}');
+//     }
+
+//     // Extract the suggestions data properly
+//     final suggestionsData = data['suggestions'];
+    
+//     // Create a proper map for CvFeedbackModel.fromJson
+//     final feedbackData = {
+//       'extractedSkills': suggestionsData['CVs']['ExtractedSkills'] ?? [],
+//       'extractedExperience': suggestionsData['CVs']['ExtractedExperience'] ?? [],
+//       'extractedEducation': suggestionsData['CVs']['ExtractedEducation'] ?? [],
+//       'summary': suggestionsData['CVs']['Summary'] ?? '',
+//       'strengths': suggestionsData['CVFeedback']['Strengths'] ?? '',
+//       'weaknesses': suggestionsData['CVFeedback']['Weaknesses'] ?? '',
+//       'improvementSuggestions': suggestionsData['CVFeedback']['ImprovementSuggestions'] ?? '',
+//       'skillGaps': suggestionsData['SkillGaps'] ?? [],
+//     };
+
+//     return CvFeedbackModel.fromJson(feedbackData);
+//   } catch (e) {
+//     print('Error in analyzeCv: $e');
+//     if (e is DioException) {
+//       if (e.response?.statusCode == 400) {
+//         throw ServerFailure('Invalid CV ID');
+//       } else if (e.response?.statusCode == 404) {
+//         throw ServerFailure('CV not found');
+//       }
+//     }
+//     throw ServerFailure('Failed to analyze CV: $e');
+//   }
+// }
+@override
   Future<CvFeedback> analyzeCv(String cvId) async {
     try {
       final token = await authLocalDataSource.getAccessToken();

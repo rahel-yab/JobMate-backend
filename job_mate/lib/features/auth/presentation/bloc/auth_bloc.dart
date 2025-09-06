@@ -1,5 +1,6 @@
 // features/auth/presentation/bloc/auth_bloc.dart
 import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
 import 'package:job_mate/features/auth/domain/usecases/google_login.dart';
 import 'package:job_mate/features/auth/domain/usecases/login.dart';
 import 'package:job_mate/features/auth/domain/usecases/logout.dart';
@@ -32,7 +33,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LoginEvent>(_onLogin);
     on<LogoutEvent>(_onLogout);
     on<RefreshTokenEvent>(_onRefreshToken);
-    on<CheckAuthStatusEvent>(_onCheckAuthStatus); // New handler
+    // on<CheckAuthStatusEvent>(_onCheckAuthStatus); // New handler
     on<GoogleLoginEvent>(_onGoogleLogin);
   }
 
@@ -83,20 +84,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
-  void _onCheckAuthStatus(CheckAuthStatusEvent event, Emitter<AuthState> emit) async {
-    emit(AuthLoading('Checking authentication status'));
-    final result = await refreshToken(); // Assuming refreshToken checks validity and returns user data
-    result.fold(
-      (failure) => emit(AuthChecked(false)), // Not authenticated
-      (data) => emit(AuthChecked(true, data: data)), // Authenticated with data
-    );
-  }
+  // void _onCheckAuthStatus(CheckAuthStatusEvent event, Emitter<AuthState> emit) async {
+  //   emit(AuthLoading('Checking authentication status'));
+  //   final result = await refreshToken(); // Assuming refreshToken checks validity and returns user data
+  //   result.fold(
+  //     (failure) => emit(AuthChecked(false)), // Not authenticated
+  //     (data) => emit(AuthChecked(true, data: data)), // Authenticated with data
+  //   );
+  // }
  void _onGoogleLogin(GoogleLoginEvent event, Emitter<AuthState> emit) async {
-    emit(AuthLoading('Initiating Google OAuth login'));
-    final result = await googleLogin(); // Use googleLogin instead of login.googleLogin()
-    result.fold(
-      (failure) => emit(AuthError(failure.toString())),
-      (user) => emit(AuthSuccess('Google login successful', data: user, type: 'google_login')),
-    );
-  }
+  emit(AuthLoading('Initiating Google OAuth login'));
+  final result = await googleLogin(event.token); // Pass the token
+  result.fold(
+    (failure) => emit(AuthError(failure.toString())),
+    (userData) => emit(AuthSuccess('Google login successful', data: userData, type: 'google_login')),
+  );
+}
 }

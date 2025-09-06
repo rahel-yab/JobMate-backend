@@ -18,9 +18,9 @@ final class AuthError extends AuthState {
   final String message;
   AuthError(this.message);
 }
-final class AuthChecked extends AuthState { // New state
-  final bool isAuthenticated;
-  final dynamic data; // Can hold user data or token if authenticated
+// final class AuthChecked extends AuthState { // New state
+//   final bool isAuthenticated;
+//   final dynamic data; // Can hold user data or token if authenticated
 
-  AuthChecked(this.isAuthenticated, {this.data});
-}
+//   AuthChecked(this.isAuthenticated, {this.data});
+// }

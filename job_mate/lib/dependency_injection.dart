@@ -48,7 +48,8 @@ Future<void> init() async {
   sl.registerLazySingleton<Dio>(() {
     final dio = Dio();
     // dio.options.baseUrl = 'https://jobmate-api-3wuo.onrender.com';
-    dio.options.baseUrl = 'https://jobmate-api-0d1l.onrender.com';
+    // dio.options.baseUrl = 'https://jobmate-api-0d1l.onrender.com';
+    dio.options.baseUrl = 'https://g6-jobmate-3.onrender.com';
     // dio.options.connectTimeout = const Duration(seconds: 60);
     // dio.options.receiveTimeout = const Duration(seconds: 60);
     // dio.options.sendTimeout = const Duration(seconds: 60);
@@ -81,13 +82,13 @@ Future<void> init() async {
   );
 
   // Attach AuthInterceptor **after repository is ready**
-  // sl<Dio>().interceptors.add(
-  //   AuthInterceptor(
-  //     authRepository: sl<AuthRepository>(),
-  //     localDataSource: sl<AuthLocalDataSource>(),
-  //     dio: sl<Dio>(),
-  //   ),
-  // );
+  sl<Dio>().interceptors.add(
+    AuthInterceptor(
+      authRepository: sl<AuthRepository>(),
+      localDataSource: sl<AuthLocalDataSource>(),
+      dio: sl<Dio>(),
+    ),
+  );
 
   // Auth Usecases
   sl.registerLazySingleton<RequestOtp>(() => RequestOtp(sl<AuthRepository>()));

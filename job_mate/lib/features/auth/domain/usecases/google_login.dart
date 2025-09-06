@@ -8,7 +8,7 @@ class GoogleLogin {
 
   GoogleLogin(this.repository);
 
-  Future<Either<Failure, User>> call() async {
-    return await repository.googleLogin();
+  Future<Either<Failure, User>> call(String token) async {
+    return await repository.googleLogin(token);
   }
 }

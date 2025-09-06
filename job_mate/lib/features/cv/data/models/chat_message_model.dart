@@ -10,14 +10,24 @@ class ChatMessageModel extends ChatMessage {
           timeStamp: timestamp,
         );
 
+  // factory ChatMessageModel.fromJson(Map<String, dynamic> json) {
+  //   return ChatMessageModel(
+  //     id: json['id'],
+  //     role: json['role'],
+  //     content: json['content'],
+  //     timestamp: DateTime.parse(json['timestamp']),
+  //   );
+  // }
   factory ChatMessageModel.fromJson(Map<String, dynamic> json) {
-    return ChatMessageModel(
-      id: json['id'],
-      role: json['role'],
-      content: json['content'],
-      timestamp: DateTime.parse(json['timestamp']),
-    );
-  }
+  return ChatMessageModel(
+    id: json['id'] ?? '',
+    role: json['role'] ?? 'assistant',
+    content: json['content'] ?? '',
+     timestamp: json['timestamp'] != null 
+        ? DateTime.parse(json['timestamp'])
+        : DateTime.now(), // or parse from json if provided
+  );
+}
 
   Map<String, dynamic> toJson() {
     return {

@@ -160,10 +160,10 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
   @override
-  Future<Either<Failure, User>> googleLogin() async {
+  Future<Either<Failure, User>> googleLogin(String token) async {
     if (await networkInfo.isConnected) {
       try {
-        final response = await remoteDataSource.googleLogin();
+        final response = await remoteDataSource.googleLogin(token);
         final userModel = response['user'] as UserModel;
         final authTokenModel = response['authToken'] as AuthTokenModel;
 
