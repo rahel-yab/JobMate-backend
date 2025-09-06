@@ -30,7 +30,7 @@ const translations = {
       cv_writing:"CV Writing",
       interview_prep:"Interview Prep",
       job_boards:"Job Boards",
-      skill_enhancements:"Skillen Enhancements",
+      skill_enhancements:"Skill Enhancements",
       market_insights:"Market Insights",
       motivation:"Motivation",
       start_building:'Start building your AI powered CV',
