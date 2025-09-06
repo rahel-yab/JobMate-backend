@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_mate/core/presentation/routes.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,6 +40,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9F8), // Light teal background
       body: RefreshIndicator(
@@ -62,9 +65,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         height: 90,
                       ),
                       const SizedBox(height: 15),
-                      const Text(
-                        'Welcome to JobMate',
-                        style: TextStyle(
+                      Text(
+                        l10n.welcomeBack,
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -72,9 +75,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 5),
-                      const Text(
-                        'Your AI Career Companion',
-                        style: TextStyle(
+                      Text(
+                        l10n.yourAiCareerBuddy,
+                        style: const TextStyle(
                           fontSize: 14,
                           color: Colors.white70,
                         ),
@@ -90,9 +93,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: FadeTransition(
                   opacity: _fadeAnimation,
-                  child: const Text(
-                    'What would you like to do?',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.whatWouldYouLikeToDo,
+                    style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF144A3F),
@@ -118,29 +121,29 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     children: [
                       _buildFeatureCard(
                         context,
-                        title: 'CV Analysis',
-                        description: 'Get AI feedback on your resume',
+                        title: l10n.cvAnalysis,
+                        description: l10n.getFeedbackOnResume,
                         icon: Icons.description,
                         route: Routes.cvAnalysis,
                       ),
                       _buildFeatureCard(
                         context,
-                        title: 'Job Search',
-                        description: 'Find perfect job matches',
+                        title: l10n.jobSearch,
+                        description: l10n.findPerfectJobMatches,
                         icon: Icons.work_outline,
                         route: Routes.jobSearch,
                       ),
                       _buildFeatureCard(
                         context,
-                        title: 'Interview Prep',
-                        description: 'Practice with AI mock interviews',
+                        title: l10n.interviewPrep,
+                        description: l10n.practiceWithMockInterviews,
                         icon: Icons.record_voice_over,
                         route: Routes.interviewPrep,
                       ),
                       _buildFeatureCard(
                         context,
-                        title: 'Skill Boost',
-                        description: 'Get personalized learning plan',
+                        title: l10n.skillBoost,
+                        description: l10n.getPersonalizedLearningPlan,
                         icon: Icons.school,
                         route: Routes.home, // Replace with real route if exists
                       ),

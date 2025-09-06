@@ -1,12 +1,22 @@
 // main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:job_mate/core/presentation/router.dart';
 import 'package:job_mate/dependency_injection.dart' as di;
 import 'package:job_mate/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:job_mate/features/cv/presentation/bloc/cv/cv_bloc.dart';
-
 import 'package:job_mate/features/cv/presentation/bloc/cv_chat/cv_chat_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+// import 'package:job_mate/features/auth/presentation/bloc/auth_bloc.dart';
+// <<<<<<< HEAD
+// import 'package:job_mate/features/cv/presentation/bloc/cv/cv_bloc.dart';
+
+// import 'package:job_mate/features/cv/presentation/bloc/cv_chat/cv_chat_bloc.dart';
+// =======
+// import 'package:job_mate/features/cv/presentation/bloc/cv_bloc.dart';
+// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+// >>>>>>> e551cae63743c136fa1d52fe1108c543baa8a138
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +40,16 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'JobMate',
         routerConfig: router,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en'), // English
+          Locale('am'), // Amharic
+        ],
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
             seedColor: const Color(0xFF144A3F), // Dark teal

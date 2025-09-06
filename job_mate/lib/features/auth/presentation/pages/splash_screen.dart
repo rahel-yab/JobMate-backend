@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -35,6 +36,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -55,17 +58,17 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
                 const SizedBox(height: 40),
 
-                const Text(
-                  'JOBMATE',
-                  style: TextStyle(
+                Text(
+                  l10n.appTitle,
+                  style: const TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-                const Text(
-                  'Your AI Career Companion!',
-                  style: TextStyle(fontSize: 18, color: Colors.white70),
+                Text(
+                  l10n.yourAiCareerCompanion,
+                  style: const TextStyle(fontSize: 18, color: Colors.white70),
                 ),
                 const SizedBox(height: 25),
                 Row(
@@ -76,9 +79,9 @@ class _SplashScreenState extends State<SplashScreen>
                       children: [
                         Icon(MdiIcons.brain, size: 25, color: Colors.white),
                         const SizedBox(height: 5),
-                        const Text(
-                          'AI powered',
-                          style: TextStyle(fontSize: 14, color: Colors.white),
+                        Text(
+                          l10n.aiPowered,
+                          style: const TextStyle(fontSize: 14, color: Colors.white),
                         ),
                       ],
                     ),
@@ -92,9 +95,9 @@ class _SplashScreenState extends State<SplashScreen>
                           color: Colors.white,
                         ),
                         const SizedBox(height: 5),
-                        const Text(
-                          'Career Focus',
-                          style: TextStyle(fontSize: 14, color: Colors.white),
+                        Text(
+                          l10n.careerFocus,
+                          style: const TextStyle(fontSize: 14, color: Colors.white),
                         ),
                       ],
                     ),
@@ -108,9 +111,9 @@ class _SplashScreenState extends State<SplashScreen>
                           color: Colors.white,
                         ),
                         const SizedBox(height: 5),
-                        const Text(
-                          'Smart Insights',
-                          style: TextStyle(fontSize: 14, color: Colors.white),
+                        Text(
+                          l10n.smartInsights,
+                          style: const TextStyle(fontSize: 14, color: Colors.white),
                         ),
                       ],
                     ),
@@ -135,16 +138,16 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Text(
-                              'Get Started',
-                              style: TextStyle(
+                              l10n.getStarted,
+                              style: const TextStyle(
                                 fontSize: 18,
                                 color: Colors.white,
                               ),
                             ),
-                            SizedBox(width: 8),
-                            Icon(
+                            const SizedBox(width: 8),
+                            const Icon(
                               Icons.arrow_forward_rounded,
                               color: Colors.white,
                             ),
