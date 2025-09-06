@@ -32,6 +32,7 @@ func SetupRouter(authMiddleware *auth.AuthMiddleware,
 	otpRoutes := router.Group("/auth")
 	{
 		otpRoutes.POST("/request-otp", otpController.RequestOTP)
+		otpRoutes.POST("/request-password-reset-otp", otpController.RequestPasswordResetOTP)
 	}
 
 	// Auth routes
@@ -97,6 +98,7 @@ func NewAuthRouter(authController controllers.AuthController, authMiddleware *au
 	group.POST("/login", authController.Login)
 	group.POST("/logout", authMiddleware.Middleware(), authController.Logout)
 	group.POST("/refresh", authController.RefreshToken)
+	group.POST("/reset-password", authController.ResetPassword)
 }
 
 func NewCVRouter(cvController controllers.CVController,authMiddleware *auth.AuthMiddleware, group gin.RouterGroup) {
