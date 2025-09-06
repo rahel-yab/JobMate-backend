@@ -1,35 +1,67 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Upload } from "lucide-react";
+import { FileText, Upload, MessageCircle } from "lucide-react";
 
 export default function CvAnalysisCard({
   onAnalyze,
+  onChatInstead,
 }: {
-  onAnalyze: (cv: string) => void;
+  onAnalyze: (data: { rawText?: string; file?: File }) => void;
+  onChatInstead: () => void;
 }) {
   const [mode, setMode] = useState<"paste" | "upload">("paste");
   const [text, setText] = useState("");
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [error, setError] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFileName(e.target.files[0].name);
+    const selectedFile = e.target.files?.[0];
+
+    if (!selectedFile) return;
+
+    // Allowed file extensions
+    const allowedExtensions = [".pdf", ".docx"];
+    const fileName = selectedFile.name.toLowerCase();
+    const isValid = allowedExtensions.some((ext) => fileName.endsWith(ext));
+
+    if (!isValid) {
+      setFile(null);
+      setError("❌ Invalid file type. Please upload a PDF or DOCX file.");
+      return;
     }
+
+    // Clear error if valid
+    setError("");
+    setFile(selectedFile);
   };
 
   const handleUploadClick = () => {
     document.getElementById("hiddenFileInput")?.click();
   };
 
+  const handleAnalyze = () => {
+    if (mode === "paste" && text.trim().length > 0) {
+      onAnalyze({ rawText: text });
+    } else if (mode === "upload" && file) {
+      onAnalyze({ file });
+    }
+  };
+
+  const isDisabled =
+    (mode === "paste" && text.trim().length <= 10) ||
+    (mode === "upload" && !file);
+
   return (
     <div className="flex justify-start mb-3 ml-8 ">
       <div className="bg-[#DFF2EE] rounded-2xl p-4 max-w-[80%] w-full">
+        {/* Header */}
         <div className="flex items-center gap-2 text-gray-700 font-semibold mb-4">
           <FileText className="h-5 w-5" />
           <span>CV Analysis</span>
         </div>
 
+        {/* Mode Switch */}
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setMode("paste")}
@@ -53,45 +85,60 @@ export default function CvAnalysisCard({
           </button>
         </div>
 
+        {/* Input */}
         {mode === "paste" ? (
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Paste your CV content here or describe your background, education, skills, and experience..."
-            className="w-full text-black border border-white h-60 p-3 rounded-md  shadow-md focus:ring-1 focus:ring-[#217C6A] focus:outline-none"
+            placeholder="Paste your CV content here..."
+            className="w-full text-black border border-white h-60 p-3 rounded-md shadow-md focus:ring-1 focus:ring-[#217C6A] focus:outline-none"
           />
         ) : (
           <div
             onClick={handleUploadClick}
-            className="w-full h-60 border-2 border-dashed  rounded-md flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition"
+            className="w-full h-60 border-2 border-dashed rounded-md flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition"
           >
             <Upload className="h-10 w-10 text-gray-500 mb-2" />
-            {fileName ? (
-              <span className="text-sm text-gray-700">{fileName}</span>
+            {file ? (
+              <span className="text-sm text-gray-700">{file.name}</span>
             ) : (
               <span className="text-sm text-gray-500">
-                Upload your CV file (PDF or doc format)
+                Supports PDF and DOCX files up to 10MB
               </span>
             )}
             <input
               id="hiddenFileInput"
               type="file"
+              accept=".pdf,.docx"
               onChange={handleFileChange}
               className="hidden"
             />
+            {error && (
+              <div className="mt-2 text-sm text-[#B45309] bg-[#FEF3C7] border border-[#FCD34D] px-3 py-2 rounded-md">
+                {error}
+              </div>
+            )}
           </div>
         )}
 
+        {/* Button */}
         <button
-          onClick={() => onAnalyze(text)}
-          disabled={text.length <= 10}
+          onClick={handleAnalyze}
+          disabled={isDisabled}
           className={`w-full mt-4 font-semibold py-3 rounded-md transition ${
-            text.length <= 10
+            isDisabled
               ? "bg-[#369784] text-gray-200 cursor-not-allowed"
               : "hover:bg-[#217C6A] bg-[#195d50] text-white"
           }`}
         >
           Analyze My CV
+        </button>
+        <button
+          onClick={onChatInstead}
+          className="w-full mt-3 font-semibold py-3 rounded-md transition bg-white border border-[#217C6A] text-[#217C6A] hover:bg-[#E6F4F1] flex items-center justify-center gap-2"
+        >
+          <MessageCircle className="h-5 w-5" />
+          Chat About My CV Instead
         </button>
       </div>
     </div>

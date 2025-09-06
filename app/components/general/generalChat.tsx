@@ -14,7 +14,7 @@ export default function GeneralChat() {
       type: "text",
       sender: "ai",
       text: t("generalWelcomeMessage"),
-      time: formatTime(),
+      time: formatTime(new Date()),
     },
   ]);
   const [input, setInput] = useState("");
@@ -31,7 +31,7 @@ export default function GeneralChat() {
       type: "text",
       sender: "user",
       text,
-      time: formatTime(),
+      time: formatTime(new Date()),
     };
     setMessages((prev) => [...prev, userMsg]);
 
@@ -47,7 +47,7 @@ export default function GeneralChat() {
         type: "text",
         sender: "ai",
         text: res.reply,
-        time: formatTime(),
+        time: formatTime(new Date()),
       };
       setMessages((prev) => [...prev, aiMsg]);
     } catch {
@@ -58,7 +58,7 @@ export default function GeneralChat() {
           type: "text",
           sender: "ai",
           text: "Something went wrong. Try again.",
-          time: formatTime(),
+          time: formatTime(new Date()),
         },
       ]);
     }

@@ -9,15 +9,15 @@ export default function ChatWindow({
   input,
   setInput,
   onSend,
-  onQuickAction,
   renderMessage,
+  onBack,
 }: {
   messages: any[];
   input: string;
   setInput: (val: string) => void;
   onSend: () => void;
-  onQuickAction?: (text: string) => void;
   renderMessage: (msg: any) => React.ReactNode;
+  onBack?: () => void;
 }) {
   const { language, setLanguage, t } = useLanguage();
 
@@ -26,7 +26,10 @@ export default function ChatWindow({
       {/* Header */}
       <div className="flex items-center justify-between h-[80px] shadow px-4 bg-[#217C6A] text-white">
         <div className="flex items-center gap-3">
-          <ArrowLeft className="h-5 w-5 text-white cursor-pointer" />
+          <ArrowLeft
+            className="h-5 w-5 text-white cursor-pointer"
+            onClick={onBack}
+          />
           <div className="h-10 w-10 bg-[#0F3A31] text-white rounded-full flex items-center justify-center font-bold">
             JM
           </div>
@@ -53,7 +56,7 @@ export default function ChatWindow({
 
       {/* Input Area */}
       <div className="px-4 py-4 bg-[#BEE3DC] text-black justify-center">
-        {<QuickActions handleQuickAction={onQuickAction} />}
+        {<QuickActions />}
         <ChatInput input={input} setInput={setInput} onSend={onSend} />
       </div>
     </div>
