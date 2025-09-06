@@ -10,7 +10,6 @@ import {
   FiUser,
 } from "react-icons/fi";
 import { AiOutlineRead } from "react-icons/ai";
-
 const roboto = Roboto({
   weight: "400",
 });
