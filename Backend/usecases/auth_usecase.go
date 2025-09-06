@@ -404,3 +404,47 @@ func validatePasswordStrength(password string) bool {
 
 	return hasLetter && hasNumber
 }
+// ResetPassword resets user password after OTP verification
+func (uc *AuthUsecase) ResetPassword(ctx context.Context, email, otp, newPassword string) error {
+	// Get latest password reset OTP (same pattern as registration)
+	code, err := uc.OTPRepo.GetLatestPasswordResetCodeByEmail(ctx, email)
+	if err != nil {
+		return errors.New("failed to get verification code")
+	}
+	if code == nil {
+		return errors.New("no valid verification code found")
+	}
+
+	// Check if OTP is expired or used (same pattern as registration)
+	if code.Used || time.Now().After(code.ExpiresAt) {
+		return errors.New("verification code expired or already used")
+	}
+
+	// Verify OTP (same pattern as registration)
+	if err := bcrypt.CompareHashAndPassword([]byte(code.CodeHash), []byte(otp)); err != nil {
+		return errors.New("invalid verification code")
+	}
+
+	// Mark OTP as used (same pattern as registration)
+	if err := uc.OTPRepo.MarkCodeAsUsed(ctx, code.ID); err != nil {
+		return errors.New("failed to mark code as used")
+	}
+
+	// Validate new password strength
+	if !validatePasswordStrength(newPassword) {
+		return fmt.Errorf("%w", domain.ErrWeakPassword)
+	}
+
+	// Hash new password
+	hashedPassword, err := uc.PasswordService.HashPassword(newPassword)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	// Update user password
+	if err := uc.AuthRepo.UpdatePasswordByEmail(ctx, email, hashedPassword); err != nil {
+		return fmt.Errorf("failed to update password: %w", err)
+	}
+
+	return nil
+}
