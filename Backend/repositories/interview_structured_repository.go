@@ -24,20 +24,21 @@ func NewInterviewStructuredRepository(db *mongo.Database) repositories.IIntervie
 	}
 }
 
-func (r *InterviewStructuredRepository) StartInterview(ctx context.Context, userID, field string, userProfile map[string]interface{}, questions []string) (string, error) {
+func (r *InterviewStructuredRepository) StartInterview(ctx context.Context, userID, field, preferredLanguage string, userProfile map[string]interface{}, questions []string) (string, error) {
 	objectID := primitive.NewObjectID()
 	
 	chat := bson.M{
-		"_id":              objectID,
-		"user_id":          userID,
-		"field":            field,
-		"user_profile":     userProfile,
-		"questions":        questions,
-		"messages":         []bson.M{},
-		"current_question": 0,
-		"is_completed":     false,
-		"created_at":       time.Now(),
-		"updated_at":       time.Now(),
+		"_id":               objectID,
+		"user_id":           userID,
+		"field":             field,
+		"preferred_language": preferredLanguage,
+		"user_profile":      userProfile,
+		"questions":         questions,
+		"messages":          []bson.M{},
+		"current_question":  0,
+		"is_completed":      false,
+		"created_at":        time.Now(),
+		"updated_at":        time.Now(),
 	}
 
 	_, err := r.collection.InsertOne(ctx, chat)
@@ -70,7 +71,7 @@ func (r *InterviewStructuredRepository) GetInterviewChatByID(ctx context.Context
 }
 
 func (r *InterviewStructuredRepository) convertToChat(result bson.M) *models.InterviewStructuredChat {
-	var id, userID, field string
+	var id, userID, field, preferredLanguage string
 	var createdAt, updatedAt time.Time
 	var currentQuestion int
 	var isCompleted bool
@@ -91,6 +92,10 @@ func (r *InterviewStructuredRepository) convertToChat(result bson.M) *models.Int
 	
 	if f, ok := result["field"].(string); ok {
 		field = f
+	}
+
+	if pl, ok := result["preferred_language"].(string); ok {
+		preferredLanguage = pl
 	}
 
 	if ca, ok := result["created_at"].(primitive.DateTime); ok {
@@ -134,15 +139,16 @@ func (r *InterviewStructuredRepository) convertToChat(result bson.M) *models.Int
 	}
 
 	chat := &models.InterviewStructuredChat{
-		ID:              id,
-		UserID:          userID,
-		Field:           field,
-		Questions:       questions,
-		UserProfile:     userProfile,
-		CurrentQuestion: currentQuestion,
-		IsCompleted:     isCompleted,
-		CreatedAt:       createdAt,
-		UpdatedAt:       updatedAt,
+		ID:                id,
+		UserID:            userID,
+		Field:             field,
+		PreferredLanguage: preferredLanguage,
+		Questions:         questions,
+		UserProfile:       userProfile,
+		CurrentQuestion:   currentQuestion,
+		IsCompleted:       isCompleted,
+		CreatedAt:         createdAt,
+		UpdatedAt:         updatedAt,
 	}
 
 	// Convert messages
@@ -249,6 +255,7 @@ func (r *InterviewStructuredRepository) UpdateSessionState(ctx context.Context, 
 
 	return nil
 }
+
 
 func (r *InterviewStructuredRepository) GetInterviewChatsByUserID(ctx context.Context, userID string) ([]*models.InterviewStructuredChat, error) {
 	filter := bson.M{"user_id": userID}
