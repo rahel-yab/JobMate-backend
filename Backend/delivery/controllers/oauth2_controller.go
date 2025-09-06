@@ -77,12 +77,13 @@ func (ctrl *OAuth2Controller) HandleCallback(c *gin.Context) {
 		"firstName": result.User.FirstName,
 		"lastName":  result.User.LastName,
 		"provider":  result.User.Provider,
+		"access_token":result.AccessToken,
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":      "OAuth login successful",
-		"access_token": result.AccessToken,            // return in response
-		"expires_in":   result.ExpiresIn.Seconds(),
-		"user":         safeUser,
+
+		"message": "login successful",
+		"user":    safeUser,
+
 	})
 }

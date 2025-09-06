@@ -42,8 +42,7 @@ type User struct {
 	CareerInterests   *string
 	CareerGoals       *string
 	ProfilePicture    *string
-	RefreshToken   	  *string
-	AccessToken       *string
+
 	OTP               *string
 	// LastActiveAt      time.Time
 	CreatedAt         time.Time
