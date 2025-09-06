@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:job_mate/core/presentation/routes.dart';
+import 'package:job_mate/features/auth/presentation/pages/home_page.dart';
 
 import 'package:job_mate/features/auth/presentation/pages/splash_screen.dart';
 import 'package:job_mate/features/auth/presentation/pages/login_page.dart';
@@ -22,6 +23,11 @@ final GoRouter router = GoRouter(
       path: Routes.cvAnalysis,
       builder: (context, state) => const CvAnalysisPage(),
     ),
+    GoRoute(
+      path: Routes.home,
+      builder: (context, state) => const HomePage(),
+    ),
+
     
   ],
 );

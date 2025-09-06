@@ -4,12 +4,21 @@ import 'package:file_picker/file_picker.dart';
 import 'package:job_mate/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:job_mate/features/cv/data/datasources/local/profile_local_data_source_impl.dart';
 import 'package:job_mate/features/cv/domain/entities/cv_feedback.dart';
-import 'package:job_mate/features/cv/presentation/bloc/cv_bloc.dart';
-import 'package:job_mate/features/cv/presentation/bloc/cv_event.dart';
-import 'package:job_mate/features/cv/presentation/bloc/cv_state.dart';
+import 'package:job_mate/features/cv/domain/entities/chat_session.dart';
+import 'package:job_mate/features/cv/domain/entities/chat_message.dart';
+import 'package:job_mate/features/cv/domain/entities/suggestion.dart';
+import 'package:job_mate/features/cv/presentation/bloc/cv/cv_bloc.dart';
+import 'package:job_mate/features/cv/presentation/bloc/cv/cv_event.dart';
+import 'package:job_mate/features/cv/presentation/bloc/cv/cv_state.dart';
+import 'package:job_mate/features/cv/presentation/bloc/cv_chat/cv_chat_bloc.dart';
+import 'package:job_mate/features/cv/presentation/bloc/cv_chat/cv_chat_event.dart';
+
 import 'package:job_mate/features/cv/presentation/widgets/chat_header.dart';
 import 'package:job_mate/features/cv/presentation/widgets/cv_input_widget.dart';
 import 'package:job_mate/features/cv/presentation/widgets/file_upload_widget.dart';
+
+import 'package:job_mate/features/cv/presentation/widgets/message_input.dart';
+import 'package:job_mate/features/cv/presentation/widgets/suggestion_card.dart';
 import 'package:job_mate/features/auth/data/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,19 +29,27 @@ class CvAnalysisPage extends StatefulWidget {
   State<CvAnalysisPage> createState() => _CvAnalysisPageState();
 }
 
-class _CvAnalysisPageState extends State<CvAnalysisPage>
-    with SingleTickerProviderStateMixin {
+class _CvAnalysisPageState extends State<CvAnalysisPage> {
   bool isTextMode = true;
   final TextEditingController _textController = TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
   String? uploadedFilePath;
   String? userId;
   bool isLoadingUserId = true;
-  final List<CvFeedback> _feedbackHistory = []; // store multiple analyses
+  final List<CvFeedback> _feedbackHistory = [];
+  bool showUploadBox = true; // Toggle for upload box visibility
+  String? currentChatId; // Current chat ID
+  List<ChatSession> chatSessions = []; // List of all chat sessions
+  List<ChatMessage> chatMessages = []; // Messages for current chat
+  Suggestion? suggestions; // Suggestions data
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadUserId());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserId();
+      context.read<CvChatBloc>().add(GetAllCvChatSessionsEvent()); // Load all chat sessions
+    });
     _textController.addListener(() {
       setState(() {});
     });
@@ -78,9 +95,101 @@ class _CvAnalysisPageState extends State<CvAnalysisPage>
     }
   }
 
+  void _toggleUploadBox() {
+    setState(() => showUploadBox = !showUploadBox);
+  }
+
+  void _sendMessage() {
+    final message = _messageController.text.trim();
+    if (message.isNotEmpty && currentChatId != null) {
+      context.read<CvChatBloc>().add(SendCvChatMessageEvent(
+            chatId: currentChatId!,
+            message: message,
+            cvId: null,
+          ));
+      _messageController.clear();
+    }
+  }
+
+  void _selectChat(ChatSession chat) {
+    setState(() {
+      currentChatId = chat.chatId;
+      chatMessages = chat.messages ?? [];
+    });
+    context.read<CvChatBloc>().add(GetCvChatHistoryEvent(chat.chatId));
+  }
+
+  void _openChatHistory(BuildContext context) {
+    Scaffold.of(context).openDrawer();
+  }
+
+  // -----------------------
+  // UI HELPERS
+  // -----------------------
+
+  Widget _buildUploadBox() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(width: 44),
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            margin: const EdgeInsets.only(top: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEAF6F4),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: const [
+                    Icon(Icons.description, color: Color(0xFF005148)),
+                    SizedBox(width: 8),
+                    Text("CV Analysis",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Mode toggle
+                Row(
+                  children: [
+                    _modeButton("Type/Paste", isTextMode, () {
+                      setState(() => isTextMode = true);
+                    }),
+                    const SizedBox(width: 10),
+                    _modeButton("Upload File", !isTextMode, () {
+                      setState(() => isTextMode = false);
+                    }),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                isTextMode
+                    ? CvInputWidget(controller: _textController)
+                    : FileUploadWidget(
+                        filePath: uploadedFilePath,
+                        onPickFile: _pickFile,
+                      ),
+
+                const SizedBox(height: 16),
+
+                _analyzeButton(),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _feedbackBubble(CvFeedback feedback) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20.0), // spacing between results
+      padding: const EdgeInsets.only(bottom: 20.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -138,8 +247,8 @@ class _CvAnalysisPageState extends State<CvAnalysisPage>
   Widget _typingBubble() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const CircleAvatar(
+      children: const [
+        CircleAvatar(
           radius: 20,
           backgroundColor: Color(0xFF144A3F),
           child: Text('JM',
@@ -148,21 +257,10 @@ class _CvAnalysisPageState extends State<CvAnalysisPage>
                 fontWeight: FontWeight.bold,
               )),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEAF6F4),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: const [
-                Text("Analyzing your CV"),
-                SizedBox(width: 8),
-                AnimatedDots(), // custom animated typing dots
-              ],
-            ),
+          child: SizedBox(
+            child: Text("✍️ Analyzing your CV..."),
           ),
         ),
       ],
@@ -231,7 +329,6 @@ class _CvAnalysisPageState extends State<CvAnalysisPage>
           const SizedBox(height: 4),
           ...validGaps.map((gap) {
             final lines = <String>[];
-
             if (gap.skillName != null && gap.skillName!.isNotEmpty) {
               String levelInfo = '';
               if (gap.currentLevel != null) {
@@ -244,7 +341,6 @@ class _CvAnalysisPageState extends State<CvAnalysisPage>
               lines.add(
                   "• ${gap.skillName}${levelInfo.isNotEmpty ? ' ($levelInfo)' : ''}");
             }
-
             if (gap.importance != null && gap.importance!.isNotEmpty) {
               lines.add("   Importance: ${gap.importance}");
             }
@@ -252,7 +348,6 @@ class _CvAnalysisPageState extends State<CvAnalysisPage>
                 gap.improvementSuggestions!.isNotEmpty) {
               lines.add("   Suggestions: ${gap.improvementSuggestions}");
             }
-
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Column(
@@ -323,6 +418,34 @@ class _CvAnalysisPageState extends State<CvAnalysisPage>
     );
   }
 
+  Widget _bottomNavBar() {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      currentIndex: 0,
+      onTap: _onBottomItemTapped,
+      selectedItemColor: const Color(0xFF0A8C6D),
+      unselectedItemColor: Colors.black,
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.description_outlined),
+          label: 'CV',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.work_outline),
+          label: 'Jobs',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.chat_bubble_outline),
+          label: 'Interview',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.star_border),
+          label: 'Skills',
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -330,6 +453,28 @@ class _CvAnalysisPageState extends State<CvAnalysisPage>
       appBar: ChatHeader(
         onBack: () => Navigator.pop(context),
         onToggleLanguage: () {},
+        onShowHistory: () => _openChatHistory(context),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Color(0xFF144A3F)),
+              child: Text('Your CV Chats',
+                  style: TextStyle(color: Colors.white)),
+            ),
+            ...chatSessions.map((chat) => ListTile(
+      title: Text("Chat ${chat.chatId}"), // ✅ fixed
+      subtitle: Text("Updated: ${chat.updatedAt.toLocal()}"),
+      onTap: () {
+        Navigator.pop(context);
+        _selectChat(chat);
+      },
+)),
+
+          ],
+        ),
       ),
       body: BlocConsumer<CvBloc, CvState>(
         listener: (context, state) {
@@ -339,189 +484,123 @@ class _CvAnalysisPageState extends State<CvAnalysisPage>
           }
           if (state is CvUploaded) {
             context.read<CvBloc>().add(AnalyzeCvEvent(state.details.cvId));
+            setState(() => showUploadBox = false);
           }
           if (state is CvAnalyzed) {
             setState(() => _feedbackHistory.insert(0, state.feedback));
           }
         },
         builder: (context, state) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-            child: Column(
+          return Column(
+  children: [
+    // Main scrollable area (messages + feedback)
+    Expanded(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Greeting
+            Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // System greeting
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Color(0xFF144A3F),
-                      child: Text('JM',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          )),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEAF6F4),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          'I would be happy to help you with your CV.\n'
-                          'You can upload your current CV or describe your background below.',
-                          style: TextStyle(fontSize: 14),
-                        ),
-                      ),
-                    ),
-                  ],
+                const CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Color(0xFF144A3F),
+                  child: Text('JM',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      )),
                 ),
-
-                const SizedBox(height: 20),
-
-                // Input box
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(width: 44),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        margin: const EdgeInsets.only(top: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEAF6F4),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: const [
-                                Icon(Icons.description,
-                                    color: Color(0xFF005148)),
-                                SizedBox(width: 8),
-                                Text("CV Analysis",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16)),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-
-                            // Mode toggle
-                            Row(
-                              children: [
-                                _modeButton("Type/Paste", isTextMode, () {
-                                  setState(() => isTextMode = true);
-                                }),
-                                const SizedBox(width: 10),
-                                _modeButton("Upload File", !isTextMode, () {
-                                  setState(() => isTextMode = false);
-                                }),
-                              ],
-                            ),
-
-                            const SizedBox(height: 16),
-
-                            isTextMode
-                                ? CvInputWidget(controller: _textController)
-                                : FileUploadWidget(
-                                    filePath: uploadedFilePath,
-                                    onPickFile: _pickFile,
-                                  ),
-
-                            const SizedBox(height: 16),
-
-                            _analyzeButton(),
-                          ],
-                        ),
-                      ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEAF6F4),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ],
+                    child: const Text(
+                      'I would be happy to help you with your CV.\n'
+                      'You can upload your current CV or describe your background below.',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ),
                 ),
-
-                const SizedBox(height: 20),
-
-                if (state is CvLoading) _typingBubble(),
-
-                // Show all feedbacks with spacing
-                ..._feedbackHistory.map((f) => _feedbackBubble(f)),
               ],
             ),
-          );
+
+            const SizedBox(height: 20),
+
+            if (showUploadBox) _buildUploadBox(),
+
+            if (!showUploadBox) ...[
+              if (state is CvLoading) _typingBubble(),
+              ..._feedbackHistory.map((f) => _feedbackBubble(f)),
+
+              if (suggestions != null)
+                SuggestionCard(
+                  suggestion: suggestions!,
+                  onTap: (s) => _messageController.text = s,
+                ),
+            ],
+          ],
+        ),
+      ),
+    ),
+
+    // Fixed bottom actions (message input + reanalyze button)
+    if (!showUploadBox)
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 4,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            MessageInput(
+              controller: _messageController,
+              onSend: _sendMessage,
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+  onPressed: _toggleUploadBox,
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.teal, // Teal background
+    foregroundColor: Colors.white, // Text color
+    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Control width and height
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(8), // Slightly rounded corners
+    ),
+  ),
+  child: const Text(
+    "Reanalyze CV",
+    textAlign: TextAlign.center,
+    style: TextStyle(
+      fontSize: 16, // Adjust text size if needed
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+),
+
+          ],
+        ),
+      ),
+  ],
+);
+
         },
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: 0,
-        onTap: _onBottomItemTapped,
-        selectedItemColor: const Color(0xFF0A8C6D),
-        unselectedItemColor: Colors.black,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.description_outlined),
-            label: 'CV',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.work_outline),
-            label: 'Jobs',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            label: 'Interview',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.star_border),
-            label: 'Skills',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Simple animated 3-dot typing indicator
-class AnimatedDots extends StatefulWidget {
-  const AnimatedDots({super.key});
-
-  @override
-  State<AnimatedDots> createState() => _AnimatedDotsState();
-}
-
-class _AnimatedDotsState extends State<AnimatedDots>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: const Duration(seconds: 1))
-          ..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (_, __) {
-        int dotCount = (3 * _controller.value).floor() + 1;
-        return Text("." * dotCount,
-            style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF005148)));
-      },
+      bottomNavigationBar: _bottomNavBar(),
     );
   }
 }

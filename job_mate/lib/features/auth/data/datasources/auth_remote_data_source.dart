@@ -9,4 +9,5 @@ abstract class AuthRemoteDataSource {
   Future<void> logout();
   Future<void> requestOtp(String email);
   Future<AuthTokenModel> refreshToken();
+  Future<Map<String, dynamic>> googleLogin();
 }

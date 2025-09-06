@@ -8,7 +8,7 @@ import 'package:job_mate/features/cv/domain/entities/suggestion.dart';
 abstract class CvRepository {
   Future<Either<Failure,CvDetails>> uploadCv(String userId, String? rawText, String? filePath);
   Future<Either<Failure,CvFeedback>> analyzeCv(String cvId);
-  // Future<Either<Failure, Suggestion>> getSuggestions();
+  Future<Either<Failure, Suggestion>> getSuggestions();
 
 
 }

@@ -5,6 +5,7 @@ import 'package:job_mate/features/auth/data/datasources/auth_local_data_source.d
 import 'package:job_mate/features/cv/data/datasources/remote/cv_remote_data_source.dart';
 import 'package:job_mate/features/cv/data/models/cv_details_model.dart';
 import 'package:job_mate/features/cv/data/models/cv_feedback_model.dart';
+import 'package:job_mate/features/cv/data/models/suggestions_model.dart';
 import 'package:job_mate/features/cv/domain/entities/cv_details.dart';
 import 'package:job_mate/features/cv/domain/entities/cv_feedback.dart';
 import 'package:job_mate/features/cv/domain/entities/suggestion.dart';
@@ -194,36 +195,36 @@ class CvRemoteDataSourceImpl extends CvRemoteDataSource {
       throw ServerFailure('Failed to analyze CV: $e');
     }
   }
-  // @override
-  // Future<Suggestion> getSuggestions() async {
-  //   try {
-  //     final token = await authLocalDataSource.getAccessToken();
-  //     if (token == null) {
-  //       throw ServerFailure('No authentication token available');
-  //     }
+  @override
+  Future<Suggestion> getSuggestions() async {
+    try {
+      final token = await authLocalDataSource.getAccessToken();
+      if (token == null) {
+        throw ServerFailure('No authentication token available');
+      }
 
-  //     print('Sending getSuggestions request to ${dio.options.baseUrl}/cv/suggestions with token: $token');
-  //     final response = await dio.get(
-  //       '/cv/suggestions',
-  //       options: Options(
-  //         headers: {'Authorization': 'Bearer $token'},
-  //         receiveTimeout: const Duration(seconds: 30),
-  //         validateStatus: (status) {
-  //           print('getSuggestions status: $status');
-  //           return status != null && status < 500;
-  //         },
-  //       ),
-  //     );
+      print('Sending getSuggestions request to ${dio.options.baseUrl}/cv/suggestions with token: $token');
+      final response = await dio.get(
+        '/cv/suggestions',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+          receiveTimeout: const Duration(seconds: 30),
+          validateStatus: (status) {
+            print('getSuggestions status: $status');
+            return status != null && status < 500;
+          },
+        ),
+      );
 
-  //     print('Received getSuggestions response: ${response.statusCode} - ${jsonEncode(response.data)} - Headers: ${response.headers}');
-  //     if (response.data == null || response.data is! Map<String, dynamic>) {
-  //       throw ServerFailure('Unexpected getSuggestions response format: ${jsonEncode(response.data)}');
-  //     }
+      print('Received getSuggestions response: ${response.statusCode} - ${jsonEncode(response.data)} - Headers: ${response.headers}');
+      if (response.data == null || response.data is! Map<String, dynamic>) {
+        throw ServerFailure('Unexpected getSuggestions response format: ${jsonEncode(response.data)}');
+      }
 
-  //     return SuggestionModel.fromJson(response.data);
-  //   } catch (e) {
-  //     print('Error in getSuggestions: $e');
-  //     throw ServerFailure('Failed to get suggestions: $e');
-  //   }
-  // }
+      return SuggestionModel.fromJson(response.data);
+    } catch (e) {
+      print('Error in getSuggestions: $e');
+      throw ServerFailure('Failed to get suggestions: $e');
+    }
+  }
 }

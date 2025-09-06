@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_mate/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -33,17 +34,44 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  void _onGoogleLoginPressed() async {
+  const googleLoginUrl = 'https://jobmate-api-3wuo.onrender.com/oauth/google/login';
+  print('Attempting to launch Google OAuth URL: $googleLoginUrl');
+  try {
+    final canLaunch = await canLaunchUrl(Uri.parse(googleLoginUrl));
+    print('Can launch URL: $canLaunch');
+    if (canLaunch) {
+      print('Launching URL in external application');
+      await launchUrl(
+        Uri.parse(googleLoginUrl),
+        mode: LaunchMode.externalApplication,
+      );
+      print('URL launched successfully');
+    } else {
+      print('Cannot launch URL: $googleLoginUrl');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not launch Google login')),
+      );
+    }
+  } catch (e, stackTrace) {
+    print('Error launching Google login: $e\nStackTrace: $stackTrace');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error initiating Google login: $e')),
+    );
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
-            context.go('/cv-analysis');
+            context.go('/home');
           } else if (state is AuthError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
           }
         },
         builder: (context, state) {
@@ -76,7 +104,6 @@ class _LoginPageState extends State<LoginPage> {
                     ],
                   ),
                   const SizedBox(height: 32),
-
                   const Text(
                     "Welcome Back",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -156,15 +183,27 @@ class _LoginPageState extends State<LoginPage> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.teal,
                                 ),
-                                child:
-                                    isLoading
-                                        ? const CircularProgressIndicator(
-                                          color: Colors.white,
-                                        )
-                                        : const Text(
-                                          "Sign in",
-                                          style: TextStyle(color: Colors.white),
-                                        ),
+                                child: isLoading
+                                    ? const CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
+                                    : const Text(
+                                        "Sign in",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 48,
+                              child: OutlinedButton.icon(
+                                onPressed: isLoading ? null : _onGoogleLoginPressed,
+                                icon: Image.asset('assets/google_logo.png', height: 24), // Add Google logo asset
+                                label: const Text("Sign in with Google"),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Colors.grey),
+                                ),
                               ),
                             ),
                           ],

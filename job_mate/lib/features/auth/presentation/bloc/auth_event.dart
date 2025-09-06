@@ -21,3 +21,5 @@ class LoginEvent extends AuthEvent{
 }
 class LogoutEvent extends AuthEvent{}
 class RefreshTokenEvent extends AuthEvent{}
+class CheckAuthStatusEvent extends AuthEvent {}
+class GoogleLoginEvent extends AuthEvent {}

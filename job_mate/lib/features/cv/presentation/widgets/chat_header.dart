@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onBack;
   final VoidCallback onToggleLanguage;
+  final VoidCallback onShowHistory; // ✅ Added
 
   const ChatHeader({
     super.key,
     required this.onBack,
     required this.onToggleLanguage,
+    required this.onShowHistory, // ✅ Required
   });
 
   @override
@@ -45,6 +47,10 @@ class ChatHeader extends StatelessWidget implements PreferredSizeWidget {
         ],
       ),
       actions: [
+        IconButton(
+          icon: const Icon(Icons.history, color: Colors.black),
+          onPressed: onShowHistory, // ✅ History button
+        ),
         Padding(
           padding: const EdgeInsets.only(right: 12),
           child: TextButton.icon(

@@ -9,4 +9,5 @@ abstract class AuthRepository {
   Future<Either<Failure,User>> register(String email, String password, String otp);
   Future<Either<Failure,void>> logout();
   Future<Either<Failure,void>> requestOtp(String email);
+  Future<Either<Failure, User>> googleLogin();
 }

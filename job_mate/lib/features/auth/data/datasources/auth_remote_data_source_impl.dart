@@ -11,6 +11,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<Map<String, dynamic>> login(String email, String password) async {
+    
     try {
       final response = await dio.post(
         '/auth/login',
@@ -19,6 +20,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'password': password,
         },
       );
+      print('Received registration response: ${response.statusCode} - ${response.data}');
 
       if (response.statusCode == 200) {
         final userData = response.data['user'];
@@ -160,6 +162,44 @@ Future<UserModel> register(String email, String password, String otp) async {
         );
       }
       rethrow;
+    }
+  }
+  @override
+  Future<Map<String, dynamic>> googleLogin() async {
+    try {
+      // The backend redirects to Google's OAuth page, so we initiate the request
+      final response = await dio.get('/oauth/google/login');
+
+      // Since the backend handles the callback, we expect the response from the callback endpoint
+      // However, in practice, the browser handles the redirect, so this is more about initiating the flow
+      // We'll handle the actual response in the UI via a redirect handler
+      print('Google OAuth login response: ${response.statusCode} - ${response.data}');
+
+      if (response.statusCode == 200) {
+        final userData = response.data['user'];
+        final user = UserModel.fromJson(userData);
+        final authToken = AuthTokenModel(
+          accessToken: userData['auth_token'] ?? '', // Backend sets auth_token in cookies
+          expiresIn: DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3600,
+        );
+        return {
+          'user': user,
+          'authToken': authToken,
+        };
+      } else {
+        throw DioException(
+          requestOptions: response.requestOptions,
+          response: response,
+          message: 'Google OAuth login failed with status code: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      print('DioException during Google OAuth login: ${e.message}');
+      throw DioException(
+        requestOptions: e.requestOptions,
+        response: e.response,
+        message: 'Google OAuth login failed: ${e.message}',
+      );
     }
   }
 }

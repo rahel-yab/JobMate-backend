@@ -159,4 +159,24 @@ class AuthRepositoryImpl implements AuthRepository {
         return ServerFailure('Unknown error occurred: ${e.message}');
     }
   }
+  @override
+  Future<Either<Failure, User>> googleLogin() async {
+    if (await networkInfo.isConnected) {
+      try {
+        final response = await remoteDataSource.googleLogin();
+        final userModel = response['user'] as UserModel;
+        final authTokenModel = response['authToken'] as AuthTokenModel;
+
+        await localDataSource.cacheUser(userModel);
+        await localDataSource.cacheAuthToken(authTokenModel);
+        return Right(userModel);
+      } on DioException catch (e) {
+        return Left(_handleDioException(e));
+      } catch (e) {
+        return Left(ServerFailure('Unexpected error occurred: ${e.toString()}'));
+      }
+    } else {
+      return Left(NetworkFailure('No internet connection'));
+    }
+  }
 }

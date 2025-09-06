@@ -1,127 +1,217 @@
 import 'package:flutter/material.dart';
-import 'package:job_mate/core/presentation/routes.dart';
 import 'package:go_router/go_router.dart';
+import 'package:job_mate/core/presentation/routes.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  bool _isRefreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+    _controller.forward();
+  }
+
+  Future<void> _refresh() async {
+    setState(() => _isRefreshing = true);
+    await Future.delayed(const Duration(seconds: 1)); // Simulate data refresh
+    setState(() => _isRefreshing = false);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(100.0),
-        child: Container(
-          color: Colors.teal,
-          padding: const EdgeInsets.all(16.0),
+      backgroundColor: const Color(0xFFF5F9F8), // Light teal background
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        color: const Color(0xFF238471),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(onPressed: (){}, icon: Icon(Icons.arrow_back_ios_new)),
-              SizedBox(width: 8,),
-              const Text(
-                'Welcome Back',
-                style: TextStyle(
-                  color: Color.fromARGB(255, 122, 121, 121),
-                  fontSize: 16,
-                
-                ),
-                
-              ),
-              IconButton(onPressed: (){}, icon: Icon(Icons.person)),
-              SizedBox(width: 8,),
-              const Text(
-                'Abebe Kebede',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-                
-              ),
-              const SizedBox(height: 10),
-              // Placeholder for logo (replace with your actual logo image)
-              // Container(
-              //   height: 50,
-              //   width: 50,
-              //   color: Colors.white, // Replace with your logo image
-              //   child: const Center(child: Text('Logo')),
-              // ),
-              ClipRRect(
-                  borderRadius: BorderRadius.circular(30),
-                  child: Image.asset(
-                    'assets/logo.png',
-                    width: 150,
-                    height: 150,
+              // Top colored section with logo and animated welcome
+              Container(
+                width: double.infinity,
+                color: const Color(0xFF238471),
+                padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 24),
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/logo.png', // Replace with your logo path
+                        height: 90,
+                      ),
+                      const SizedBox(height: 15),
+                      const Text(
+                        'Welcome to JobMate',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 5),
+                      const Text(
+                        'Your AI Career Companion',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white70,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
+              ),
+              const SizedBox(height: 30),
+              // "What would you like to do?" text with animation
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: const Text(
+                    'What would you like to do?',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF144A3F),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 25),
+              // Feature cards with pull-to-refresh and animation
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  padding: const EdgeInsets.all(8),
+                  child: GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 20,
+                    mainAxisSpacing: 20,
+                    childAspectRatio: 0.75, // Adjusted for taller cards
+                    children: [
+                      _buildFeatureCard(
+                        context,
+                        title: 'CV Analysis',
+                        description: 'Get AI feedback on your resume',
+                        icon: Icons.description,
+                        route: Routes.cvAnalysis,
+                      ),
+                      _buildFeatureCard(
+                        context,
+                        title: 'Job Search',
+                        description: 'Find perfect job matches',
+                        icon: Icons.work_outline,
+                        route: Routes.jobSearch,
+                      ),
+                      _buildFeatureCard(
+                        context,
+                        title: 'Interview Prep',
+                        description: 'Practice with AI mock interviews',
+                        icon: Icons.record_voice_over,
+                        route: Routes.interviewPrep,
+                      ),
+                      _buildFeatureCard(
+                        context,
+                        title: 'Skill Boost',
+                        description: 'Get personalized learning plan',
+                        icon: Icons.school,
+                        route: Routes.home, // Replace with real route if exists
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
             ],
           ),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'What would you like to do?',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 1.5,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                _buildCard(context,'CV Analysis', 'Get feedback on your resume',Routes.cvAnalysis),
-                _buildCard(context,'Job Search', 'Find perfect job matches','/job-serach'),
-                _buildCard(context,'Interview Prep', 'Practice with mock interviews','/interview-prep'),
-                _buildCard(context,'Skill Boost', 'Get personalized learning plan','/skill-boost'),
-              ],
-            ),
-          ],
         ),
       ),
     );
   }
 
-  Widget _buildCard(BuildContext context, String title, String subtitle, String route) {
-    return InkWell(
+  Widget _buildFeatureCard(
+    BuildContext context, {
+    required String title,
+    required String description,
+    required IconData icon,
+    required String route,
+  }) {
+    return GestureDetector(
       onTap: () {
-        context.pushNamed(route);
+        setState(() {
+          // Trigger a slight scale-up animation on tap
+        });
+        context.go(route);
       },
-      child: Card(
-        elevation: 4,
-        color: Colors.green[50],
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                title,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 40, color: const Color(0xFF238471)),
+            const SizedBox(height: 15),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF144A3F),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+            Flexible(
+              child: Text(
+                description,
                 style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: Color.fromARGB(255, 70, 70, 70),
                 ),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                subtitle,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 3,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

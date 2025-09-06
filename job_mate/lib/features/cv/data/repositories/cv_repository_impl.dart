@@ -44,17 +44,17 @@ class CvRepositoryImpl implements CvRepository{
       return Left(ServerFailure('Upload CV failed: $e'));
     }
   }
-  // @override
-  // Future<Either<Failure, Suggestion>> getSuggestions() async {
-  //   if (await networkInfo.isConnected) {
-  //     try {
-  //       final suggestions = await remoteDataSource.getSuggestions();
-  //       return Right(suggestions);
-  //     } catch (e) {
-  //       return Left(ServerFailure('Get suggestions failed: $e'));
-  //     }
-  //   } else {
-  //     return Left(NetworkFailure('No internet connection'));
-  //   }
-  // }
+  @override
+  Future<Either<Failure, Suggestion>> getSuggestions() async {
+    if (await networkInfo.isConnected) {
+      try {
+        final suggestions = await remoteDataSource.getSuggestions();
+        return Right(suggestions);
+      } catch (e) {
+        return Left(ServerFailure('Get suggestions failed: $e'));
+      }
+    } else {
+      return Left(NetworkFailure('No internet connection'));
+    }
+  }
 }
