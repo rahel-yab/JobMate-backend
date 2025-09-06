@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:job_mate/core/presentation/routes.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(100.0),
@@ -18,9 +21,9 @@ class HomePage extends StatelessWidget {
             children: [
               IconButton(onPressed: (){}, icon: Icon(Icons.arrow_back_ios_new)),
               SizedBox(width: 8,),
-              const Text(
-                'Welcome Back',
-                style: TextStyle(
+              Text(
+                l10n.welcomeBack,
+                style: const TextStyle(
                   color: Color.fromARGB(255, 122, 121, 121),
                   fontSize: 16,
                 
@@ -63,9 +66,9 @@ class HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'What would you like to do?',
-              style: TextStyle(
+            Text(
+              l10n.whatWouldYouLikeToDo,
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -79,10 +82,10 @@ class HomePage extends StatelessWidget {
               childAspectRatio: 1.5,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                _buildCard(context,'CV Analysis', 'Get feedback on your resume',Routes.cvAnalysis),
-                _buildCard(context,'Job Search', 'Find perfect job matches','/job-serach'),
-                _buildCard(context,'Interview Prep', 'Practice with mock interviews','/interview-prep'),
-                _buildCard(context,'Skill Boost', 'Get personalized learning plan','/skill-boost'),
+                _buildCard(context, l10n.cvAnalysis, l10n.getFeedbackOnResume, Routes.cvAnalysis),
+                _buildCard(context, l10n.jobSearch, l10n.findPerfectJobMatches, '/job-serach'),
+                _buildCard(context, l10n.interviewPrep, l10n.practiceWithMockInterviews, '/interview-prep'),
+                _buildCard(context, l10n.skillBoost, l10n.getPersonalizedLearningPlan, '/skill-boost'),
               ],
             ),
           ],
