@@ -49,4 +49,5 @@ type User struct {
 	UpdatedAt         time.Time
 
 	Provider          string
+	Skills 		      []string
 }

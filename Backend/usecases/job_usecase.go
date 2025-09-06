@@ -2,10 +2,9 @@ package usecases
 
 import (
 	"context"
-	"time"
-
+	
 	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
-	interfaces "github.com/tsigemariamzewdu/JobMate-backend/domain/interfaces/services"
+	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/ai_service"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/job_service"
 	"github.com/tsigemariamzewdu/JobMate-backend/repositories"
 )
@@ -13,67 +12,63 @@ import (
 type JobUsecase struct {
 	JobService   *job_service.JobService
 	JobChatRepo  *repositories.JobChatRepository
-	AIService    interfaces.IAIService
+	JobAIService *ai_service.JobAIService
 }
 
-func NewJobUsecase(jobService *job_service.JobService, jobChatRepo *repositories.JobChatRepository, aiService interfaces.IAIService) *JobUsecase {
+func NewJobUsecase(jobService *job_service.JobService, jobChatRepo *repositories.JobChatRepository, jobAIService *ai_service.JobAIService) *JobUsecase {
 	return &JobUsecase{
-		JobService:  jobService,
-		JobChatRepo: jobChatRepo,
-		AIService:   aiService,
+		JobService:   jobService,
+		JobChatRepo:  jobChatRepo,
+		JobAIService: jobAIService,
 	}
 }
 
-// SuggestJobs handles the full job chat flow: fetch jobs, store chat, call AI, return all
 func (uc *JobUsecase) SuggestJobs(ctx context.Context, userID string, req models.JobSuggestionRequest, chatMsgs []models.JobChatMessage) (jobs []models.Job, aiMessage string, msg string, chatID string, err error) {
-	// Fetch jobs
-	jobs, msg, err = uc.JobService.GetCuratedJobs(req.Field, req.LookingFor, req.Experience, req.Skills, req.Language)
-	if err != nil {
-		return nil, "", "No jobs found for your criteria", "", err
-	}
-
-	// Save or update job chat
-	query := map[string]any{
-		"looking_for": req.LookingFor,
-		"field":       req.Field,
-		"skills":      req.Skills,
-		"experience":  req.Experience,
-		"language":    req.Language,
-	}
-	chatID, _ = uc.JobChatRepo.CreateJobChat(ctx, userID, query, jobs, chatMsgs)
-
-	// Prepare AI messages
-	var aiMessages []interfaces.AIMessage
-	for _, m := range chatMsgs {
-		aiMessages = append(aiMessages, interfaces.AIMessage{
-			Role:    m.Role,
-			Content: m.Message,
-		})
-	}
-
-	// Add job results as a system message
-	if len(jobs) > 0 {
-		jobSummary := "Job search results:\n"
-		for _, job := range jobs {
-			jobSummary += "- " + job.Title + " at " + job.Company + " (" + job.Location + ")\n"
+	var messageContent string
+	if len(chatMsgs) > 0 {
+		messageContent = chatMsgs[len(chatMsgs)-1].Message
+	} else {
+		messageContent = "I want to search for " + req.Field + " " + req.LookingFor + " jobs"
+		if len(req.Skills) > 0 {
+			messageContent += " with skills: " + joinStrings(req.Skills)
 		}
-		aiMessages = append(aiMessages, interfaces.AIMessage{
-			Role:    "system",
-			Content: jobSummary,
-		})
+		if req.Experience != "" {
+			messageContent += " and " + req.Experience + " experience"
+		}
 	}
 
-	// Call AI service via adapter
-	aiResp, _ := uc.AIService.GetChatCompletion(ctx, aiMessages, nil)
-
-	// Save AI response to chat
-	if aiResp != nil {
-		_ = uc.JobChatRepo.AppendMessage(ctx, chatID, models.JobChatMessage{
-			Role:      "assistant",
-			Message:   aiResp.Content,
-			Timestamp: time.Now(),
-		})
+	response, err := uc.JobAIService.HandleJobConversation(ctx, userID, messageContent, "")
+	if err != nil {
+		return nil, "", "Failed to process job search", "", err
 	}
 
-	return jobs, aiResp.Content, msg, chatID, nil
+	return response.Jobs, response.Message, "Job search completed", response.ChatID, nil
+}
+
+func (uc *JobUsecase) Chat(ctx context.Context, userID string, message string, chatID string) (*models.JobAIResponse, error) {
+	return uc.JobAIService.HandleJobConversation(ctx, userID, message, chatID)
+}
+
+func (uc *JobUsecase) GetUserJobChats(ctx context.Context, userID string) ([]*models.JobChat, error) {
+	return uc.JobChatRepo.GetJobChatsByUserID(ctx, userID)
+}
+
+func (uc *JobUsecase) GetJobChat(ctx context.Context, chatID string) (*models.JobChat, error) {
+	return uc.JobChatRepo.GetJobChatByID(ctx, chatID)
+}
+
+func joinStrings(strs []string) string {
+	if len(strs) == 0 {
+		return ""
+	}
+	if len(strs) == 1 {
+		return strs[0]
+	}
+	
+	result := strs[0]
+	for i := 1; i < len(strs)-1; i++ {
+		result += ", " + strs[i]
+	}
+	result += " and " + strs[len(strs)-1]
+	return result
 }
