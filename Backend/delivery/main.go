@@ -71,6 +71,7 @@ func main() {
 	authMiddleware := authinfra.NewAuthMiddleware(jwtService)
 	oauthService, err := authinfra.NewOAuth2Service(providersConfigs)
 	aiService := ai_service.NewGeminiAISuggestionService("gemini-1.5-flash", cfg.AIApiKey)
+	jobAIService := ai_service.NewJobAIService(groqpkg.NewGroqClient(cfg), job_service.NewJobService(cfg.JobDataApiKey), userRepo, jobChatRepo)
 
 	textExtractor := file_parser.NewFileTextExtractor()
 
@@ -105,7 +106,7 @@ func main() {
 
 	// Job Matching feature
 	jobRepo := job_service.NewJobService(cfg.JobDataApiKey)
-	jobUsecase := usecases.NewJobUsecase(jobRepo, jobChatRepo, geminiClient)
+	jobUsecase := usecases.NewJobUsecase(jobRepo, jobChatRepo, jobAIService)
 
 	// Initialize controllers
 	otpController := controllers.NewOtpController(otpUsecase)
@@ -117,7 +118,7 @@ func main() {
 	cvChatController := controllers.NewCVChatController(cvChatUsecase)
 	interviewFreeformController := controllers.NewInterviewFreeformController(interviewFreeformUsecase)
 	interviewStructuredController := controllers.NewInterviewStructuredController(interviewStructuredUsecase)
-	jobController := controllers.NewJobController(jobUsecase, jobChatRepo, groqClient)
+	jobController := controllers.NewJobController(jobUsecase, jobChatRepo, groqClient, jobAIService)
 
 	// Setup router (add all controllers)
 	router := routes.SetupRouter(
