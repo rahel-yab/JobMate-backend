@@ -1,0 +1,228 @@
+{
+  "appTitle": "JobMate",
+  "@appTitle": {
+    "description": "The title of the JobMate application"
+  },
+  "welcomeMessage": "Hi! I'm JobMate, your career buddy!",
+  "@welcomeMessage": {
+    "description": "Welcome message shown when the app starts"
+  },
+  "howCanIHelp": "How can I help you today?",
+  "@howCanIHelp": {
+    "description": "Question asking how JobMate can assist the user"
+  },
+  "cvReview": "Review my CV",
+  "@cvReview": {
+    "description": "Button text for CV review feature"
+  },
+  "findJobs": "Find jobs",
+  "@findJobs": {
+    "description": "Button text for job search feature"
+  },
+  "practiceInterview": "Practice interview",
+  "@practiceInterview": {
+    "description": "Button text for interview practice feature"
+  },
+  "uploadCv": "Upload CV",
+  "@uploadCv": {
+    "description": "Button text for uploading CV file"
+  },
+  "describeBackground": "Describe your background",
+  "@describeBackground": {
+    "description": "Button text for describing background instead of uploading CV"
+  },
+  "cvFeedback": "CV Feedback",
+  "@cvFeedback": {
+    "description": "Title for CV feedback section"
+  },
+  "jobSuggestions": "Job Suggestions",
+  "@jobSuggestions": {
+    "description": "Title for job suggestions section"
+  },
+  "interviewQuestions": "Interview Questions",
+  "@interviewQuestions": {
+    "description": "Title for interview questions section"
+  },
+  "login": "Login",
+  "@login": {
+    "description": "Login button text"
+  },
+  "register": "Register",
+  "@register": {
+    "description": "Register button text"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "Email field label"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Password field label"
+  },
+  "submit": "Submit",
+  "@submit": {
+    "description": "Submit button text"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  "hello": "Hello {userName}",
+  "@hello": {
+    "description": "Greeting message with user name",
+    "placeholders": {
+      "userName": {
+        "type": "String",
+        "example": "John"
+      }
+    }
+  },
+  "cvImprovementTips": "Here are some tips to improve your CV:",
+  "@cvImprovementTips": {
+    "description": "Introduction text for CV improvement suggestions"
+  },
+  "jobOpportunities": "Here are some job opportunities for you:",
+  "@jobOpportunities": {
+    "description": "Introduction text for job opportunities"
+  },
+  "interviewPracticeMode": "Let's practice some interview questions!",
+  "@interviewPracticeMode": {
+    "description": "Introduction text for interview practice mode"
+  },
+  "welcomeBack": "Welcome Back",
+  "@welcomeBack": {
+    "description": "Welcome back message for returning users"
+  },
+  "whatWouldYouLikeToDo": "What would you like to do?",
+  "@whatWouldYouLikeToDo": {
+    "description": "Question asking what the user wants to do"
+  },
+  "cvAnalysis": "CV Analysis",
+  "@cvAnalysis": {
+    "description": "Title for CV analysis feature"
+  },
+  "getFeedbackOnResume": "Get feedback on your resume",
+  "@getFeedbackOnResume": {
+    "description": "Description for CV analysis feature"
+  },
+  "jobSearch": "Job Search",
+  "@jobSearch": {
+    "description": "Title for job search feature"
+  },
+  "findPerfectJobMatches": "Find perfect job matches",
+  "@findPerfectJobMatches": {
+    "description": "Description for job search feature"
+  },
+  "interviewPrep": "Interview Prep",
+  "@interviewPrep": {
+    "description": "Title for interview preparation feature"
+  },
+  "practiceWithMockInterviews": "Practice with mock interviews",
+  "@practiceWithMockInterviews": {
+    "description": "Description for interview preparation feature"
+  },
+  "skillBoost": "Skill Boost",
+  "@skillBoost": {
+    "description": "Title for skill improvement feature"
+  },
+  "getPersonalizedLearningPlan": "Get personalized learning plan",
+  "@getPersonalizedLearningPlan": {
+    "description": "Description for skill improvement feature"
+  },
+  "yourAiCareerBuddy": "Your AI Career Buddy",
+  "@yourAiCareerBuddy": {
+    "description": "App tagline"
+  },
+  "signInToContinue": "Sign in to continue your career journey",
+  "@signInToContinue": {
+    "description": "Sign in prompt message"
+  },
+  "dontHaveAccount": "Don't have an account?",
+  "@dontHaveAccount": {
+    "description": "Question for users without account"
+  },
+  "signUpHere": "Sign up here",
+  "@signUpHere": {
+    "description": "Link to sign up page"
+  },
+  "welcomeToJobmate": "Welcome to JobMate",
+  "@welcomeToJobmate": {
+    "description": "Welcome message for new users"
+  },
+  "createAccountToStart": "Create your account to start your career journey",
+  "@createAccountToStart": {
+    "description": "Sign up prompt message"
+  },
+  "firstName": "First Name",
+  "@firstName": {
+    "description": "First name field label"
+  },
+  "lastName": "Last Name",
+  "@lastName": {
+    "description": "Last name field label"
+  },
+  "confirmPassword": "Confirm Password",
+  "@confirmPassword": {
+    "description": "Confirm password field label"
+  },
+  "requestOtp": "Request OTP",
+  "@requestOtp": {
+    "description": "Request OTP button text"
+  },
+  "enterOtp": "Enter OTP",
+  "@enterOtp": {
+    "description": "OTP field label"
+  },
+  "alreadyHaveAccount": "Already have an account?",
+  "@alreadyHaveAccount": {
+    "description": "Question for existing users"
+  },
+  "signInHere": "Sign in here",
+  "@signInHere": {
+    "description": "Link to sign in page"
+  },
+  "cvHelpMessage": "I would be happy to help you with your CV.\nYou can upload your current CV or describe your background below.",
+  "@cvHelpMessage": {
+    "description": "CV analysis help message"
+  },
+  "cvTab": "CV",
+  "@cvTab": {
+    "description": "CV tab label"
+  },
+  "jobsTab": "Jobs",
+  "@jobsTab": {
+    "description": "Jobs tab label"
+  },
+  "interviewTab": "Interview",
+  "@interviewTab": {
+    "description": "Interview tab label"
+  },
+  "skillsTab": "Skills",
+  "@skillsTab": {
+    "description": "Skills tab label"
+  },
+  "comingSoon": "This section is coming soon",
+  "@comingSoon": {
+    "description": "Coming soon message"
+  },
+  "userNotAuthenticated": "User not authenticated. Please log in.",
+  "@userNotAuthenticated": {
+    "description": "Authentication error message"
+  },
+  "yourAiCareerCompanion": "Your AI Career Companion!",
+  "@yourAiCareerCompanion": {
+    "description": "Splash screen tagline"
+  },
+  "aiPowered": "AI powered",
+  "@aiPowered": {
+    "description": "AI powered feature description"
+  },
+  "careerFocus": "Career Focus",
+  "@careerFocus": {
+    "description": "Career focus feature description"
+  },
+  "pleaseEnterEmailFirst": "Please enter your email first",
+  "@pleaseEnterEmailFirst": {
+    "description": "Email validation message"
+  }
+}
