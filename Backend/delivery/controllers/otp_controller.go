@@ -2,12 +2,14 @@ package controllers
 
 import (
 	"context"
-	"github.com/tsigemariamzewdu/JobMate-backend/delivery/dto"
-	"github.com/tsigemariamzewdu/JobMate-backend/usecases"
-	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
+	"time"
 
-	"net/http"
+	"github.com/tsigemariamzewdu/JobMate-backend/delivery/dto"
+	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
+	"github.com/tsigemariamzewdu/JobMate-backend/usecases"
+
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -71,4 +73,4 @@ func (oc *OtpController) RequestPasswordResetOTP(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Password reset OTP sent to your email"})
-
+}
