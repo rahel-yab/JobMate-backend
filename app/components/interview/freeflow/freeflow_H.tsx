@@ -12,7 +12,13 @@ interface FreeformChatItem {
   subtitle?: string;
   updatedAt: string;
 }
-
+interface FreeformChat {
+  chat_id: string;
+  session_type: "General" | "Technical" | "Behavioral" | string; // can add other types if needed
+  last_message: string;
+  created_at: string;
+  updated_at: string;
+} 
 const texts = {
   en: {
     jobMate: "JobMate",
@@ -71,19 +77,19 @@ const FreeformHistory: React.FC = () => {
   const freeformHistory: FreeformChatItem[] =
     data?.data?.chats
       ?.filter(
-        (chat: any) =>
+        (chat: FreeformChat) =>
           chat.session_type === "General" ||
           chat.session_type === "Technical" ||
           chat.session_type === "Behavioral"
       )
-      .map((chat: any) => ({
+      .map((chat: FreeformChat) => ({
         id: chat.chat_id,
         title: chat.session_type,
         subtitle: chat.last_message || "",
         updatedAt: chat.updated_at,
       }))
       .sort(
-        (a: any, b: any) =>
+        (a: FreeformChatItem, b: FreeformChatItem) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       ) || [];
 

@@ -8,7 +8,19 @@ import {
   useGetFreeformUserChatsQuery,
   useGetStructuredUserChatsQuery,
 } from "@/lib/redux/api/interviewApi";
-
+;
+import type { FreeformChat } from "@/lib/redux/api/I_type";
+interface UserChat {
+  chat_id: string;
+  field: string;
+  user_profile: Record<string, unknown>;
+  current_question: number;
+  total_questions: number;
+  is_completed: boolean;
+  last_message: string;
+  created_at: string;
+  updated_at: string;
+}
 
 interface InterviewHistoryItem {
   id: string;
@@ -142,7 +154,7 @@ const InterviewPage: React.FC = () => {
 
   const structuredHistory: InterviewHistoryItem[] =
     structuredData?.data?.chats
-      ?.map((chat: any) => ({
+      ?.map((chat: UserChat) => ({
         id: chat.chat_id,
         type: chat.field,
         status: chat.is_completed ? "Completed" : "In Progress",
@@ -155,8 +167,8 @@ const InterviewPage: React.FC = () => {
       .slice(0, 2) || [];
 
   const freeformHistory: InterviewHistoryItem[] =
-    freeformData?.data
-      ?.chats?.map((chat: any) => ({
+    freeformData?.data?.chats
+      ?.map((chat: FreeformChat) => ({
         id: chat.chat_id,
         type: chat.session_type,
         updatedAt: chat.updated_at,

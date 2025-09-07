@@ -3,6 +3,14 @@
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useGetStructuredHistoryQuery } from "@/lib/redux/api/interviewApi";
+  // Add any other properties that messages have
+
+interface Message {
+  role: "user" | "assistant";
+  question_index: number;
+  content: string; // or text or whatever property holds the message content
+  // Add any other properties that messages have
+}
 
 const texts = {
   en: {
@@ -53,10 +61,10 @@ const StructuredsingleHistory: React.FC = () => {
   const structuredQA =
     chatHistory?.data?.questions?.map((question: string, index: number) => {
       const userMessage = chatHistory.data.messages.find(
-        (m: any) => m.role === "user" && m.question_index === index
+        (m: Message) => m.role === "user" && m.question_index === index
       );
       const assistantMessage = chatHistory.data.messages.find(
-        (m: any) => m.role === "assistant" && m.question_index === index
+        (m: Message) => m.role === "assistant" && m.question_index === index
       );
 
       return {

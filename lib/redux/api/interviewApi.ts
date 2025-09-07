@@ -1,5 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../store";
+import type {
+  GetFreeformUserChatsResponse,
+  GetStructuredUserChatsResponse,
+} from "./I_type";
 
 export const interviewApi = createApi({
   reducerPath: "interviewApi",
@@ -15,7 +19,6 @@ export const interviewApi = createApi({
       // console.log("Auth state in prepareHeaders:", state.auth);
       // //const token = (getState() as RootState).auth.accessToken;
       const token = state.auth.user?.acces_token; // ✅ correct path
-     
 
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
@@ -43,7 +46,7 @@ export const interviewApi = createApi({
     getFreeformHistory: builder.query({
       query: (chat_id) => `/interview/freeform/${chat_id}/history`,
     }),
-    getFreeformUserChats: builder.query<any, void>({
+    getFreeformUserChats: builder.query<GetFreeformUserChatsResponse, void>({
       query: () => "/interview/freeform/user/chats",
     }),
 
@@ -78,9 +81,11 @@ export const interviewApi = createApi({
       transformResponse: (response) => response.data, // unwrap the data directly
     }),
 
-    getStructuredUserChats: builder.query<any, void>({
-      query: () => "/interview/structured/user/chats",
-    }),
+    getStructuredUserChats: builder.query<GetStructuredUserChatsResponse, void>(
+      {
+        query: () => "/interview/structured/user/chats",
+      }
+    ),
   }),
 });
 

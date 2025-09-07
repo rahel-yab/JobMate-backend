@@ -7,6 +7,12 @@ interface Message {
   sender: "user" | "ai";
   text: string;
 }
+interface message {
+  id: string;
+  role: "user" | "assistant" | string;
+  content: string;
+  timestamp: string; // ISO date string
+}
 
 const texts = {
   en: {
@@ -60,9 +66,9 @@ const FreeformChatHistory: React.FC = () => {
 
   // Map API response to messages array
   const messages: Message[] =
-    data?.data?.messages.map((msg: any) => ({
+    data?.data?.messages.map((msg: message) => ({
       sender: msg.role === "assistant" ? "ai" : "user",
-      text: msg.content || msg.text || "",
+      text: msg.content || "",
     })) || [];
 
   // Handle error by alert + redirect
