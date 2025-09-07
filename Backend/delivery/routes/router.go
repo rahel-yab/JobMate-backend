@@ -22,7 +22,7 @@ func SetupRouter(authMiddleware *auth.AuthMiddleware,
 	router := gin.Default()
 
 	router.Use(middlewares.SetupCORS())
-	router.Use(middlewares.SecurityHeaders())
+	// router.Use(middlewares.SecurityHeaders())
 
 
 	// register user + auth routes
