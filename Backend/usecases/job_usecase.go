@@ -2,7 +2,8 @@ package usecases
 
 import (
 	"context"
-	
+	"fmt"
+
 	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/ai_service"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/job_service"
@@ -25,16 +26,21 @@ func NewJobUsecase(jobService *job_service.JobService, jobChatRepo *repositories
 
 func (uc *JobUsecase) SuggestJobs(ctx context.Context, userID string, req models.JobSuggestionRequest, chatMsgs []models.JobChatMessage) (jobs []models.Job, aiMessage string, msg string, chatID string, err error) {
 	var messageContent string
+	
 	if len(chatMsgs) > 0 {
 		messageContent = chatMsgs[len(chatMsgs)-1].Message
 	} else {
-		messageContent = "I want to search for " + req.Field + " " + req.LookingFor + " jobs"
+		messageContent = fmt.Sprintf("I want to find %s %s jobs", req.LookingFor, req.Field)
+		
 		if len(req.Skills) > 0 {
-			messageContent += " with skills: " + joinStrings(req.Skills)
+			messageContent += fmt.Sprintf(". I have skills in %s", joinStrings(req.Skills))
 		}
+		
 		if req.Experience != "" {
-			messageContent += " and " + req.Experience + " experience"
+			messageContent += fmt.Sprintf(" and I'm looking for %s level positions", req.Experience)
 		}
+		
+		messageContent += ". Please search for available jobs using your job search function."
 	}
 
 	response, err := uc.JobAIService.HandleJobConversation(ctx, userID, messageContent, "")
