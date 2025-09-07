@@ -1,13 +1,12 @@
 import React from "react";
 import GeneralChat from "@/app/components/general/generalChat";
 import Card from "@/app/components/jobSearch/Jobcard";
+import JobSearchChat from "@/app/components/jobSearch/jobSearchChat";
 
 const JobSearch = () => {
   return (
     <div>
-      <GeneralChat></GeneralChat>
-      <p>alsdgoas</p>
-      <Card />
+      <JobSearchChat></JobSearchChat>
     </div>
   );
 };
