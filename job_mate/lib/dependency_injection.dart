@@ -35,6 +35,15 @@ import 'package:job_mate/features/cv/domain/usecases/send_chat_message.dart';
 import 'package:job_mate/features/cv/domain/usecases/upload_cv.dart';
 import 'package:job_mate/features/cv/presentation/bloc/cv/cv_bloc.dart';
 import 'package:job_mate/features/cv/presentation/bloc/cv_chat/cv_chat_bloc.dart';
+import 'package:job_mate/features/job_search/data/datasource/remote/job_chat_remote_data_source.dart';
+import 'package:job_mate/features/job_search/data/datasource/remote/job_chat_remote_data_source_impl.dart';
+import 'package:job_mate/features/job_search/data/repositories/job_chat_repository_impl.dart';
+import 'package:job_mate/features/job_search/domain/repositories/job_chat_repository.dart';
+import 'package:job_mate/features/job_search/domain/usecases/get_all_chats.dart';
+import 'package:job_mate/features/job_search/domain/usecases/get_chat_by_id.dart';
+import 'package:job_mate/features/job_search/domain/usecases/send_chat_message.dart';
+
+import 'package:job_mate/features/job_search/presentation/bloc/job_search_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Interview Feature
@@ -66,8 +75,9 @@ Future<void> init() async {
     final dio = Dio();
     // dio.options.baseUrl = 'https://jobmate-api-3wuo.onrender.com';
     // dio.options.baseUrl = 'https://jobmate-api-0d1l.onrender.com';
-    dio.options.baseUrl = 'https://g6-jobmate-3.onrender.com';
-    // dio.options.connectTimeout = const Duration(seconds: 60);
+    // dio.options.baseUrl = 'https://g6-jobmate-3.onrender.com';
+    dio.options.baseUrl = 'https://jobmate-api-0d1l.onrender.com';
+    // dio.options.connectTimeout = const Duration(seconds: 60);R
     // dio.options.receiveTimeout = const Duration(seconds: 60);
     // dio.options.sendTimeout = const Duration(seconds: 60);
     return dio;
@@ -210,11 +220,14 @@ Future<void> init() async {
 
   // === Interview Feature ===
   // Local Data Source
-  sl.registerLazySingleton<InterviewLocalDataSource>(
-    () => InterviewLocalDataSourceImpl(
-      sl<SharedPreferences>(),
-      sharedPreferences: sl<SharedPreferences>(),
-    ),
+  // sl.registerLazySingleton<InterviewLocalDataSource>(
+  //   () => InterviewLocalDataSourceImpl(
+  //     sl<SharedPreferences>(),
+  //     preferences: sl<SharedPreferences>(),
+  //   ),
+  // );
+    sl.registerLazySingleton<InterviewLocalDataSource>(
+    () => InterviewLocalDataSourceImpl(prefs:sl<SharedPreferences>()),
   );
 
   // Remote Data Source
@@ -268,4 +281,34 @@ Future<void> init() async {
       getStructuredHistory: sl<GetStructuredHistory>(),
     ),
   );
+
+  // === Job Search Feature ===
+  // ... (previous registrations remain)
+
+sl.registerLazySingleton<JobChatRemoteDataSource>(
+  () => JobChatRemoteDataSourceImpl(
+    dio: sl<Dio>(),
+    authLocalDataSource: sl<AuthLocalDataSource>(),
+  ),
+);
+
+sl.registerLazySingleton<JobChatRepository>(
+  () => JobChatRepositoryImpl(
+    remoteDataSource: sl<JobChatRemoteDataSource>(),
+    networkInfo: sl<NetworkInfo>(),
+  ),
+);
+
+sl.registerLazySingleton<GetAllChats>(() => GetAllChats(sl<JobChatRepository>()));
+sl.registerLazySingleton<GetChatById>(() => GetChatById(sl<JobChatRepository>()));
+sl.registerLazySingleton<SendJobChatMessage>(() => SendJobChatMessage(sl<JobChatRepository>()));
+
+sl.registerFactory(
+  () => JobChatBloc(
+    getAllChats: sl<GetAllChats>(),
+    getChatById: sl<GetChatById>(),
+    // sendChatMessage: sl<SendChatMessage>(),
+    sendChatMessage: sl<SendJobChatMessage>(),
+  ),
+);
 }

@@ -150,12 +150,17 @@ class _InterviewPageState extends State<InterviewPage> {
       }
     });
   }
+  void _navigateToHome() {
+    // Navigate back to home using GoRouter
+    context.go(Routes.home);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: ChatHeader(
-        onBack: () => Navigator.pop(context),
+        // onBack: () => Navigator.pop(context),
+        onBack: _navigateToHome,
         onToggleLanguage: () {},
       ),
       body: Column(

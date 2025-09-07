@@ -7,7 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class InterviewLocalDataSourceImpl implements InterviewLocalDataSource {
   final SharedPreferences prefs;
-  InterviewLocalDataSourceImpl(this.prefs);
+  // InterviewLocalDataSourceImpl(this.prefs);
+  InterviewLocalDataSourceImpl({required this.prefs});
 
   static const String _freeformSessionsKey = 'interview_freeform_sessions';
   static const String _structuredSessionsKey = 'interview_structured_sessions';

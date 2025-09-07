@@ -8,6 +8,8 @@ import 'package:job_mate/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:job_mate/features/cv/presentation/bloc/cv/cv_bloc.dart';
 import 'package:job_mate/features/cv/presentation/bloc/cv_chat/cv_chat_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:job_mate/features/interview/presentation/blocs/interview_bloc.dart';
+import 'package:job_mate/features/job_search/presentation/bloc/job_search_bloc.dart';
 // import 'package:job_mate/features/auth/presentation/bloc/auth_bloc.dart';
 // <<<<<<< HEAD
 // import 'package:job_mate/features/cv/presentation/bloc/cv/cv_bloc.dart';
@@ -35,6 +37,8 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => di.sl<AuthBloc>()), // Check auth on startup
         BlocProvider(create: (_) => di.sl<CvBloc>()),
         BlocProvider(create: (_) => di.sl<CvChatBloc>()),
+        BlocProvider(create: (_) => di.sl<JobChatBloc>()),
+        BlocProvider(create: (_) => di.sl<InterviewBloc>()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:go_router/go_router.dart';
+import 'package:job_mate/core/presentation/routes.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:job_mate/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:job_mate/features/cv/data/datasources/local/profile_local_data_source_impl.dart';
@@ -653,6 +655,10 @@ class _CvAnalysisPageState extends State<CvAnalysisPage> {
       ],
     );
   }
+  void _navigateToHome() {
+    // Navigate back to home using GoRouter
+    context.go(Routes.home);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -703,7 +709,9 @@ class _CvAnalysisPageState extends State<CvAnalysisPage> {
         key: _scaffoldKey, // ADDED: Scaffold key for drawer access
         backgroundColor: Colors.white,
         appBar: ChatHeader(
-          onBack: () => Navigator.pop(context),
+          // onBack: () => Navigator.pop(context),
+          
+          onBack: _navigateToHome,
           onToggleLanguage: () {},
           onShowHistory: _openChatHistory, // CHANGED: Removed context parameter
         ),
