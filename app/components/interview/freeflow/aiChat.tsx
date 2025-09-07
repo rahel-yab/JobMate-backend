@@ -50,7 +50,7 @@ const FreeformChatPage: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const t = texts[language];
-  const { data: userChatsData, isLoading: chatsLoading } =
+  const { data: userChatsData,} =
     useGetFreeformUserChatsQuery();
  
 
