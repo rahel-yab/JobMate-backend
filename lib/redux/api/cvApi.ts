@@ -154,7 +154,7 @@ import { RootState } from "@/lib/redux/store";
     } else if (rawText) {
       // Raw text can be JSON
       return {
-        url: "/cv",
+        url: "/cv/",
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -206,6 +206,9 @@ import { RootState } from "@/lib/redux/store";
         method: "GET",
       }),
     }),
+      getSuggestions: builder.query<any, void>({
+      query: () => "/cv/suggestions",
+    }),
   }),
 });
 
@@ -216,4 +219,5 @@ export const {
   useSendMessageMutation,
   useGetUserChatsQuery,
   useGetChatHistoryQuery,
+  useGetSuggestionsQuery,
 } = cvApi;

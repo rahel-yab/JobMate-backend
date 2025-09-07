@@ -2,16 +2,34 @@
 
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CvIntroCard from "@/app/components/cv/CvIntroCard";
 import CvBenefitsCard from "@/app/components/cv/CvBenefitsCard";
 import CvHistoryCard from "@/app/components/cv/CvHistoryCard";
 import { useGetUserChatsQuery } from "@/lib/redux/api/cvApi";
 import CvExistingChat from "@/app/components/cv/CvExistingChat";
+import CvAdvisorCard from "../components/cv/CvAdvisorCard";
 
 export default function CvPage() {
   const { data: chats = [], isLoading, refetch } = useGetUserChatsQuery();
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
+
+  // On mount, check if there's a persisted chatId in sessionStorage
+  useEffect(() => {
+    const storedChatId = sessionStorage.getItem("selected_chat_id");
+    if (storedChatId) {
+      setSelectedChat(storedChatId);
+    }
+  }, []);
+
+  // Persist chatId whenever it changes
+  useEffect(() => {
+    if (selectedChat) {
+      sessionStorage.setItem("selected_chat_id", selectedChat);
+    } else {
+      sessionStorage.removeItem("selected_chat_id");
+    }
+  }, [selectedChat]);
 
   if (selectedChat) {
     return (
@@ -40,7 +58,7 @@ export default function CvPage() {
         {/* Intro and Benefits Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <CvIntroCard />
-          <CvBenefitsCard />
+          <CvAdvisorCard />
         </div>
 
         {/* Chat history preview */}

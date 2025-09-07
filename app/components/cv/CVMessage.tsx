@@ -1,5 +1,13 @@
 "use client";
 
+import {
+  CheckCircle,
+  ThumbsUp,
+  AlertTriangle,
+  Lightbulb,
+  Wrench,
+} from "lucide-react";
+
 type SkillGap = {
   skillName: string;
   currentLevel: number;
@@ -13,7 +21,7 @@ type CVMessageProps = {
   strengths: string;
   weaknesses: string;
   improvements: string;
-  skillGaps?: SkillGap[];
+  skillGaps?: SkillGap[] | null;
 };
 
 export default function CVMessage({
@@ -21,72 +29,83 @@ export default function CVMessage({
   strengths,
   weaknesses,
   improvements,
-  skillGaps = [],
+  skillGaps,
 }: CVMessageProps) {
+  const normalizedSkillGaps = skillGaps ?? [];
+
   return (
     <div className="flex items-start gap-3 max-w-[80%]">
+      {/* Placeholder avatar (like chat bubble style) */}
       <div className="h-7 w-7 p-3 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 text-xs"></div>
 
-      <div className="bg-[#DFF2EE] text-black px-6 py-4 rounded-2xl flex-1 shadow">
-        <div className="space-y-3">
-          <h3 className="font-bold text-[#217C6A]">📄 CV Analysis</h3>
+      {/* Main content */}
+      <div className="bg-white shadow rounded-xl p-6 space-y-6 flex-1">
+        {/* Header */}
+        <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <CheckCircle className="text-green-600 w-5 h-5" />
+          CV Analysis Complete
+          <span className="text-sm text-gray-500 ml-auto">AI Analysis</span>
+        </h2>
 
-          <div>
-            <p className="font-semibold">Summary:</p>
-            <p className="text-sm text-gray-700">{summary}</p>
-          </div>
-
-          <div>
-            <p className="font-semibold">✅ Strengths:</p>
-            <ul className="list-disc pl-5 text-sm text-gray-700">
-              <li>{strengths}</li>
-            </ul>
-          </div>
-
-          <div>
-            <p className="font-semibold">⚠️ Weaknesses:</p>
-            <ul className="list-disc pl-5 text-sm text-gray-700">
-              <li>{weaknesses}</li>
-            </ul>
-          </div>
-
-          <div>
-            <p className="font-semibold">💡 Improvements:</p>
-            <ul className="list-disc pl-5 text-sm text-gray-700">
-              <li>{improvements}</li>
-            </ul>
-          </div>
-
-          {skillGaps.length > 0 && (
-            <div>
-              <p className="font-semibold">🛠 Skill Gaps:</p>
-              <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-                {skillGaps.map((gap, idx) => (
-                  <li key={idx} className="flex flex-col">
-                    <div>
-                      <strong>{gap.skillName}</strong> (Current:{" "}
-                      {gap.currentLevel}, Recommended: {gap.recommendedLevel})
-                    </div>
-                    <div
-                      className={`text-xs font-semibold mt-1 px-2 py-0.5 w-fit rounded-md ${
-                        gap.importance === "important"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {gap.importance === "important"
-                        ? "Important"
-                        : "Optional"}
-                    </div>
-                    <div className="text-sm text-gray-700 mt-1">
-                      {gap.improvementSuggestions}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+        {/* Strengths */}
+        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-md">
+          <h3 className="flex items-center gap-2 font-semibold text-green-700 mb-1">
+            <ThumbsUp className="w-4 h-4 text-green-600" />
+            Strengths
+          </h3>
+          <p className="text-gray-700 text-sm">{strengths}</p>
         </div>
+
+        {/* Weaknesses / Areas for Improvement */}
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
+          <h3 className="flex items-center gap-2 font-semibold text-red-700 mb-1">
+            <AlertTriangle className="w-4 h-4 text-red-600" />
+            Areas for Improvement
+          </h3>
+          <p className="text-gray-700 text-sm">{weaknesses}</p>
+        </div>
+
+        {/* Improvement Suggestions */}
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
+          <h3 className="flex items-center gap-2 font-semibold text-blue-700 mb-1">
+            <Lightbulb className="w-4 h-4 text-blue-600" />
+            Improvement Suggestions
+          </h3>
+          <p className="text-gray-700 text-sm">{improvements}</p>
+        </div>
+
+        {/* Skill Gaps */}
+        {normalizedSkillGaps.length > 0 && (
+          <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-md">
+            <h3 className="flex items-center gap-2 font-semibold text-purple-700 mb-2">
+              <Wrench className="w-4 h-4 text-purple-600" />
+              Skill Gaps Identified
+            </h3>
+            <ul className="list-disc pl-5 space-y-3 text-sm text-gray-700">
+              {normalizedSkillGaps.map((gap, idx) => (
+                <li key={idx} className="flex flex-col">
+                  <span className="font-semibold">{gap.skillName}</span>
+                  <span className="text-xs text-gray-600">
+                    Current: {gap.currentLevel}, Recommended:{" "}
+                    {gap.recommendedLevel}
+                  </span>
+                  <span
+                    className={`mt-1 px-2 py-0.5 text-xs w-fit rounded-md font-medium ${
+                      gap.importance === "important"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {gap.importance === "important" ? "Important" : "Optional"}
+                  </span>
+                  <p className="mt-1 text-gray-700">
+                    {gap.improvementSuggestions}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

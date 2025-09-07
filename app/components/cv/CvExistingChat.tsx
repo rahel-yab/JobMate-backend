@@ -27,12 +27,18 @@ export default function CvExistingChat({
   const [input, setInput] = useState("");
   const [cvId, setCvId] = useState<string | null>(null);
 
+  // Rehydrate cvId from localStorage on mount
+  useEffect(() => {
+    const storedCvId = localStorage.getItem("cv_id");
+    if (storedCvId) setCvId(storedCvId);
+  }, []);
+
   // Load messages + capture cvId from API
   useEffect(() => {
     if (data) {
       if (data.cv_id) {
         setCvId(data.cv_id);
-        localStorage.setItem("cv_id", data.cv_id); // optional persistence
+        localStorage.setItem("cv_id", data.cv_id); // persist for refresh
       }
 
       if (data.messages) {
@@ -47,12 +53,18 @@ export default function CvExistingChat({
     }
   }, [data]);
 
+  // Clear cvId from localStorage when leaving the page
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem("cv_id");
+    };
+  }, []);
+
   const handleSend = async () => {
     if (!input.trim()) return;
     const text = input;
     setInput("");
 
-    // Add user message locally
     const userMsg = {
       id: Date.now(),
       sender: "user",

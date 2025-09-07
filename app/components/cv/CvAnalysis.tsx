@@ -7,20 +7,19 @@ export default function CvAnalysisCard({
   onAnalyze,
   onChatInstead,
 }: {
-  onAnalyze: (data: { rawText?: string; file?: File }) => void;
+  onAnalyze: (data: { rawText?: string; file?: File }) => Promise<void>;
   onChatInstead: () => void;
 }) {
   const [mode, setMode] = useState<"paste" | "upload">("paste");
   const [text, setText] = useState("");
   const [error, setError] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false); // New loading state
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-
     if (!selectedFile) return;
 
-    // Allowed file extensions
     const allowedExtensions = [".pdf", ".docx"];
     const fileName = selectedFile.name.toLowerCase();
     const isValid = allowedExtensions.some((ext) => fileName.endsWith(ext));
@@ -31,7 +30,6 @@ export default function CvAnalysisCard({
       return;
     }
 
-    // Clear error if valid
     setError("");
     setFile(selectedFile);
   };
@@ -40,15 +38,25 @@ export default function CvAnalysisCard({
     document.getElementById("hiddenFileInput")?.click();
   };
 
-  const handleAnalyze = () => {
-    if (mode === "paste" && text.trim().length > 0) {
-      onAnalyze({ rawText: text });
-    } else if (mode === "upload" && file) {
-      onAnalyze({ file });
+  const handleAnalyze = async () => {
+    if (isDisabled || isAnalyzing) return; // prevent multiple clicks
+    setIsAnalyzing(true);
+
+    try {
+      if (mode === "paste" && text.trim().length > 0) {
+        await onAnalyze({ rawText: text });
+      } else if (mode === "upload" && file) {
+        await onAnalyze({ file });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
   const isDisabled =
+    isAnalyzing ||
     (mode === "paste" && text.trim().length <= 10) ||
     (mode === "upload" && !file);
 
@@ -121,7 +129,7 @@ export default function CvAnalysisCard({
           </div>
         )}
 
-        {/* Button */}
+        {/* Analyze Button */}
         <button
           onClick={handleAnalyze}
           disabled={isDisabled}
@@ -131,8 +139,9 @@ export default function CvAnalysisCard({
               : "hover:bg-[#217C6A] bg-[#195d50] text-white"
           }`}
         >
-          Analyze My CV
+          {isAnalyzing ? "Analyzing..." : "Analyze My CV"}
         </button>
+
         <button
           onClick={onChatInstead}
           className="w-full mt-3 font-semibold py-3 rounded-md transition bg-white border border-[#217C6A] text-[#217C6A] hover:bg-[#E6F4F1] flex items-center justify-center gap-2"

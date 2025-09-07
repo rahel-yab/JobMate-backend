@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from "react";
 import { formatTime } from "@/lib/utils";
 import CvWindow from "./CvWindow";
@@ -37,6 +37,13 @@ export default function CvChat() {
   const [startSession] = useStartSessionMutation();
   const [sendMessage] = useSendMessageMutation();
   const router = useRouter();
+
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem("cv_id");
+      localStorage.removeItem("cv_chat_id");
+    };
+  }, []);
 
   // upload
   const handleUpload = async (data: { rawText?: string; file?: File }) => {
@@ -75,17 +82,36 @@ export default function CvChat() {
   // analyze CV
   const handleAnalyze = async (id: string) => {
     const res = await analyzeCV(id).unwrap();
-    const { CVs, CVFeedback, SkillGaps } = res.details.suggestions;
+    console.log(res);
+
+    const suggestions = res.data?.suggestions;
+    if (!suggestions) {
+      console.warn("No suggestions found in response");
+      return;
+    }
+
+    const { CVs, CVFeedback, SkillGaps } = suggestions;
+
+    const normalizedSkillGaps = (SkillGaps || []).map((gap: any) => ({
+      skillName: gap.SkillName,
+      currentLevel: gap.CurrentLevel,
+      recommendedLevel: gap.RecommendedLevel,
+      importance:
+        gap.Importance?.toLowerCase() === "critical"
+          ? "important" // normalize "critical" → "important"
+          : gap.Importance?.toLowerCase(),
+      improvementSuggestions: gap.ImprovementSuggestions,
+    }));
 
     const cvMsg = {
       id: Date.now(),
       sender: "ai",
       type: "cv-analysis",
-      summary: CVs.summary, // ✅ camelCase
-      strengths: CVFeedback.strengths,
-      weaknesses: CVFeedback.weaknesses,
-      improvements: CVFeedback.improvementSuggestions,
-      skillGaps: SkillGaps,
+      summary: CVs?.Summary || "",
+      strengths: CVFeedback?.Strengths || "",
+      weaknesses: CVFeedback?.Weaknesses || "",
+      improvements: CVFeedback?.ImprovementSuggestions || "",
+      skillGaps: normalizedSkillGaps,
       time: formatTime(new Date()),
     };
 
@@ -118,11 +144,12 @@ export default function CvChat() {
     setMessages((prev) => [...prev, userMsg]);
 
     try {
-      const cv_id = localStorage.getItem("cv_id");
+      const cv_id = localStorage.getItem("cv_id") || "undefined";
       const cid = await ensureSession(cv_id);
       const res = await sendMessage({
         chat_id: cid,
         message: text,
+        cv_id,
       }).unwrap();
 
       const aiMsg = {
