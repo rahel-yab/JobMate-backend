@@ -18,7 +18,8 @@ export const interviewApi = createApi({
       const state = getState() as RootState;
       // console.log("Auth state in prepareHeaders:", state.auth);
       // //const token = (getState() as RootState).auth.accessToken;
-      const token = state.auth.user?.acces_token; // ✅ correct path
+      const token = state.auth.accessToken; // ✅ correct path
+      console.log("Token in prepareHeaders:", token);
 
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);

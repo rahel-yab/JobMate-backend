@@ -63,60 +63,70 @@ const FreeformChatPage: React.FC = () => {
     useGetFreeformUserChatsQuery();
  
 
-  useEffect(() => {
-    const startSession = async () => {
-      if (!userChatsData || sessionId) return; // ✅ Prevent duplicate creation on reload or lang change
+ useEffect(() => {
+   let isMounted = true;
+   let hasStarted = false;
 
-      try {
-        const userChats = userChatsData?.data?.chats;
+   const startSession = async () => {
+     if (!userChatsData || sessionId || hasStarted) return;
+     hasStarted = true;
 
-        if (Array.isArray(userChats)) {
-          const existingSession = userChats.find(
-            (chat: FreeformChat) => chat.session_type === sessionType
-          );
+     try {
+       const userChats = userChatsData?.data?.chats;
 
-          if (existingSession) {
-            setSessionId(existingSession.chat_id);
-            setMessages([
-              {
-                sender: "ai",
-                text:
-                  language === "en"
-                    ? "Welcome back! You can continue your conversation."
-                    : "እንኳን ደህና መጣችሁ! ቀደም ሲል ያለበትን ውይይት ይቀጥሉ።",
-              },
-            ]);
-          } else {
-            const res = await createSession({
-              user_id: "demo-user-id", // Replace with real user ID
-              session_type: sessionType,
-            }).unwrap();
+       if (!Array.isArray(userChats)) return;
 
-            const chatId = res?.data?.chat_id;
-            const initialMessage = res?.data?.message;
+       const existingSession = userChats.find(
+         (chat: FreeformChat) =>
+           chat.session_type.toLowerCase() === sessionType.toLowerCase()
+       );
 
-            if (chatId) {
-              setSessionId(chatId);
-              setMessages([
-                {
-                  sender: "ai",
-                  text:
-                    initialMessage ||
-                    (language === "en"
-                      ? "Hello! I'm your AI interview coach. What would you like to explore today?"
-                      : "ሰላም! እኔ የኤ.አይ ቃለ መጠይቅ አማራጭዎ ነኝ። ዛሬ ምን ማወቅ እፈልጋለሁ?"),
-                },
-              ]);
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Failed to start or load session:", error);
-      }
-    };
+       if (existingSession) {
+         if (!isMounted) return;
+         setSessionId(existingSession.chat_id);
+         setMessages([
+           {
+             sender: "ai",
+             text:
+               language === "en"
+                 ? "Welcome back! You can continue your conversation."
+                 : "እንኳን ደህና መጣችሁ! ቀደም ሲል ያለበትን ውይይት ይቀጥሉ።",
+           },
+         ]);
+       } else {
+         const res = await createSession({
+           user_id: "demo-user-id", // Replace this with real ID
+           session_type: sessionType,
+         }).unwrap();
 
-    startSession();
-  }, [userChatsData, sessionType]); 
+         const chatId = res?.data?.chat_id;
+         const initialMessage = res?.data?.message;
+
+         if (chatId && isMounted) {
+           setSessionId(chatId);
+           setMessages([
+             {
+               sender: "ai",
+               text:
+                 initialMessage ||
+                 (language === "en"
+                   ? "Hello! I'm your AI interview coach. What would you like to explore today?"
+                   : "ሰላም! እኔ የኤ.አይ ቃለ መጠይቅ አማራጭዎ ነኝ። ዛሬ ምን ማወቅ እፈልጋለሁ?"),
+             },
+           ]);
+         }
+       }
+     } catch (error) {
+       console.error("Failed to start or load session:", error);
+     }
+   };
+
+   startSession();
+
+   return () => {
+     isMounted = false;
+   };
+ }, [userChatsData, sessionType]);
 
   // useEffect(() => {
   //   const startSession = async () => {
@@ -253,7 +263,7 @@ const FreeformChatPage: React.FC = () => {
               <div
                 className={`max-w-xs md:max-w-md p-3 rounded-xl ${
                   msg.sender === "ai"
-                    ? "bg-[#f3f5f9] text-gray-800 rounded-bl-none"
+                    ? "bg-blue-100 text-gray-800 rounded-bl-none"
                     : "bg-blue-600 text-white rounded-br-none"
                 }`}
               >
