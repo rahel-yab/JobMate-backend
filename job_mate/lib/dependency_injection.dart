@@ -37,6 +37,23 @@ import 'package:job_mate/features/cv/presentation/bloc/cv/cv_bloc.dart';
 import 'package:job_mate/features/cv/presentation/bloc/cv_chat/cv_chat_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Interview Feature
+import 'package:job_mate/features/interview/data/datasources/interview_local_data_source.dart';
+import 'package:job_mate/features/interview/data/datasources/interview_local_data_source_impl.dart';
+import 'package:job_mate/features/interview/data/datasources/interview_remote_data_source.dart';
+import 'package:job_mate/features/interview/data/datasources/interview_remote_data_source_impl.dart';
+import 'package:job_mate/features/interview/data/repositories/interview_repository_impl.dart';
+import 'package:job_mate/features/interview/domain/repositories/interview_repository.dart';
+import 'package:job_mate/features/interview/domain/usecases/answer_structured_interview.dart';
+import 'package:job_mate/features/interview/domain/usecases/get_freeform_history.dart';
+import 'package:job_mate/features/interview/domain/usecases/get_structured_history.dart';
+import 'package:job_mate/features/interview/domain/usecases/get_user_freeform_chats.dart';
+import 'package:job_mate/features/interview/domain/usecases/get_user_structured_chats.dart';
+import 'package:job_mate/features/interview/domain/usecases/send_freeform_message.dart';
+import 'package:job_mate/features/interview/domain/usecases/start_freeform_session.dart';
+import 'package:job_mate/features/interview/domain/usecases/start_structured_interview.dart';
+import 'package:job_mate/features/interview/presentation/blocs/interview_bloc.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
@@ -95,8 +112,12 @@ Future<void> init() async {
   sl.registerLazySingleton<Register>(() => Register(sl<AuthRepository>()));
   sl.registerLazySingleton<Login>(() => Login(sl<AuthRepository>()));
   sl.registerLazySingleton<Logout>(() => Logout(sl<AuthRepository>()));
-  sl.registerLazySingleton<Refreshtoken>(() => Refreshtoken(sl<AuthRepository>()));
-  sl.registerLazySingleton<GoogleLogin>(() => GoogleLogin(sl<AuthRepository>()));
+  sl.registerLazySingleton<Refreshtoken>(
+    () => Refreshtoken(sl<AuthRepository>()),
+  );
+  sl.registerLazySingleton<GoogleLogin>(
+    () => GoogleLogin(sl<AuthRepository>()),
+  );
 
   // Auth Bloc
   sl.registerFactory(
@@ -105,7 +126,7 @@ Future<void> init() async {
       login: sl<Login>(),
       logout: sl<Logout>(),
       requestOtp: sl<RequestOtp>(),
-      refreshToken: sl<Refreshtoken>(), 
+      refreshToken: sl<Refreshtoken>(),
       googleLogin: sl<GoogleLogin>(),
     ),
   );
@@ -136,55 +157,115 @@ Future<void> init() async {
   sl.registerLazySingleton<AnalyzeCv>(() => AnalyzeCv(sl<CvRepository>()));
   sl.registerLazySingleton<UploadCv>(() => UploadCv(sl<CvRepository>()));
   sl.registerLazySingleton<GetSuggestions>(
-  () => GetSuggestions(sl<CvRepository>()),
-);
+    () => GetSuggestions(sl<CvRepository>()),
+  );
 
   // CV Bloc
   sl.registerFactory(
     () => CvBloc(
       uploadCv: sl<UploadCv>(),
-      analyzeCv: sl<AnalyzeCv>(), 
+      analyzeCv: sl<AnalyzeCv>(),
       getSuggestions: sl<GetSuggestions>(),
     ),
   );
   //cv chat
   sl.registerLazySingleton<CvChatRemoteDataSource>(
-  () => CvChatRemoteDataSourceImpl(
-    dio: sl<Dio>(),
-    authLocalDataSource: sl<AuthLocalDataSource>(),
-  ),
-);
+    () => CvChatRemoteDataSourceImpl(
+      dio: sl<Dio>(),
+      authLocalDataSource: sl<AuthLocalDataSource>(),
+    ),
+  );
 
-sl.registerLazySingleton<CvChatRepository>(
-  () => CvChatRepositoryImpl(
-    remoteDataSource: sl<CvChatRemoteDataSource>(),
-    networkInfo: sl<NetworkInfo>(),
-  ),
-);
+  sl.registerLazySingleton<CvChatRepository>(
+    () => CvChatRepositoryImpl(
+      remoteDataSource: sl<CvChatRemoteDataSource>(),
+      networkInfo: sl<NetworkInfo>(),
+    ),
+  );
 
-sl.registerLazySingleton<CreateChatSession>(
-  () => CreateChatSession(sl<CvChatRepository>()),
-);
+  sl.registerLazySingleton<CreateChatSession>(
+    () => CreateChatSession(sl<CvChatRepository>()),
+  );
 
-sl.registerLazySingleton<SendChatMessage>(
-  () => SendChatMessage(sl<CvChatRepository>()),
-);
+  sl.registerLazySingleton<SendChatMessage>(
+    () => SendChatMessage(sl<CvChatRepository>()),
+  );
 
-sl.registerLazySingleton<GetChatHistory>(
-  () => GetChatHistory(sl<CvChatRepository>()),
-);
+  sl.registerLazySingleton<GetChatHistory>(
+    () => GetChatHistory(sl<CvChatRepository>()),
+  );
 
-sl.registerLazySingleton<GetAllChatSessions>(
-  () => GetAllChatSessions(sl<CvChatRepository>()),
-);
+  sl.registerLazySingleton<GetAllChatSessions>(
+    () => GetAllChatSessions(sl<CvChatRepository>()),
+  );
 
-sl.registerFactory(
-  () => CvChatBloc(
-    createChatSession: sl<CreateChatSession>(),
-    sendChatMessage: sl<SendChatMessage>(),
-    getChatHistory: sl<GetChatHistory>(),
-    getAllChatSessions: sl<GetAllChatSessions>(),
-  ),
-);
+  sl.registerFactory(
+    () => CvChatBloc(
+      createChatSession: sl<CreateChatSession>(),
+      sendChatMessage: sl<SendChatMessage>(),
+      getChatHistory: sl<GetChatHistory>(),
+      getAllChatSessions: sl<GetAllChatSessions>(),
+    ),
+  );
+
+  // === Interview Feature ===
+  // Local Data Source
+  sl.registerLazySingleton<InterviewLocalDataSource>(
+    () => InterviewLocalDataSourceImpl(
+      sl<SharedPreferences>(),
+      sharedPreferences: sl<SharedPreferences>(),
+    ),
+  );
+
+  // Remote Data Source
+  sl.registerLazySingleton<InterviewRemoteDataSource>(
+    () => InterviewRemoteDataSourceImpl(dio: sl<Dio>()),
+  );
+
+  // Repository
+  sl.registerLazySingleton<InterviewRepository>(
+    () => InterviewRepositoryImpl(
+      localDataSource: sl<InterviewLocalDataSource>(),
+      remoteDataSource: sl<InterviewRemoteDataSource>(),
+      networkInfo: sl<NetworkInfo>(),
+    ),
+  );
+
+  // Usecases
+  sl.registerLazySingleton<StartFreeformSession>(
+    () => StartFreeformSession(sl<InterviewRepository>()),
+  );
+  sl.registerLazySingleton<SendFreeformMessage>(
+    () => SendFreeformMessage(sl<InterviewRepository>()),
+  );
+  sl.registerLazySingleton<GetFreeformHistory>(
+    () => GetFreeformHistory(sl<InterviewRepository>()),
+  );
+  sl.registerLazySingleton<StartStructuredInterview>(
+    () => StartStructuredInterview(sl<InterviewRepository>()),
+  );
+  sl.registerLazySingleton<AnswerStructuredInterview>(
+    () => AnswerStructuredInterview(sl<InterviewRepository>()),
+  );
+  sl.registerLazySingleton<GetStructuredHistory>(
+    () => GetStructuredHistory(sl<InterviewRepository>()),
+  );
+  sl.registerLazySingleton<GetUserFreeformChats>(
+    () => GetUserFreeformChats(sl<InterviewRepository>()),
+  );
+  sl.registerLazySingleton<GetUserStructuredChats>(
+    () => GetUserStructuredChats(sl<InterviewRepository>()),
+  );
+
+  // Bloc
+  sl.registerFactory(
+    () => InterviewBloc(
+      startFreeformSession: sl<StartFreeformSession>(),
+      sendFreeformMessage: sl<SendFreeformMessage>(),
+      getFreeformHistory: sl<GetFreeformHistory>(),
+      startStructuredInterview: sl<StartStructuredInterview>(),
+      answerStructuredInterview: sl<AnswerStructuredInterview>(),
+      getStructuredHistory: sl<GetStructuredHistory>(),
+    ),
+  );
 }
-

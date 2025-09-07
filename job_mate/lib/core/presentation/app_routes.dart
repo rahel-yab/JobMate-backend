@@ -6,6 +6,7 @@ import 'package:job_mate/features/auth/presentation/pages/splash_screen.dart';
 import 'package:job_mate/features/auth/presentation/pages/login_page.dart';
 import 'package:job_mate/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:job_mate/features/cv/presentation/pages/cv_analysis_page.dart';
+import 'package:job_mate/features/interview/presentation/pages/interview_chat_page.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: Routes.splashScreen,
@@ -23,11 +24,10 @@ final GoRouter router = GoRouter(
       path: Routes.cvAnalysis,
       builder: (context, state) => const CvAnalysisPage(),
     ),
+    GoRoute(path: Routes.home, builder: (context, state) => const HomePage()),
     GoRoute(
-      path: Routes.home,
-      builder: (context, state) => const HomePage(),
+      path: Routes.interviewPrep,
+      builder: (context, state) => const InterviewPage(),
     ),
-
-    
   ],
 );

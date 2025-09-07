@@ -4,6 +4,6 @@ class Routes {
   static const register = '/register';
   static const cvAnalysis = '/cv-analysis';
   static const home = '/home';
-  static const interviewPrep = '/interviewPrep';
+  static const interviewPrep = '/interview';
   static const jobSearch = '/jobSearch';
 }
