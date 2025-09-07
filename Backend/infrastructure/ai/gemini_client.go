@@ -76,9 +76,9 @@ type GeminiService struct {
 
 func NewGeminiService(cfg *config.Config) svc.IAIService {
 	return &GeminiService{
-		APIKey:      cfg.AIApiKey,
-		Model:       cfg.AIModelName,
-		BaseURL:     cfg.AIApiBaseUrl,
+		APIKey:      cfg.GeminiApiKey,
+		Model:       cfg.GeminiModelName,
+		BaseURL:     cfg.GeminiBaseUrl,
 		Temperature: cfg.AITemperature,
 		HTTPClient:  &http.Client{Timeout: 30 * time.Second},
 	}

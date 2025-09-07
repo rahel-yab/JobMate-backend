@@ -70,7 +70,7 @@ func main() {
 	passwordService := authinfra.NewPasswordService()
 	authMiddleware := authinfra.NewAuthMiddleware(jwtService)
 	oauthService, err := authinfra.NewOAuth2Service(providersConfigs)
-	aiService := ai_service.NewGeminiAISuggestionService("gemini-1.5-flash", cfg.AIApiKey)
+	aiService := ai_service.NewGeminiAISuggestionService(cfg.GeminiModelName, cfg.GeminiApiKey)
 	jobAIService := ai_service.NewJobAIService(groqpkg.NewGroqClient(cfg), job_service.NewJobService(cfg.JobDataApiKey), userRepo, jobChatRepo)
 
 	textExtractor := file_parser.NewFileTextExtractor()
