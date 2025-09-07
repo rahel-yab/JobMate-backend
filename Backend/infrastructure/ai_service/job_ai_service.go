@@ -214,12 +214,13 @@ func (s *JobAIService) processAIResponse(ctx context.Context, userID string, aiR
                     // Search for jobs
                     jobs, msg, err := s.JobService.GetCuratedJobs(field, lookingFor, experience, skills, language)
                     if err != nil {
-                        log.Printf("Job search failed: %v", err)
-                        response.Message += "\n\nSorry, I couldn't find any jobs at the moment. Please try again later."
+                        log.Printf("JOB SEARCH FAILED - Field: %s, LookingFor: %s, Error: %v", field, lookingFor, err)
+                        response.Message = "Sorry, I couldn't find any jobs matching your criteria. Please try different search terms."
                     } else {
+                        log.Printf("JOB SEARCH SUCCESS - Found %d jobs", len(jobs))
                         response.Jobs = jobs
-                        response.Message += "\n\n" + msg
-                        jobSearchPerformed = true  
+                        response.Message = "Here are the job opportunities I found:\n\n" + msg
+                        jobSearchPerformed = true
                     }
                 }
             }
