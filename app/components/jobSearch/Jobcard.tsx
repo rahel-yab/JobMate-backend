@@ -1,16 +1,28 @@
 import Link from "next/link";
+import CategoryItem from "./CategoryItem";
 import { FiBriefcase } from "react-icons/fi";
-interface cardProps {
+
+interface JobCardProps {
+  id?: string;
   title?: string;
   company?: string;
   location?: string;
-  description?: string;
-  categories?: string[];
   type?: string;
-  image?: string;
+  requirements?: string[];
   link?: string;
+  source?: string;
 }
-const Card = ({ title, company, location, description, link }: cardProps) => {
+
+const Card = ({
+  id,
+  title,
+  company,
+  location,
+  type,
+  requirements,
+  link,
+  source,
+}: JobCardProps) => {
   const colr = [
     "border-yellow-500 text-yellow-500",
     "border-red-500 text-red-500",
@@ -21,27 +33,70 @@ const Card = ({ title, company, location, description, link }: cardProps) => {
     "border-orange-500 text-orange-500",
     "border-sky-500 text-sky-500",
   ];
+
   return (
-    <Link href={link || ""}>
-      <div className="shadow-md border border-[#00000010] flex w-[900] rounded-3xl px-8 py-4 m-1">
-        <div className="shrink-0">
-          <FiBriefcase className="" size={25} />
+    <div className="bg-[#20e65209] shadow-md border border-[#00000010] flex rounded-3xl px-8 py-4 m-2 hover:shadow-lg transition-all duration-200 w-2/3">
+      {/* Company Logo Placeholder */}
+      <div className="mx-3 shrink-0">
+        <FiBriefcase className="text-green-950" size={50} />
+      </div>
+
+      {/* Job Info */}
+      <div className="px-6 flex flex-col justify-between w-full">
+        <div>
+          {title && (
+            <h2 className="text-lg text-green-950 ">
+              {title.charAt(0).toUpperCase() + title.slice(1)}
+            </h2>
+          )}
+          {(company || location) && (
+            <p className="text-gray-500">
+              {company && company} {company && location && "-"}{" "}
+              {location && <span>{location}</span>}
+            </p>
+          )}
         </div>
-        <div className=" px-8">
-          <h2 className="text-2xl font-semibold inline-block">
-            {title || "Social Media Assistant"}
-          </h2>
-          <p className=" my-3 text-gray-400">
-            {company || " Young Men Chiristian Association"} -
-            <span> {location || "Addis Ababa, Ethiopia"}</span>
-          </p>
-          <p className="mb-3">
-            {description ||
-              "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque, repellendus dolorum libero ea repellat quis vero officia architecto modi enim unde molestiae in eveniet maiores excepturi ratione quisquam? Iste, aperiam?"}
-          </p>
+
+        {/* Footer: type, requirements, source, link */}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {type && (
+            <CategoryItem name={type} className="bg-green-50 text-orange-500" />
+          )}
+
+          {requirements &&
+            requirements?.length > 0 &&
+            requirements.map((req, index) => (
+              <CategoryItem
+                key={`${id || "job"}-req-${index}`}
+                name={req}
+                className={`border ${
+                  colr[Math.floor(Math.random() * colr.length)]
+                }`}
+              />
+            ))}
+
+          {source && (
+            <>
+              <span className="text-gray-400 mx-2">|</span>
+              <CategoryItem
+                name={source}
+                className="bg-blue-50 text-blue-500"
+              />
+            </>
+          )}
+
+          {link && (
+            <Link
+              href={link}
+              target="_blank"
+              className="ml-auto text-blue-600 hover:underline text-sm"
+            >
+              View Job →
+            </Link>
+          )}
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 
