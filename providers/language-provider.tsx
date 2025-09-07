@@ -35,6 +35,8 @@ const translations = {
       motivation:"Motivation",
       start_building:'Start building your AI powered CV',
       your_offline:"Your offline career resource",
+      next :"Next",
+      back:"Back",
       // login
       l_welcome: "Welcome Back",
       l_subtitle: "Sign in to continue your career journey",
@@ -94,6 +96,8 @@ const translations = {
       motivation:"ራስን ማንቃት",
       start_building:'AIን ተጠቅመው CV ያዘጋጁ',
       your_offline:"ካለ ኢንተርኔት ግንኙነት የሚያገኟቸው አገልግሎቶች",
+      next :"ቀጣይ",
+      back:"ተመለስ",
       // login 
       l_welcome: "እንኳን በደህና መጡ",
       l_subtitle: "የሥራ ጉዞዎን ለመቀጠል ግባ",
