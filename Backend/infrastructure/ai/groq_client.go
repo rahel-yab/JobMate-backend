@@ -53,7 +53,7 @@ func NewGroqClient(cfg *config.Config) *GroqClient {
 }
 
 // GetChatCompletion sends a request to the Groq API and returns the AI's response
-func (gc *GroqClient) GetChatCompletion(ctx context.Context, messages []dto.GroqAIMessageDTO, tools []dto.GroqToolDTO) (*models.GroqAIMessage, error) {
+func (gc *GroqClient) GetChatCompletion(ctx context.Context, messages []dto.GroqAIMessageDTO, tools interface{}) (*models.GroqAIMessage, error) {
 
 	requestBody := struct {
 		Messages    []dto.GroqAIMessageDTO `json:"messages"`
@@ -61,7 +61,7 @@ func (gc *GroqClient) GetChatCompletion(ctx context.Context, messages []dto.Groq
 		Temperature float32                `json:"temperature"`
 		MaxTokens   int                    `json:"max_tokens,omitempty"`
 		Stream      bool                   `json:"stream,omitempty"`
-		Tools       []dto.GroqToolDTO      `json:"tools,omitempty"`
+		Tools       interface{}            `json:"tools,omitempty"`  // Changed to interface{}
 	}{
 		Messages:    messages,
 		Model:       gc.Model,

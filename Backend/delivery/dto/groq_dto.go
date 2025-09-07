@@ -12,7 +12,7 @@ type GroqToolDTO struct {
 type GroqToolFunctionDTO struct {
 	Name        string                         `json:"name"`
 	Description string                         `json:"description"`
-	Parameters  GroqToolFunctionParametersDTO `json:"parameters"`
+	Parameters  interface{} `json:"parameters"`
 }
 
 

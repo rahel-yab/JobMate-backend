@@ -130,34 +130,36 @@ func (s *JobAIService) getJobSearchTools() []dto.GroqToolDTO {
             Function: dto.GroqToolFunctionDTO{
                 Name:        "search_jobs",
                 Description: "Search for jobs based on criteria",
-                Parameters: dto.GroqToolFunctionParametersDTO{
-                    Type: "object",
-                    Properties: map[string]dto.GroqToolPropertyDTO{
-                        "field": {
-                            Type:        "string",
-                            Description: "Job field/industry",
+                Parameters: map[string]interface{}{
+                    "type": "object",
+                    "properties": map[string]interface{}{
+                        "field": map[string]interface{}{
+                            "type":        "string",
+                            "description": "Job field/industry",
                         },
-                        "looking_for": {
-                            Type:        "string",
-                            Description: "local, remote, or freelance",
+                        "looking_for": map[string]interface{}{
+                            "type":        "string",
+                            "description": "local, remote, or freelance",
+                            "enum":        []string{"local", "remote", "freelance"},
                         },
-                        "skills": {
-                            Type:        "array",
-                            Description: "Required skills",
-                            Items: &dto.GroqToolPropertyDTO{
-                                Type: "string",
+                        "skills": map[string]interface{}{
+                            "type":        "array",
+                            "description": "Required skills",
+                            "items": map[string]interface{}{
+                                "type": "string",
                             },
                         },
-                        "experience": {
-                            Type:        "string",
-                            Description: "Experience level",
+                        "experience": map[string]interface{}{
+                            "type":        "string",
+                            "description": "Experience level",
                         },
-                        "language": {
-                            Type:        "string",
-                            Description: "en or am",
+                        "language": map[string]interface{}{
+                            "type":        "string",
+                            "description": "en or am",
+                            "enum":        []string{"en", "am"},
                         },
                     },
-                    Required: []string{"field", "looking_for"},
+                    "required": []string{"field", "looking_for"},
                 },
             },
         },
