@@ -25,7 +25,7 @@ export default function ProtectedWrapper({ children }: ProtectedWrapperProps) {
       return;
     }
 
-    if (token && unprotectedRoutes.includes(pathname)) {
+    if (token && ["/login", "/register"].includes(pathname)) {
       router.replace("/");
       return;
     }
