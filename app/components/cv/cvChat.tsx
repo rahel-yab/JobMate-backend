@@ -8,6 +8,7 @@ import CVMessage from "./CVMessage";
 import ChatMessage from "../ChatMessage";
 import CvAnalysisCard from "./CvAnalysis";
 import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 import {
   useUploadCVMutation,
   useAnalyzeCVMutation,
@@ -127,7 +128,7 @@ export default function CvChat() {
       const aiMsg = {
         id: Date.now(),
         sender: "ai",
-        text: res.content,
+        text: <ReactMarkdown>{res.content}</ReactMarkdown>,
         time: formatTime(new Date(res.timestamp)),
       };
       setMessages((prev) => [...prev, aiMsg]);

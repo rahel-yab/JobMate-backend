@@ -5,6 +5,7 @@ import { formatTime } from "@/lib/utils";
 import CvWindow from "./CvWindow";
 import CVMessage from "./CVMessage";
 import ChatMessage from "../ChatMessage";
+import ReactMarkdown from "react-markdown";
 import {
   useGetChatHistoryQuery,
   useSendMessageMutation,
@@ -38,7 +39,7 @@ export default function CvExistingChat({
         const formatted = data.messages.map((m: any) => ({
           id: m.id,
           sender: m.role === "assistant" ? "ai" : "user",
-          text: m.content,
+          text: <ReactMarkdown>{m.content}</ReactMarkdown>,
           time: formatTime(new Date(m.timestamp)),
         }));
         setMessages(formatted);
@@ -70,7 +71,7 @@ export default function CvExistingChat({
       const aiMsg = {
         id: Date.now(),
         sender: "ai",
-        text: res.content,
+        text: <ReactMarkdown>{res.content}</ReactMarkdown>,
         time: formatTime(new Date(res.timestamp)),
       };
       setMessages((prev) => [...prev, aiMsg]);
