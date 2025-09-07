@@ -25,7 +25,7 @@ export const store = configureStore({
       .concat(cvApi.middleware)
       .concat(generalApi.middleware)
 
-      .concat(jobApi.middleware),
+      .concat(jobApi.middleware)
 
       .concat(interviewApi.middleware),
 
