@@ -146,7 +146,7 @@ const StructuredHistory: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-blue-50 font-sans text-gray-800">
       {/* Header */}
       <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#217C6A] text-white">
         <div className="flex items-center gap-3">

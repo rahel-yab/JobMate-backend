@@ -168,11 +168,17 @@ const InterviewPage: React.FC = () => {
       .slice(0, 2) || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+    //{bg-gray-50}
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-blue-50 font-sans text-gray-800">
       {/* Header */}
       <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#217C6A] text-white">
         <div className="flex items-center gap-3">
-          <div className="h-5 w-5 text-white cursor-pointer"  onClick={() => router.push("/dashboard")}>←</div>
+          <div
+            className="h-5 w-5 text-white cursor-pointer"
+            onClick={() => router.push("/dashboard")}
+          >
+            ←
+          </div>
           <div className="h-10 w-10 bg-[#0F3A31] text-white rounded-full flex items-center justify-center font-bold">
             JM
           </div>
@@ -198,8 +204,8 @@ const InterviewPage: React.FC = () => {
         </div>
       </header>
 
-      <div className="bg-white min-h-screen">
-        <nav className="bg-white p-4 flex justify-between items-center">
+      <div className="bg-gradient-to-b from-green-50  min-h-screen">
+        <nav className="bg-gradient-to-b from-green-5 p-4 flex justify-between items-center">
           <span className="text-xl font-bold text-transparent">
             {translations[language].interviewPractice}
           </span>
@@ -297,7 +303,6 @@ const InterviewPage: React.FC = () => {
                             `/interview/structured/resume?chatid=${item.id}`
                           );
                         } else {
-                    
                           router.push(
                             `/interview/structured/history/?chatid=${item.id}`
                           );

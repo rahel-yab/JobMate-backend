@@ -61,7 +61,7 @@ const FreeformSessionPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-50 font-sans text-gray-800 min-h-screen flex flex-col">
+    <div className="bg-gradient-to-b from-green-50 to-blue-50 font-sans text-gray-800 min-h-screen flex flex-col">
       {/* Header */}
       <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#217C6A] text-white">
         <div className="flex items-center gap-3">
@@ -94,7 +94,7 @@ const FreeformSessionPage: React.FC = () => {
       </header>
 
       {/* Main content */}
-      <main className="flex-grow flex items-center justify-center p-4 sm:p-6 md:p-8">
+      <main className=" flex-grow flex items-center justify-center p-4 sm:p-6 md:p-8 ">
         <div className="container mx-auto max-w-sm bg-white rounded-xl shadow-md p-6 border border-gray-200 text-center">
           {/* AI icon */}
           <div className="flex justify-center items-center mb-4 bg-[#217C6A] rounded-full w-16 h-16 mx-auto">

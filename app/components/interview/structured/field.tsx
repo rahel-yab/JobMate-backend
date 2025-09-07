@@ -48,7 +48,7 @@ const FiledApp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-800">
+    <div className="bg-gradient-to-b from-green-50 to-blue-50 min-h-screen  flex flex-col bg-gray-50 font-sans text-gray-800">
       {/* Header */}
       <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#217C6A] text-white">
         <div className="flex items-center gap-3">
@@ -79,7 +79,7 @@ const FiledApp: React.FC = () => {
         </div>
       </header>
 
-      <div className="bg-white min-h-screen">
+      <div className="bg-gradient-to-b from-green-50 to-blue-50 min-h-screen">
         {/* Main Card */}
         <div className="flex-grow flex items-center justify-center p-4">
           <div className="container mx-auto max-w-sm bg-white rounded-xl shadow-md p-6 border border-gray-200 text-center">

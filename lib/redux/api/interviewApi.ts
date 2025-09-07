@@ -15,7 +15,7 @@ export const interviewApi = createApi({
       // console.log("Auth state in prepareHeaders:", state.auth);
       // //const token = (getState() as RootState).auth.accessToken;
       const token = state.auth.user?.acces_token; // ✅ correct path
-      console.log("Token in prepareHeaders:", token);
+     
 
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
@@ -74,7 +74,6 @@ export const interviewApi = createApi({
         url: `/interview/structured/continue/${chat_id}`,
         method: "GET",
         // If preferred_language is a query param, add it here:
-       
       }),
       transformResponse: (response) => response.data, // unwrap the data directly
     }),

@@ -191,7 +191,7 @@ const FreeformChatPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-blue-50 font-sans text-gray-800">
       {/* Header */}
       <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#217C6A] text-white">
         <div className="flex items-center gap-3">
@@ -244,7 +244,7 @@ const FreeformChatPage: React.FC = () => {
               <div
                 className={`max-w-xs md:max-w-md p-3 rounded-xl ${
                   msg.sender === "ai"
-                    ? "bg-blue-100 text-gray-800 rounded-bl-none"
+                    ? "bg-[#f3f5f9] text-gray-800 rounded-bl-none"
                     : "bg-blue-600 text-white rounded-br-none"
                 }`}
               >
