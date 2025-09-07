@@ -35,6 +35,8 @@ const translations = {
       motivation:"Motivation",
       start_building:'Start building your AI powered CV',
       your_offline:"Your offline career resource",
+      next :"Next",
+      back:"Back",
       // login
       l_welcome: "Welcome Back",
       l_subtitle: "Sign in to continue your career journey",
@@ -46,30 +48,64 @@ const translations = {
       l_register: "Sign up",
       l_forgotPassword: "Forgot password?",
 
-      
-      // register
-      r_join: "Join JobMate",
-      r_create: "Create your account to get started",
-      r_fullName: "Full Name",
-      r_createAccount: "Sign Up",
-      r_noAccount: " Already have an account? ",
-      r_login:"Sign in",
-      // otp
-      otp_title: "Verify OTP",
-      otp_subtitle1: "We’ve sent an OTP to",
-      otp_subtitle2: "Please enter it below to complete your registration.",
-      otp_placeholder: "Enter OTP",
-      otp_button: "Verify & Register",
-      otp_verifying: "Verifying...",
-      otp_failed: "Registration failed. Please try again.",
-      //forgot and reset 
-      f_title: "Forgot Password?",
+
+    // register
+    r_join: "Join JobMate",
+    r_create: "Create your account to get started",
+    r_fullName: "Full Name",
+    r_createAccount: "Sign Up",
+    r_noAccount: " Already have an account? ",
+    r_login: "Sign in",
+    // otp
+    otp_title: "Verify OTP",
+    otp_subtitle1: "We’ve sent an OTP to",
+    otp_subtitle2: "Please enter it below to complete your registration.",
+    otp_placeholder: "Enter OTP",
+    otp_button: "Verify & Register",
+    otp_verifying: "Verifying...",
+    otp_failed: "Registration failed. Please try again.",
+    //forgot and reset
+    f_title: "Forgot Password?",
     emailPlaceholder: "Enter your email",
     cancel: "Cancel",
     sendOtp: "Send OTP",
     sending: "Sending...",
     reset_title: "Reset Password",
     resetBtn: "Reset Password",
+
+    // Home Section
+    home_title: "You don’t have to job-hunt alone",
+    home_description:
+      "Finding a job can feel overwhelming — from writing the perfect CV to preparing for tough interview questions. JobMate is your AI-powered career buddy, built for Ethiopian youth. It reviews your CV, highlights skills you need to grow, and suggests both local and remote opportunities. You can even practice real interview questions and get instant feedback, in Amharic or English. With JobMate by your side, you’ll gain the confidence and guidance you need to land your first role, grow your career, and unlock global opportunities.",
+    register: "Register",
+
+    // Services Section
+    service_title: "JobMate Services",
+    cv_feedback_title: "CV Feedback",
+    cv_feedback_desc:
+      "Get instant feedback on your CV, discover strengths, and identify areas to improve.",
+    job_title: "Available Jobs",
+    job_desc:
+      "Find local, remote, and freelance opportunities tailored to your skills and goals.",
+    interview_title: "Interview Practice",
+    interview_desc:
+      "Practice common interview questions with AI and get real-time feedback. Learn tips on salary negotiation, workplace culture, and more.",
+    offline_title: "Offline Resources",
+    offline_desc:
+      "Even without internet, access stored interview tips, CV templates, and job search guides.",
+    chat_title: "Chat Assistance",
+    chat_desc:
+      "Get quick answers to your questions through a friendly AI chat, making learning and problem-solving easier anytime.",
+
+    // Footer
+    footer_copyright: "Copyright © 2020 Nexcent ltd.",
+    footer_rights: "All rights reserved",
+
+    // NavBar
+    home: "Home",
+    service: "Service",
+    login: "Log In",
+    signUp: "Sign Up",
   },
   am: {
     // Header
@@ -94,6 +130,8 @@ const translations = {
       motivation:"ራስን ማንቃት",
       start_building:'AIን ተጠቅመው CV ያዘጋጁ',
       your_offline:"ካለ ኢንተርኔት ግንኙነት የሚያገኟቸው አገልግሎቶች",
+      next :"ቀጣይ",
+      back:"ተመለስ",
       // login 
       l_welcome: "እንኳን በደህና መጡ",
       l_subtitle: "የሥራ ጉዞዎን ለመቀጠል ግባ",
@@ -104,29 +142,62 @@ const translations = {
       l_noAccount: "መለያ የለህም? አዲስ መለያ ፍጠር",
       l_register: "ተመዝገብ ",
       l_forgotPassword: "የይለፍ ቃል ረስተዋል?",
+
     // register
-      r_join: "JobMate ጋር ተቀላቀል",
-      r_create: "መለያህን ፍጠር እና ጀምር",
-      r_fullName: "ሙሉ ስም",
-      r_createAccount: "ተመዝገብ",
-      r_haveAccount: "መለያ አለህ? ግባ",
-       
-      // otp 
-      otp_title: "ኦቲፒ ያረጋግጡ",
-      otp_subtitle1: "ኦቲፒ ኮድ ወደ ",
-      otp_subtitle2: "ተልኳል እባክዎ ምዝገባውን ለመጨረስ ከታች ባለው ላይ ኮዱን ያስገቡ",
-      otp_placeholder: "ኦቲፒ ያስገቡ",
-      otp_button: "ያረጋግጡ እና ይመዝገቡ",
-      otp_verifying: "በመረጋገጥ ላይ...",
-      otp_failed: "ምዝገባው አልተሳካም። እባክዎ ደግመው ይሞክሩ።",
-      // forgot and reset 
-      f_title: "የይለፍ ቃል ረስተዋል?",
+    r_join: "JobMate ጋር ተቀላቀል",
+    r_create: "መለያህን ፍጠር እና ጀምር",
+    r_fullName: "ሙሉ ስም",
+    r_createAccount: "ተመዝገብ",
+    r_haveAccount: "መለያ አለህ? ግባ",
+
+    // otp
+    otp_title: "ኦቲፒ ያረጋግጡ",
+    otp_subtitle1: "ኦቲፒ ኮድ ወደ ",
+    otp_subtitle2: "ተልኳል እባክዎ ምዝገባውን ለመጨረስ ከታች ባለው ላይ ኮዱን ያስገቡ",
+    otp_placeholder: "ኦቲፒ ያስገቡ",
+    otp_button: "ያረጋግጡ እና ይመዝገቡ",
+    otp_verifying: "በመረጋገጥ ላይ...",
+    otp_failed: "ምዝገባው አልተሳካም። እባክዎ ደግመው ይሞክሩ።",
+    // forgot and reset
+    f_title: "የይለፍ ቃል ረስተዋል?",
     emailPlaceholder: "ኢሜይል አስገባ",
     cancel: "ሰርዝ",
     sendOtp: "ኦቲፒ ላክ",
     sending: "በመላክ ላይ...",
     reset_title: "የይለፍ ቃልዎን ያድሱ",
     resetBtn: "የይለፍ ቃል አድስ",
+
+    // Home Section
+    home_title: "ብቻህን ስራ መፈልግ ግድ አደለም",
+    home_description:
+      "ስራ መፈለግ አስጨናቂ ሊሆን ይችላል — ከፍጹም የሆነ CV መጻፍ እስከ አስቸጋሪ ጥያቄዎች ለመለምከት። JobMate የAI ኃይል የተሞላ የሙያ ጓደኛ ነው፣ ለኢትዮጵያ ወጣቶች ተለዋዋጭ ተጠቃሚ። እርስዎን CV ይመረምራል፣ የሚያሻሽሉትን ክህሎቶች ይጠቁማል፣ እና አካባቢያዊና የርቀት ዕድሎችን ይጠቁማል። እንደ እውነተኛ የቃለመጠይቅ ጥያቄዎች ልምምድ ያድርጉ እና በፍጥነት ግብረመልስ ያግኙ፣ በአማርኛ ወይም በእንግሊዝኛ።",
+    register: "ተመዝገብ",
+
+    // Services Section
+    service_title: "የJobMate አገልግሎቶች",
+    cv_feedback_title: "CV ግብረመልስ",
+    cv_feedback_desc:
+      "በCVዎ ላይ ፈጣን ግብረመልስ ያግኙ፣ ጥሩ ነጥቦችን ይገነዘቡ፣ እና የሚሻሹበትን ቦታ ይወቁ።",
+    job_title: "የስራ እድሎች",
+    job_desc: "ከእርስዎ ክህሎት እና ዓላማ ጋር የሚዛመዱ አካባቢያዊ፣ የርቀት እና ነፃ ስራዎችን ያግኙ።",
+    interview_title: "የቃለ መጠይቅ ልምምድ",
+    interview_desc:
+      "ተለመዱ የቃለመጠይቅ ጥያቄዎችን ከAI ጋር ይልማዱ እና በቅርብ ጊዜ ግብረመልስ ያግኙ። በደሞዝ እና የስራ ባህሪ ምክሮችን ያውቁ።",
+    offline_title: "የኦፍላይን ሀብት",
+    offline_desc:
+      "እንኳን ከኢንተርኔት ባለመኖር፣ የቃለመጠይቅ ምክር፣ CV አብነቶች እና የስራ ፍለጋ መመሪያዎችን ያግኙ።",
+    chat_title: "የቻት እርዳታ",
+    chat_desc: "በአዳዲስ ጥያቄዎች ፍጥነት መልስ ለማግኘት ከAI ጋር ቀላል የሆነ የቻት እንቅስቃሴ ያግኙ።",
+
+    // Footer
+    footer_copyright: "Copyright © 2020 Nexcent ltd.",
+    footer_rights: "All rights reserved",
+
+    //NavBar
+    home: "ዋና",
+    service: "አገልግሎት",
+    login: "ግባ",
+    signUp: "ተመዝገብ",
   },
 };
 

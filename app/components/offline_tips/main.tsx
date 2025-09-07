@@ -29,7 +29,7 @@ const Main = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap shadow-sm p-3 rounded gap-2 mb-8">
          <button                                 
             onClick={() => setActiveTab('cv')}
             className={`${styles[0]}
@@ -70,7 +70,7 @@ const Main = () => {
         <div className="bg-white rounded-lg p-6">
           {renderTips()}
         </div>
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 justify-center">
+        <div className="mt-8 flex justify-center">
           <a
             href="https://www.canva.com/"
             target="_blank"
@@ -81,7 +81,7 @@ const Main = () => {
           </a>
         </div>
       </div>
-      <footer className="bg-[#217C6A] text-white mt-12 py-6">
+      <footer className="bg-[#217C6A]  text-white mt-12 py-6">
         <div className="container mx-auto px-4 text-center">
           <p>{t("your_offline")}</p>
         </div>

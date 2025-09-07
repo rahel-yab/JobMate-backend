@@ -29,7 +29,7 @@ export default function RootLayout({
       lang="en"
       className={`${GeistSans.variable} ${notoSansEthiopic.variable}`}
     >
-      <body className="flex h-screen bg-gray-50">
+      <body className="bg-gray-50">
         <ReduxProvider>
           <LanguageProvider>
             <Nav />

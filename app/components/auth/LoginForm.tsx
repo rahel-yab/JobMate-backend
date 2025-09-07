@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { useLoginMutation } from "@/lib/redux/api/authApi";
@@ -20,17 +20,23 @@ export default function LoginForm() {
 
   const redirect = searchParams.get("redirect") || "/cv";
 
+  const effectRan = useRef(false);
+
+  // Handle Google login callback
   useEffect(() => {
+    if (effectRan.current) return; 
+    effectRan.current = true;
+
     const token = searchParams.get("token");
     const userJson = searchParams.get("user");
 
     if (token && userJson) {
       const user = JSON.parse(userJson);
       dispatch(setCredentials({ user, accessToken: token }));
-      toast.success(" Logged in with Google!");
+      toast.success("Logged in with Google!");
       router.push(redirect);
     }
-  }, [searchParams]);
+  }, [searchParams, dispatch, router, redirect]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,7 +54,7 @@ export default function LoginForm() {
       dispatch(
         setCredentials({
           user: data.user,
-          accessToken: data.user.access_token,
+          accessToken: data.user.acces_token,
         })
       );
       toast.success(" Logged in successfully!");
