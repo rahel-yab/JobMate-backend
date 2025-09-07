@@ -76,7 +76,7 @@ func SetupRouter(authMiddleware *auth.AuthMiddleware,
 	// delivery/routes/router.go
 	jobRoutes := router.Group("/jobs")
 	{
-		jobRoutes.POST("/suggest", jobController.SuggestJobs) 
+		jobRoutes.POST("/suggest", authMiddleware.Middleware(), jobController.SuggestJobs) 
 		jobRoutes.POST("/chat", authMiddleware.Middleware(), jobController.Chat) 
 		jobRoutes.GET("/chats", authMiddleware.Middleware(), jobController.GetUserChats) 
 		jobRoutes.GET("/chat/:id", authMiddleware.Middleware(), jobController.GetChat) 
