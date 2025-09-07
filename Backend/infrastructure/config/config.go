@@ -39,6 +39,12 @@ type Config struct {
 	AIApiBaseUrl   string 
 	AIProvider     string 
 	AITemperature float32 
+
+	// Gemini AI Configuration
+	GeminiApiKey       string 
+	GeminiModelName    string 
+	GeminiBaseUrl   string 
+	GeminiProvider     string 
 	
 	// Separate config for OpenAI if needed later for CV specific
 	OpenAIApiKey string 
@@ -119,6 +125,12 @@ func LoadConfig() (*Config, error) {
 		AIApiBaseUrl: viper.GetString("AI_API_BASE_URL"), 
 		AIProvider:   viper.GetString("AI_PROVIDER"),    
 		AITemperature:         float32(viper.GetFloat64("AI_TEMPERATURE")), 
+
+		// Gemini Specific
+		GeminiApiKey: viper.GetString("GEMINI_API_KEY"),        
+		GeminiModelName:  viper.GetString("GEMINI_MODEL_NAME"),  
+		GeminiBaseUrl: viper.GetString("GEMINI_BASE_URL"), 
+		GeminiProvider:   viper.GetString("GEMINI_PROVIDER"),
 		
 		// OpenAI Specific (for CV analysis, if separate)
 		OpenAIApiKey: viper.GetString("OPENAI_API_KEY"),
