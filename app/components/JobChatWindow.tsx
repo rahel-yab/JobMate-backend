@@ -1,9 +1,26 @@
 "use client";
 import { ArrowLeft, Globe } from "lucide-react";
 import { useLanguage } from "@/providers/language-provider";
-import QuickActions from "./QuickActions";
 import ChatInput from "./ChatInput";
 import Card from "./jobSearch/Jobcard";
+
+interface JobCardProps {
+  id?: string;
+  title?: string;
+  company?: string;
+  location?: string;
+  type?: string;
+  requirements?: string[];
+  link?: string;
+  source?: string;
+}
+
+interface Message {
+  id: string;
+  type: "text" | "jobs";
+  text?: string;
+  jobs?: JobCardProps[];
+}
 
 export default function JobChatWindow({
   messages,
@@ -12,15 +29,13 @@ export default function JobChatWindow({
   onSend,
   renderMessage,
   onBack,
-  jobs,
 }: {
-  messages: any[];
+  messages: Message[];
   input: string;
   setInput: (val: string) => void;
   onSend: () => void;
-  renderMessage: (msg: any) => React.ReactNode;
+  renderMessage: (msg: Message) => React.ReactNode;
   onBack?: () => void;
-  jobs?: any[];
 }) {
   const { language, setLanguage, t } = useLanguage();
 
@@ -60,7 +75,7 @@ export default function JobChatWindow({
           if (msg.type === "jobs" && msg.jobs) {
             return (
               <div key={msg.id} className="space-y-2">
-                {msg.jobs.map((job: any, idx: number) => (
+                {msg.jobs.map((job, idx) => (
                   <Card
                     key={`${msg.id}-${idx}`}
                     id={String(idx)}

@@ -1,14 +1,15 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { RootState } from "@/lib/redux/store";
+import { JobCardProps } from "@/app/components/jobSearch/Jobcard";
 
 export const jobApi = createApi({
   reducerPath: "jobApi",
   baseQuery: fetchBaseQuery({
     baseUrl: "https://jobmate-api-0d1l.onrender.com",
-    prepareHeaders: (headers) => {
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-
-      const token = user?.acces_token;
-      console.log(token);
+    prepareHeaders: (headers, { getState }) => {
+      const state = getState() as RootState;
+      const token = state.auth.user?.acces_token;
+      console.log("toooooooooooken", token);
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
@@ -18,7 +19,7 @@ export const jobApi = createApi({
 
   endpoints: (builder) => ({
     // 1. Get all job chats
-    getAllChats: builder.query<any[], void>({
+    getAllChats: builder.query({
       query: () => ({
         url: "/jobs/chats",
         method: "GET",
@@ -26,7 +27,7 @@ export const jobApi = createApi({
     }),
 
     sendMsg: builder.mutation<
-      { message: string; jobs: any[]; chat_id: string },
+      { message: string; jobs: JobCardProps[]; chat_id: string },
       { message: string; chat_id?: string }
     >({
       query: ({ message, chat_id }) => ({
@@ -37,7 +38,7 @@ export const jobApi = createApi({
     }),
 
     // 3. Get single chat by ID
-    getChatById: builder.query<any, string>({
+    getChatById: builder.query({
       query: (id) => ({
         url: `/jobs/chat/${id}`,
         method: "GET",

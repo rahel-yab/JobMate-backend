@@ -2,7 +2,7 @@ import Link from "next/link";
 import CategoryItem from "./CategoryItem";
 import { FiBriefcase } from "react-icons/fi";
 
-interface JobCardProps {
+export interface JobCardProps {
   id?: string;
   title?: string;
   company?: string;
