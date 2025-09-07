@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/dto"
@@ -62,11 +63,14 @@ func (s *JobAIService) HandleJobConversation(ctx context.Context, userID string,
 	}
 
 	// Extract job search criteria from AI response
-	searchCriteria := s.extractJobSearchCriteria(aiResponse.Content, userProfile)
+	searchCriteria, aiTextResponse := s.extractJobSearchCriteriaAndResponse(aiResponse.Content, userProfile)
 
-	// If criteria is found, perform job search
-	if searchCriteria != nil {
-		jobs, msg, err := s.JobService.GetCuratedJobs(
+	// If criteria is found and complete, perform job search
+	var jobs []models.Job
+	var searchMsg string
+	
+	if searchCriteria != nil && s.isCriteriaComplete(searchCriteria) {
+		jobs, searchMsg, err = s.JobService.GetCuratedJobs(
 			searchCriteria.Field,
 			searchCriteria.LookingFor,
 			searchCriteria.Experience,
@@ -74,84 +78,129 @@ func (s *JobAIService) HandleJobConversation(ctx context.Context, userID string,
 			searchCriteria.Language,
 		)
 
-		if err == nil {
-			// Create a combined response with AI message and job results
-			finalResponse := fmt.Sprintf("%s\n\n%s", aiResponse.Content, msg)
-			
-			// Save to chat history
-			response := s.saveChatHistory(ctx, userID, chatID, userMessage, finalResponse, searchCriteria, jobs)
-			response.Jobs = jobs
-			return response, nil
+		if err != nil {
+			log.Printf("Job search failed: %v", err)
+			searchMsg = "I couldn't find any current job openings matching your criteria. Please try different search terms or check back later."
 		}
 	}
 
-	// If no search criteria found or search failed, return just the AI response
-	response := s.saveChatHistory(ctx, userID, chatID, userMessage, aiResponse.Content, nil, nil)
+	// Combine AI response with job search results
+	finalResponse := s.formatFinalResponse(aiTextResponse, searchMsg, jobs, searchCriteria)
+
+	// Save to chat history
+	response := s.saveChatHistory(ctx, userID, chatID, userMessage, finalResponse, searchCriteria, jobs)
+	response.Jobs = jobs
+	
 	return response, nil
 }
 
-func (s *JobAIService) extractJobSearchCriteria(aiResponse string, userProfile *models.User) *dto.JobSearchCriteriaDTO {
+func (s *JobAIService) extractJobSearchCriteriaAndResponse(aiResponse string, userProfile *models.User) (*dto.JobSearchCriteriaDTO, string) {
 	// Look for JSON pattern in the AI response
 	re := regexp.MustCompile(`\{[^{}]*\"experience\"[^{}]*\"field\"[^{}]*\"language\"[^{}]*\"looking_for\"[^{}]*\"skills\"[^{}]*\}`)
 	matches := re.FindStringSubmatch(aiResponse)
 	
-	if len(matches) == 0 {
-		return nil
-	}
+	var criteria *dto.JobSearchCriteriaDTO
+	textResponse := aiResponse
 
-	var criteria dto.JobSearchCriteriaDTO
-	err := json.Unmarshal([]byte(matches[0]), &criteria)
-	if err != nil {
-		log.Printf("Failed to parse job search criteria: %v", err)
-		return nil
-	}
-
-	// Enhance with user profile data if available
-	if userProfile != nil {
-		if len(criteria.Skills) == 0 && len(userProfile.Skills) > 0 {
-			criteria.Skills = userProfile.Skills
-		}
+	if len(matches) > 0 {
+		// Extract JSON and remove it from the text response
+		jsonStr := matches[0]
+		textResponse = strings.Replace(aiResponse, jsonStr, "", 1)
+		textResponse = strings.TrimSpace(textResponse)
 		
-		if criteria.Experience == "" && *userProfile.YearsExperience > 0 {
-			if *userProfile.YearsExperience < 3 {
-				criteria.Experience = "entry-level"
-			} else if *userProfile.YearsExperience < 7 {
-				criteria.Experience = "mid-level"
-			} else {
-				criteria.Experience = "senior"
+		var criteriaData dto.JobSearchCriteriaDTO
+		err := json.Unmarshal([]byte(jsonStr), &criteriaData)
+		if err != nil {
+			log.Printf("Failed to parse job search criteria: %v", err)
+		} else {
+			criteria = &criteriaData
+			
+			// Enhance with user profile data if available
+			if userProfile != nil {
+				if len(criteria.Skills) == 0 && len(userProfile.Skills) > 0 {
+					criteria.Skills = userProfile.Skills
+				}
+				
+				if criteria.Experience == "" && *userProfile.YearsExperience > 0 {
+					if *userProfile.YearsExperience < 3 {
+						criteria.Experience = "entry-level"
+					} else if *userProfile.YearsExperience < 7 {
+						criteria.Experience = "mid-level"
+					} else {
+						criteria.Experience = "senior"
+					}
+				}
 			}
 		}
 	}
 
-	return &criteria
+	return criteria, textResponse
+}
+
+func (s *JobAIService) isCriteriaComplete(criteria *dto.JobSearchCriteriaDTO) bool {
+	return criteria.Field != "" && criteria.LookingFor != ""
+}
+
+func (s *JobAIService) formatFinalResponse(aiTextResponse, searchMsg string, jobs []models.Job, criteria *dto.JobSearchCriteriaDTO) string {
+	if aiTextResponse == "" && criteria != nil {
+		// If AI only returned JSON, create a friendly response
+		aiTextResponse = fmt.Sprintf("I found your job preferences: %s %s position", criteria.Experience, criteria.Field)
+		if len(criteria.Skills) > 0 {
+			aiTextResponse += fmt.Sprintf(" with skills in %s", strings.Join(criteria.Skills, ", "))
+		}
+	}
+
+	finalResponse := aiTextResponse
+	
+	if searchMsg != "" {
+		if finalResponse != "" {
+			finalResponse += "\n\n" + searchMsg
+		} else {
+			finalResponse = searchMsg
+		}
+	}
+
+	if len(jobs) == 0 && criteria != nil && s.isCriteriaComplete(criteria) {
+		finalResponse += "\n\nNo current job openings were found. You might want to:"
+		finalResponse += "\n• Try different search terms"
+		finalResponse += "\n• Broaden your location preference"
+		finalResponse += "\n• Check back in a few days for new postings"
+	}
+
+	return finalResponse
 }
 
 func (s *JobAIService) prepareAIMessages(userMessage string, history []models.JobChatMessage, userProfile *models.User) []models.AIMessage {
 	messages := []models.AIMessage{
 		{
 			Role: "system",
-			Content: `You are a job search assistant. Your task is to extract job search criteria from user messages and return it in JSON format.
+			Content: `You are a helpful job search assistant. Your task is to:
 
-IMPORTANT: When the user provides job search criteria, you MUST respond with ONLY a JSON object containing these fields:
-{
-  "experience": "entry-level/mid-level/senior",
-  "field": "software development/design/marketing/etc",
-  "language": "en/am",
-  "looking_for": "local/remote/freelance",
-  "skills": ["JavaScript", "Python", "React", "etc"]
-}
+				1. Extract job search criteria from user messages
+				2. Return a JSON object with the criteria
+				3. Provide helpful, natural language responses
 
-If the user doesn't provide complete information, ask for the missing details but still return the JSON with available fields.
+				CRITICAL: You MUST include BOTH:
+				- A natural language response to the user
+				- A JSON object with the extracted criteria
 
-Examples:
-User: "I'm looking for remote software jobs"
-Response: {"experience":"","field":"software development","language":"en","looking_for":"remote","skills":[]}
+				JSON FORMAT:
+				{
+				"experience": "entry-level/mid-level/senior",
+				"field": "job field",
+				"language": "en/am", 
+				"looking_for": "local/remote/freelance",
+				"skills": ["skill1", "skill2"]
+				}
 
-User: "I need local marketing jobs with 5 years experience"
-Response: {"experience":"mid-level","field":"marketing","language":"en","looking_for":"local","skills":[]}
+				EXAMPLES:
+				User: "I want remote software jobs with Python"
+				Response: "Great! I'll search for remote Python software jobs for you.{\"experience\":\"\",\"field\":\"software development\",\"language\":\"en\",\"looking_for\":\"remote\",\"skills\":[\"Python\"]}"
 
-User: "JavaScript React jobs in Addis Ababa"
-Response: {"experience":"","field":"software development","language":"en","looking_for":"local","skills":["JavaScript","React"]}`,
+				User: "I have 5 years experience in marketing"
+				Response: "Thanks for sharing your experience! What type of marketing position are you looking for (local, remote, or freelance)?{\"experience\":\"mid-level\",\"field\":\"marketing\",\"language\":\"en\",\"looking_for\":\"\",\"skills\":[]}"
+
+				Always be helpful and guide the user to provide missing information.`,
 		},
 	}
 
