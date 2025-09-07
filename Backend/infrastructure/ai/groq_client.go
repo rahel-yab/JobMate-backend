@@ -13,7 +13,6 @@ import (
 	config "github.com/tsigemariamzewdu/JobMate-backend/infrastructure/config"
 )
 
-// GroqAPIResponse represents the response body from the Groq API (internal to ai package)
 type GroqAPIResponse struct {
 	Choices []struct {
 		Message      dto.GroqAIMessageDTO `json:"message"`
@@ -39,9 +38,6 @@ type GroqClient struct {
 	HTTPClient  *http.Client
 }
 
-// var _ svc.IAIClient = (*GroqClient)(nil) // Will re-evaluate this after refactoring
-
-// NewGroqClient creates a new GroqClient instance
 func NewGroqClient(cfg *config.Config) *GroqClient {
 	return &GroqClient{
 		APIKey:      cfg.AIApiKey,
@@ -52,23 +48,19 @@ func NewGroqClient(cfg *config.Config) *GroqClient {
 	}
 }
 
-// GetChatCompletion sends a request to the Groq API and returns the AI's response
-func (gc *GroqClient) GetChatCompletion(ctx context.Context, messages []dto.GroqAIMessageDTO, tools []dto.GroqToolDTO) (*models.GroqAIMessage, error) {
-
+func (gc *GroqClient) GetChatCompletion(ctx context.Context, messages []dto.GroqAIMessageDTO) (*models.GroqAIMessage, error) {
 	requestBody := struct {
 		Messages    []dto.GroqAIMessageDTO `json:"messages"`
 		Model       string                 `json:"model"`
 		Temperature float32                `json:"temperature"`
 		MaxTokens   int                    `json:"max_tokens,omitempty"`
 		Stream      bool                   `json:"stream,omitempty"`
-		Tools       []dto.GroqToolDTO      `json:"tools,omitempty"`
 	}{
 		Messages:    messages,
 		Model:       gc.Model,
 		Temperature: gc.Temperature,
 		MaxTokens:   1000,
 		Stream:      false,
-		Tools:       tools,
 	}
 
 	jsonBody, err := json.Marshal(requestBody)
@@ -109,9 +101,7 @@ func (gc *GroqClient) GetChatCompletion(ctx context.Context, messages []dto.Groq
 	}
 
 	if len(groqResponse.Choices) > 0 {
-		// Convert DTO to domain model
-		responseMessage := groqResponse.Choices[0].Message
-		return dto.GroqAIMessageDTOToModel(responseMessage), nil
+		return dto.GroqAIMessageDTOToModel(groqResponse.Choices[0].Message), nil
 	}
 
 	return nil, fmt.Errorf("groq API returned no choices")

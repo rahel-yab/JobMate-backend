@@ -2,7 +2,7 @@ package usecases
 
 import (
 	"context"
-	
+
 	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/ai_service"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/job_service"
@@ -21,28 +21,6 @@ func NewJobUsecase(jobService *job_service.JobService, jobChatRepo *repositories
 		JobChatRepo:  jobChatRepo,
 		JobAIService: jobAIService,
 	}
-}
-
-func (uc *JobUsecase) SuggestJobs(ctx context.Context, userID string, req models.JobSuggestionRequest, chatMsgs []models.JobChatMessage) (jobs []models.Job, aiMessage string, msg string, chatID string, err error) {
-	var messageContent string
-	if len(chatMsgs) > 0 {
-		messageContent = chatMsgs[len(chatMsgs)-1].Message
-	} else {
-		messageContent = "I want to search for " + req.Field + " " + req.LookingFor + " jobs"
-		if len(req.Skills) > 0 {
-			messageContent += " with skills: " + joinStrings(req.Skills)
-		}
-		if req.Experience != "" {
-			messageContent += " and " + req.Experience + " experience"
-		}
-	}
-
-	response, err := uc.JobAIService.HandleJobConversation(ctx, userID, messageContent, "")
-	if err != nil {
-		return nil, "", "Failed to process job search", "", err
-	}
-
-	return response.Jobs, response.Message, "Job search completed", response.ChatID, nil
 }
 
 func (uc *JobUsecase) Chat(ctx context.Context, userID string, message string, chatID string) (*models.JobAIResponse, error) {

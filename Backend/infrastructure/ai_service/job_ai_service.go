@@ -2,8 +2,11 @@ package ai_service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/dto"
@@ -15,265 +18,275 @@ import (
 )
 
 type JobAIService struct {
-    GroqClient  *ai.GroqClient
-    JobService  *job_service.JobService
-    UserRepo    interfaces.IUserRepository
-    JobChatRepo *repositories.JobChatRepository
+	GroqClient  *ai.GroqClient
+	JobService  *job_service.JobService
+	UserRepo    interfaces.IUserRepository
+	JobChatRepo *repositories.JobChatRepository
 }
 
 func NewJobAIService(groqClient *ai.GroqClient, jobService *job_service.JobService, userRepo interfaces.IUserRepository, jobChatRepo *repositories.JobChatRepository) *JobAIService {
-    return &JobAIService{
-        GroqClient:  groqClient,
-        JobService:  jobService,
-        UserRepo:    userRepo,
-        JobChatRepo: jobChatRepo,
-    }
+	return &JobAIService{
+		GroqClient:  groqClient,
+		JobService:  jobService,
+		UserRepo:    userRepo,
+		JobChatRepo: jobChatRepo,
+	}
 }
 
 func (s *JobAIService) HandleJobConversation(ctx context.Context, userID string, userMessage string, chatID string) (*models.JobAIResponse, error) {
-    // Get chat history
-    var chatHistory []models.JobChatMessage
-    if chatID != "" {
-        chat, err := s.JobChatRepo.GetJobChatByID(ctx, chatID)
-        if err == nil && chat != nil {
-            chatHistory = chat.Messages
-        }
-    }
+	// Get chat history
+	var chatHistory []models.JobChatMessage
+	if chatID != "" {
+		chat, err := s.JobChatRepo.GetJobChatByID(ctx, chatID)
+		if err == nil && chat != nil {
+			chatHistory = chat.Messages
+		}
+	}
 
-    // Get user profile for context
-    var userProfile *models.User
-    if userID != "" {
-        userProfile, _ = s.UserRepo.GetByID(ctx, userID)
-    }
+	// Get user profile for context
+	var userProfile *models.User
+	if userID != "" {
+		userProfile, _ = s.UserRepo.GetByID(ctx, userID)
+	}
 
-    // Prepare AI messages with system prompt
-    messages := s.prepareAIMessages(userMessage, chatHistory, userProfile)
+	// Prepare AI messages with system prompt
+	messages := s.prepareAIMessages(userMessage, chatHistory, userProfile)
 
-    // Call AI
-    groqMessages := s.convertToGroqMessages(messages)
-    aiResponse, err := s.GroqClient.GetChatCompletion(ctx, groqMessages, s.getJobSearchTools())
-    if err != nil {
-        log.Printf("AI call failed: %v", err)
-        return &models.JobAIResponse{
-            Message: "Sorry, I'm having trouble connecting to the AI service. Please try again later.",
-        }, nil
-    }
+	// Call AI
+	groqMessages := s.convertToGroqMessages(messages)
+	aiResponse, err := s.GroqClient.GetChatCompletion(ctx, groqMessages)
+	if err != nil {
+		log.Printf("AI call failed: %v", err)
+		return &models.JobAIResponse{
+			Message: "Sorry, I'm having trouble connecting to the AI service. Please try again later.",
+		}, nil
+	}
 
-    // Parse AI response and execute actions
-    return s.processAIResponse(ctx, userID, aiResponse, userMessage, chatID)
+	// Extract job search criteria from AI response
+	searchCriteria, aiTextResponse := s.extractJobSearchCriteriaAndResponse(aiResponse.Content, userProfile)
+
+	// If criteria is found and complete, perform job search
+	var jobs []models.Job
+	var searchMsg string
+	
+	if searchCriteria != nil && s.isCriteriaComplete(searchCriteria) {
+		jobs, searchMsg, err = s.JobService.GetCuratedJobs(
+			searchCriteria.Field,
+			searchCriteria.LookingFor,
+			searchCriteria.Experience,
+			searchCriteria.Skills,
+			searchCriteria.Language,
+		)
+
+		if err != nil {
+			log.Printf("Job search failed: %v", err)
+			searchMsg = "I couldn't find any current job openings matching your criteria. Please try different search terms or check back later."
+		}
+	}
+
+	// Combine AI response with job search results
+	finalResponse := s.formatFinalResponse(aiTextResponse, searchMsg, jobs, searchCriteria)
+
+	// Save to chat history
+	response := s.saveChatHistory(ctx, userID, chatID, userMessage, finalResponse, searchCriteria, jobs)
+	response.Jobs = jobs
+	
+	return response, nil
+}
+
+func (s *JobAIService) extractJobSearchCriteriaAndResponse(aiResponse string, userProfile *models.User) (*dto.JobSearchCriteriaDTO, string) {
+	// Look for JSON pattern in the AI response
+	re := regexp.MustCompile(`\{[^{}]*\"experience\"[^{}]*\"field\"[^{}]*\"language\"[^{}]*\"looking_for\"[^{}]*\"skills\"[^{}]*\}`)
+	matches := re.FindStringSubmatch(aiResponse)
+	
+	var criteria *dto.JobSearchCriteriaDTO
+	textResponse := aiResponse
+
+	if len(matches) > 0 {
+		// Extract JSON and remove it from the text response
+		jsonStr := matches[0]
+		textResponse = strings.Replace(aiResponse, jsonStr, "", 1)
+		textResponse = strings.TrimSpace(textResponse)
+		
+		var criteriaData dto.JobSearchCriteriaDTO
+		err := json.Unmarshal([]byte(jsonStr), &criteriaData)
+		if err != nil {
+			log.Printf("Failed to parse job search criteria: %v", err)
+		} else {
+			criteria = &criteriaData
+			
+			// Enhance with user profile data if available
+			if userProfile != nil {
+				if len(criteria.Skills) == 0 && len(userProfile.Skills) > 0 {
+					criteria.Skills = userProfile.Skills
+				}
+				
+				if criteria.Experience == "" && *userProfile.YearsExperience > 0 {
+					if *userProfile.YearsExperience < 3 {
+						criteria.Experience = "entry-level"
+					} else if *userProfile.YearsExperience < 7 {
+						criteria.Experience = "mid-level"
+					} else {
+						criteria.Experience = "senior"
+					}
+				}
+			}
+		}
+	}
+
+	return criteria, textResponse
+}
+
+func (s *JobAIService) isCriteriaComplete(criteria *dto.JobSearchCriteriaDTO) bool {
+	return criteria.Field != "" && criteria.LookingFor != ""
+}
+
+func (s *JobAIService) formatFinalResponse(aiTextResponse, searchMsg string, jobs []models.Job, criteria *dto.JobSearchCriteriaDTO) string {
+	if aiTextResponse == "" && criteria != nil {
+		// If AI only returned JSON, create a friendly response
+		aiTextResponse = fmt.Sprintf("I found your job preferences: %s %s position", criteria.Experience, criteria.Field)
+		if len(criteria.Skills) > 0 {
+			aiTextResponse += fmt.Sprintf(" with skills in %s", strings.Join(criteria.Skills, ", "))
+		}
+	}
+
+	finalResponse := aiTextResponse
+	
+	if searchMsg != "" {
+		if finalResponse != "" {
+			finalResponse += "\n\n" + searchMsg
+		} else {
+			finalResponse = searchMsg
+		}
+	}
+
+	if len(jobs) == 0 && criteria != nil && s.isCriteriaComplete(criteria) {
+		finalResponse += "\n\nNo current job openings were found. You might want to:"
+		finalResponse += "\n• Try different search terms"
+		finalResponse += "\n• Broaden your location preference"
+		finalResponse += "\n• Check back in a few days for new postings"
+	}
+
+	return finalResponse
 }
 
 func (s *JobAIService) prepareAIMessages(userMessage string, history []models.JobChatMessage, userProfile *models.User) []models.AIMessage {
-    messages := []models.AIMessage{
-        {
-            Role: "system",
-            Content: `You are a job search assistant. ONLY help with job-related queries.
-            
-            STRICT RULES:
-            1. Only respond to job search, career advice, employment questions
-            2. If user asks about CV/resume, say: "Please use our CV analysis section for that"
-            3. If user asks about interviews, say: "Check our interview practice section"
-            4. For off-topic queries: "I'm here to help with job search only"
-            
-            JOB SEARCH FLOW:
-            - If user wants job search, ask if they want to use their profile data
-            - If yes, use their skills/experience from profile
-            - If no, ask for: job field, location preference, skills, experience level
-            - Then search jobs using available tools
-            - Present results clearly`,
-        },
-    }
+	messages := []models.AIMessage{
+		{
+			Role: "system",
+			Content: `You are a helpful job search assistant. Your task is to:
 
-    // Add chat history
-    for _, msg := range history {
-        messages = append(messages, models.AIMessage{
-            Role:    msg.Role,
-            Content: msg.Message,
-        })
-    }
+				1. Extract job search criteria from user messages
+				2. Return a JSON object with the criteria
+				3. Provide helpful, natural language responses
 
-    // Add user profile context if available
-    if userProfile != nil && len(userProfile.Skills) > 0 {
-        profileContext := fmt.Sprintf("User profile available: Skills: %v, Experience: %d years.",  
-            userProfile.Skills, userProfile.YearsExperience)
-        messages = append(messages, models.AIMessage{
-            Role:    "system",
-            Content: profileContext,
-        })
-    }
+				CRITICAL: You MUST include BOTH:
+				- A natural language response to the user
+				- A JSON object with the extracted criteria
 
-    // Add current user message
-    messages = append(messages, models.AIMessage{
-        Role:    "user",
-        Content: userMessage,
-    })
+				JSON FORMAT:
+				{
+				"experience": "entry-level/mid-level/senior",
+				"field": "job field",
+				"language": "en/am", 
+				"looking_for": "local/remote/freelance",
+				"skills": ["skill1", "skill2"]
+				}
 
-    return messages
+				EXAMPLES:
+				User: "I want remote software jobs with Python"
+				Response: "Great! I'll search for remote Python software jobs for you.{\"experience\":\"\",\"field\":\"software development\",\"language\":\"en\",\"looking_for\":\"remote\",\"skills\":[\"Python\"]}"
+
+				User: "I have 5 years experience in marketing"
+				Response: "Thanks for sharing your experience! What type of marketing position are you looking for (local, remote, or freelance)?{\"experience\":\"mid-level\",\"field\":\"marketing\",\"language\":\"en\",\"looking_for\":\"\",\"skills\":[]}"
+
+				Always be helpful and guide the user to provide missing information.`,
+		},
+	}
+
+	// Add chat history
+	for _, msg := range history {
+		messages = append(messages, models.AIMessage{
+			Role:    msg.Role,
+			Content: msg.Message,
+		})
+	}
+
+	// Add current user message
+	messages = append(messages, models.AIMessage{
+		Role:    "user",
+		Content: userMessage,
+	})
+
+	return messages
 }
 
 func (s *JobAIService) convertToGroqMessages(messages []models.AIMessage) []dto.GroqAIMessageDTO {
-    var groqMessages []dto.GroqAIMessageDTO
-    for _, msg := range messages {
-        groqMessages = append(groqMessages, dto.GroqAIMessageDTO{
-            Role:    msg.Role,
-            Content: msg.Content,
-        })
-    }
-    return groqMessages
+	var groqMessages []dto.GroqAIMessageDTO
+	for _, msg := range messages {
+		groqMessages = append(groqMessages, dto.GroqAIMessageDTO{
+			Role:    msg.Role,
+			Content: msg.Content,
+		})
+	}
+	return groqMessages
 }
 
-// infrastructure/ai_service/job_ai_service.go
-func (s *JobAIService) getJobSearchTools() []dto.GroqToolDTO {
-    return []dto.GroqToolDTO{
-        {
-            Type: "function",
-            Function: dto.GroqToolFunctionDTO{
-                Name:        "search_jobs",
-                Description: "Search for jobs based on criteria",
-                Parameters: dto.GroqToolFunctionParametersDTO{
-                    Type: "object",
-                    Properties: map[string]dto.GroqToolPropertyDTO{
-                        "field": {
-                            Type:        "string",
-                            Description: "Job field/industry",
-                        },
-                        "looking_for": {
-                            Type:        "string",
-                            Description: "local, remote, or freelance",
-                        },
-                        "skills": {
-                            Type:        "array",
-                            Description: "Required skills",
-                            Items: &dto.GroqToolPropertyDTO{
-                                Type: "string",
-                            },
-                        },
-                        "experience": {
-                            Type:        "string",
-                            Description: "Experience level",
-                        },
-                        "language": {
-                            Type:        "string",
-                            Description: "en or am",
-                        },
-                    },
-                    Required: []string{"field", "looking_for"},
-                },
-            },
-        },
-    }
-}
+func (s *JobAIService) saveChatHistory(ctx context.Context, userID string, chatID string, userMessage string, aiResponse string, criteria *dto.JobSearchCriteriaDTO, jobs []models.Job) *models.JobAIResponse {
+	response := &models.JobAIResponse{
+		Message: aiResponse,
+	}
 
-func (s *JobAIService) processAIResponse(ctx context.Context, userID string, aiResponse *models.GroqAIMessage, userMessage string, chatID string) (*models.JobAIResponse, error) {
-    response := &models.JobAIResponse{
-        Message: aiResponse.Content,
-    }
+	userMsg := models.JobChatMessage{
+		Role:      "user",
+		Message:   userMessage,
+		Timestamp: time.Now(),
+	}
 
-    jobSearchPerformed := false
+	assistantMsg := models.JobChatMessage{
+		Role:      "assistant",
+		Message:   aiResponse,
+		Timestamp: time.Now(),
+	}
 
-    // Check if AI called the search_jobs function
-    if aiResponse.ToolCalls != nil {
-        for _, toolCall := range aiResponse.ToolCalls {
-            if toolCall.Function.Name == "search_jobs" {
-                // Parse the function arguments
-                if args, ok := toolCall.Function.Arguments.(map[string]interface{}); ok {
-                    field := args["field"].(string)
-                    lookingFor := args["looking_for"].(string)
-                    
-                    // Handle optional parameters
-                    experience := ""
-                    if exp, exists := args["experience"]; exists {
-                        experience = exp.(string)
-                    }
-                    
-                    skills := []string{}
-                    if sk, exists := args["skills"]; exists {
-                        if skillSlice, ok := sk.([]interface{}); ok {
-                            for _, skill := range skillSlice {
-                                skills = append(skills, skill.(string))
-                            }
-                        }
-                    }
-                    
-                    language := "en" // default
-                    if lang, exists := args["language"]; exists {
-                        language = lang.(string)
-                    }
+	var err error
+	if chatID == "" {
+		// Create new chat
+		query := map[string]any{
+			"field":       "",
+			"looking_for": "",
+			"skills":      []string{},
+			"experience":  "",
+			"language":    "en",
+		}
 
-                    // Search for jobs
-                    jobs, msg, err := s.JobService.GetCuratedJobs(field, lookingFor, experience, skills, language)
-                    if err == nil {
-                        response.Jobs = jobs
-                        response.Message += "\n\n" + msg
-                    }
-                }
-            }
-        }
-    }
+		// Update query if criteria is available
+		if criteria != nil {
+			query["field"] = criteria.Field
+			query["looking_for"] = criteria.LookingFor
+			query["skills"] = criteria.Skills
+			query["experience"] = criteria.Experience
+			query["language"] = criteria.Language
+		}
 
-    // Save to chat history
-    userMsg := models.JobChatMessage{
-        Role:      "user",
-        Message:   userMessage,
-        Timestamp: time.Now(),
-    }
+		chatID, err = s.JobChatRepo.CreateJobChat(ctx, userID, query, jobs, []models.JobChatMessage{userMsg, assistantMsg})
+		if err != nil {
+			log.Printf("Failed to create chat: %v", err)
+		} else {
+			response.ChatID = chatID
+		}
+	} else {
+		// Append to existing chat
+		err = s.JobChatRepo.AppendMessage(ctx, chatID, userMsg)
+		if err != nil {
+			log.Printf("Failed to append user message: %v", err)
+		}
+		err = s.JobChatRepo.AppendMessage(ctx, chatID, assistantMsg)
+		if err != nil {
+			log.Printf("Failed to append assistant message: %v", err)
+		}
+		response.ChatID = chatID
+	}
 
-    assistantMsg := models.JobChatMessage{
-        Role:      "assistant",
-        Message:   response.Message,
-        Timestamp: time.Now(),
-    }
-
-    var err error
-    if chatID == "" {
-        // Create new chat
-        query := map[string]any{
-            "field":       "", // You might want to capture these from the tool call
-            "looking_for": "",
-            "skills":      []string{},
-            "experience":  "",
-            "language":    "en",
-        }
-        
-        // Update query if job search was performed
-        if jobSearchPerformed && aiResponse.ToolCalls != nil {
-            for _, toolCall := range aiResponse.ToolCalls {
-                if toolCall.Function.Name == "search_jobs" {
-                    if args, ok := toolCall.Function.Arguments.(map[string]interface{}); ok {
-                        query["field"] = args["field"]
-                        query["looking_for"] = args["looking_for"]
-                        if exp, exists := args["experience"]; exists {
-                            query["experience"] = exp
-                        }
-                        if sk, exists := args["skills"]; exists {
-                            query["skills"] = sk
-                        }
-                        if lang, exists := args["language"]; exists {
-                            query["language"] = lang
-                        }
-                    }
-                }
-            }
-        }
-        
-        chatID, err = s.JobChatRepo.CreateJobChat(ctx, userID, query, response.Jobs, []models.JobChatMessage{userMsg, assistantMsg})
-        if err != nil {
-            log.Printf("Failed to create chat: %v", err)
-        } else {
-            response.ChatID = chatID
-        }
-    } else {
-        // Append to existing chat
-        err = s.JobChatRepo.AppendMessage(ctx, chatID, userMsg)
-        if err != nil {
-            log.Printf("Failed to append user message: %v", err)
-        }
-        err = s.JobChatRepo.AppendMessage(ctx, chatID, assistantMsg)
-        if err != nil {
-            log.Printf("Failed to append assistant message: %v", err)
-        }
-        response.ChatID = chatID
-    }
-
-    return response, nil
+	return response
 }
