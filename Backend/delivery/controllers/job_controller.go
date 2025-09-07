@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -8,9 +9,9 @@ import (
 	"github.com/tsigemariamzewdu/JobMate-backend/delivery/dto"
 	"github.com/tsigemariamzewdu/JobMate-backend/domain/models"
 	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/ai"
+	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/ai_service"
 	"github.com/tsigemariamzewdu/JobMate-backend/repositories"
 	"github.com/tsigemariamzewdu/JobMate-backend/usecases"
-	"github.com/tsigemariamzewdu/JobMate-backend/infrastructure/ai_service"
 )
 
 type JobController struct {
@@ -31,18 +32,53 @@ func NewJobController(jobUsecase *usecases.JobUsecase, jobChatRepo *repositories
 
 func (jc *JobController) SuggestJobs(c *gin.Context) {
 	var req dto.JobSuggestionRequest
+	// chatID := c.Query("chat_id")
+	// if err := c.ShouldBindJSON(&req); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+	// 	return
+	// }
+
+	// userID := c.GetString("userID")
+	// // input validation
+	// if userID == "" || req.Field == "" || req.LookingFor == "" || (req.LookingFor != "local" && req.LookingFor != "remote" && req.LookingFor != "freelance") {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Missing or invalid field(s) in request"})
+	// 	return
+	// }
+
 	chatID := c.Query("chat_id")
 	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("JSON binding error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
 	userID := c.GetString("userID")
+	log.Printf("Extracted userID from context: '%s'", userID)
+	log.Printf("Request data - LookingFor: '%s', Field: '%s', Language: '%s'", 
+		req.LookingFor, req.Field, req.Language)
+
 	// input validation
-	if userID == "" || req.Field == "" || req.LookingFor == "" || (req.LookingFor != "local" && req.LookingFor != "remote" && req.LookingFor != "freelance") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing or invalid field(s) in request"})
+	if userID == "" {
+		log.Printf("Validation failed: userID is empty")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing userID in context"})
 		return
 	}
+	if req.Field == "" {
+		log.Printf("Validation failed: Field is empty")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing Field in request"})
+		return
+	}
+	if req.LookingFor == "" {
+		log.Printf("Validation failed: LookingFor is empty")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing LookingFor in request"})
+		return
+	}
+	if req.LookingFor != "local" && req.LookingFor != "remote" && req.LookingFor != "freelance" {
+		log.Printf("Validation failed: Invalid LookingFor value: %s", req.LookingFor)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid LookingFor value"})
+		return
+	}
+	
 	if req.Language != "en" && req.Language != "am" {
 		req.Language = "en"
 	}
