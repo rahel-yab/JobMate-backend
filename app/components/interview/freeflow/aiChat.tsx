@@ -14,6 +14,15 @@ interface Message {
   sender: Role;
   text: string;
 }
+interface FreeformChat {
+  chat_id: string;
+  session_type: "General" | "Technical" | "Behavioral" | string;
+  last_message: string;
+  created_at: string;
+  updated_at: string;
+}
+
+
 
 const texts = {
   en: {
@@ -63,7 +72,7 @@ const FreeformChatPage: React.FC = () => {
 
         if (Array.isArray(userChats)) {
           const existingSession = userChats.find(
-            (chat: any) => chat.session_type === sessionType
+            (chat: FreeformChat) => chat.session_type === sessionType
           );
 
           if (existingSession) {

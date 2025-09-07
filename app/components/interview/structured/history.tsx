@@ -13,6 +13,18 @@ interface StructuredChatItem {
   status: "In Progress" | "Completed";
   updatedAt: string;
 }
+interface UserChat {
+  chat_id: string;
+  field: string;
+  user_profile: Record<string, unknown>;
+  current_question: number;
+  total_questions: number;
+  is_completed: boolean;
+  last_message: string;
+  created_at: string;
+  updated_at: string;
+}
+
 
 // ✅ Format time ago
 const formatTimeAgo = (timestamp: string): string => {
@@ -75,11 +87,13 @@ const StructuredHistory: React.FC = () => {
   // ✅ Extract & sort history items
   const structuredHistory: StructuredChatItem[] =
     chatHistory?.data?.chats
-      ?.map((chat: any) => ({
+      ?.map((chat: UserChat) => ({
         id: chat.chat_id,
         title: chat.field,
         subtitle: chat.field,
-        status: chat.is_completed ? "Completed" : "In Progress",
+        status: chat.is_completed
+          ? "Completed"
+          : ("In Progress" as "Completed" | "In Progress"),
         updatedAt: chat.updated_at,
       }))
       ?.sort(
