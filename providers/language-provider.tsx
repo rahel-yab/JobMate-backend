@@ -91,7 +91,7 @@ const translations = {
       job_boards:"የስራ ማስታወቂያ ሰሌዳዎች",
       skill_enhancements:"ክህሎትን ማሳደግ",
       market_insights:"የሥራ ገበያ ግንዛቤዎች",
-      motivation:"ራስን ራስን ማንቃት",
+      motivation:"ራስን ማንቃት",
       start_building:'AIን ተጠቅመው CV ያዘጋጁ',
       your_offline:"ካለ ኢንተርኔት ግንኙነት የሚያገኟቸው አገልግሎቶች",
       // login 
