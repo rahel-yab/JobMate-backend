@@ -26,25 +26,28 @@ const translations = {
     cvWelcomeMessage:
       "Great! I'd be happy to help you with your CV. You can upload your current CV or describe your background below, and I'll provide detailed feedback to help you improve it.",
 
-    // offline tips
-    cv_writing: "CV Writing",
-    interview_prep: "Interview Prep",
-    job_boards: "Job Boards",
-    skill_enhancements: "Skill Enhancements",
-    market_insights: "Market Insights",
-    motivation: "Motivation",
-    start_building: "Start building your AI powered CV",
-    your_offline: "Your offline career resource",
-    // login
-    l_welcome: "Welcome Back",
-    l_subtitle: "Sign in to continue your career journey",
-    email: "Email Address",
-    password: "Password",
-    l_signIn: "Sign In",
-    l_signingIn: "Signing In...",
-    l_noAccount: "Don't have an account? ",
-    l_register: "Sign up",
-    l_forgotPassword: "Forgot password?",
+      // offline tips
+      cv_writing:"CV Writing",
+      interview_prep:"Interview Prep",
+      job_boards:"Job Boards",
+      skill_enhancements:"Skill Enhancements",
+      market_insights:"Market Insights",
+      motivation:"Motivation",
+      start_building:'Start building your AI powered CV',
+      your_offline:"Your offline career resource",
+      next :"Next",
+      back:"Back",
+      // login
+      l_welcome: "Welcome Back",
+      l_subtitle: "Sign in to continue your career journey",
+      email: "Email Address",
+      password: "Password",
+      l_signIn: "Sign In",
+      l_signingIn: "Signing In...",
+      l_noAccount: "Don't have an account? ",
+      l_register: "Sign up",
+      l_forgotPassword: "Forgot password?",
+
 
     // register
     r_join: "Join JobMate",
@@ -118,25 +121,28 @@ const translations = {
     cvWelcomeMessage:
       "በጣም ጥሩ! በCVዎ ላይ ልረዳዎት ደስ ይለኛል። የአሁኑን CVዎን መስቀል ወይም ዳራዎን ከዚህ በታች መግለጽ ይችላሉ፣ እና እንዲያሻሽሉት ለመርዳት ዝርዝር ግብረመልስ እሰጣለሁ።",
 
-    // offline tips
-    cv_writing: "CV አጻጻፍ",
-    interview_prep: "ቃለ መጠይቅ ዝግጅት ",
-    job_boards: "የስራ ማስታወቂያ ሰሌዳዎች",
-    skill_enhancements: "ክህሎትን ማሳደግ",
-    market_insights: "የሥራ ገበያ ግንዛቤዎች",
-    motivation: "ራስን ማንቃት",
-    start_building: "AIን ተጠቅመው CV ያዘጋጁ",
-    your_offline: "ካለ ኢንተርኔት ግንኙነት የሚያገኟቸው አገልግሎቶች",
-    // login
-    l_welcome: "እንኳን በደህና መጡ",
-    l_subtitle: "የሥራ ጉዞዎን ለመቀጠል ግባ",
-    email: "ኢሜይል አድራሻ",
-    password: "የይለፍ ቃል",
-    l_signIn: "ግባ",
-    l_signingIn: "በመግባት ላይ...",
-    l_noAccount: "መለያ የለህም? አዲስ መለያ ፍጠር",
-    l_register: "ተመዝገብ ",
-    l_forgotPassword: "የይለፍ ቃል ረስተዋል?",
+      // offline tips
+      cv_writing:"CV አጻጻፍ",
+      interview_prep:"ቃለ መጠይቅ ዝግጅት ",
+      job_boards:"የስራ ማስታወቂያ ሰሌዳዎች",
+      skill_enhancements:"ክህሎትን ማሳደግ",
+      market_insights:"የሥራ ገበያ ግንዛቤዎች",
+      motivation:"ራስን ማንቃት",
+      start_building:'AIን ተጠቅመው CV ያዘጋጁ',
+      your_offline:"ካለ ኢንተርኔት ግንኙነት የሚያገኟቸው አገልግሎቶች",
+      next :"ቀጣይ",
+      back:"ተመለስ",
+      // login 
+      l_welcome: "እንኳን በደህና መጡ",
+      l_subtitle: "የሥራ ጉዞዎን ለመቀጠል ግባ",
+      email: "ኢሜይል አድራሻ",
+      password: "የይለፍ ቃል",
+      l_signIn: "ግባ",
+      l_signingIn: "በመግባት ላይ...",
+      l_noAccount: "መለያ የለህም? አዲስ መለያ ፍጠር",
+      l_register: "ተመዝገብ ",
+      l_forgotPassword: "የይለፍ ቃል ረስተዋል?",
+
     // register
     r_join: "JobMate ጋር ተቀላቀል",
     r_create: "መለያህን ፍጠር እና ጀምር",
