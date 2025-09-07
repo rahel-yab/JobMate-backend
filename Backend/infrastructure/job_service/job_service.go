@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 
@@ -19,6 +20,8 @@ func NewJobService(apiKey string) *JobService {
 }
 
 func (s *JobService) GetCuratedJobs(field, lookingFor, experience string, skills []string, language string) ([]models.Job, string, error) {
+	log.Printf("JOB SEARCH - Field: %s, Type: %s, Experience: %s, Skills: %v", field, lookingFor, experience, skills)
+	
 	var jobs []models.Job
 	// fetch from JobDataAPI for local jobs
 	if lookingFor == "local" {
@@ -29,9 +32,11 @@ func (s *JobService) GetCuratedJobs(field, lookingFor, experience string, skills
 	}
 	// fetch from Upwork for remote/freelance jobs
 	if lookingFor == "remote" || lookingFor == "freelance" {
-		upworkJobs, err := fetchUpworkJobs(field)
+		upworkJobs, err := fetchUpworkJobs(field, skills, experience)
 		if err == nil {
 			jobs = append(jobs, upworkJobs...)
+		}else {
+			log.Printf("Upwork fetch failed: %v", err)
 		}
 	}
 	if len(jobs) == 0 {
@@ -45,6 +50,8 @@ func (s *JobService) GetCuratedJobs(field, lookingFor, experience string, skills
 	if language == "am" {
 		msg = "እነዚህ ስራዎች ለ" + field + " የሚስማሙ ናቸው።"
 	}
+
+	log.Printf("FOUND %d jobs for %s %s positions", len(jobs), lookingFor, field)
 	return jobs, msg, nil
 }
 
@@ -128,17 +135,43 @@ func fetchJobsFromJobDataAPI(apiKey, titleFilter string) ([]models.Job, error) {
 }
 
 // fetch jobs from Upwork for remote/freelance positions
-func fetchUpworkJobs(field string) ([]models.Job, error) {
-	searchURL := fmt.Sprintf("https://www.upwork.com/ab/jobs/search/?q=%s", url.QueryEscape(field))
-	job := models.Job{
-		Title:        fmt.Sprintf("Freelance %s Jobs", field),
-		Company:      "Upwork",
-		Location:     "Remote",
-		Requirements: []string{},
-		Type:         "freelance",
-		Source:       "Upwork",
-		Link:         searchURL,
-		Language:     "en",
-	}
-	return []models.Job{job}, nil
+func fetchUpworkJobs(field string, skills []string, experience string) ([]models.Job, error) {
+    
+	searchQuery := url.QueryEscape(field)
+    if len(skills) > 0 {
+        searchQuery = url.QueryEscape(fmt.Sprintf("%s %s", field, skills[0]))
+    }
+    
+    searchURL := fmt.Sprintf("https://www.upwork.com/ab/jobs/search/?q=%s", searchQuery)
+    
+    var jobs []models.Job
+    
+    jobs = append(jobs, models.Job{
+        Title:        fmt.Sprintf("%s Developer Jobs", field),
+        Company:      "Upwork",
+        Location:     "Remote",
+        Requirements: skills,
+        Type:         "freelance",
+        Source:       "Upwork",
+        Link:         searchURL,
+        Language:     "en",
+    })
+    
+    for _, skill := range skills {
+        if skill != "" {
+            skillSearchURL := fmt.Sprintf("https://www.upwork.com/ab/jobs/search/?q=%s", url.QueryEscape(skill))
+            jobs = append(jobs, models.Job{
+                Title:        fmt.Sprintf("%s Developer Jobs", skill),
+                Company:      "Upwork",
+                Location:     "Remote", 
+                Requirements: []string{skill},
+                Type:         "freelance",
+                Source:       "Upwork",
+                Link:         skillSearchURL,
+                Language:     "en",
+            })
+        }
+    }
+    
+    return jobs, nil
 }
