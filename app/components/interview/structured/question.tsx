@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   useStartStructuredInterviewMutation,
   useAnswerStructuredQuestionMutation,
-  useResumeStructuredInterviewQuery,
 } from "@/lib/redux/api/interviewApi"; // Adjust path
 
 const texts = {

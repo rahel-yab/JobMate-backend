@@ -1,9 +1,7 @@
 "use client"
-import ChatWindow from "./ChatWindow"
 import { useLanguage } from "@/providers/language-provider";
 import { ArrowLeft, Globe } from "lucide-react";
 import Link from "next/link";
-import {useState} from "react"
 export default function Header(){
     const { language, setLanguage, t } = useLanguage();
     return (

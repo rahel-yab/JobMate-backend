@@ -22,6 +22,7 @@ const { t } = useLanguage();
       router.push(`/reset-password?email=${encodeURIComponent(email)}`);
     } catch (err) {
       toast.error("❌ Failed to send reset OTP. Try again.");
+      console.log("❌ Failed to send reset OTP. Try again.",err);
     }
   };
 

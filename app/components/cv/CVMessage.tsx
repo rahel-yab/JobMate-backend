@@ -25,7 +25,6 @@ type CVMessageProps = {
 };
 
 export default function CVMessage({
-  summary,
   strengths,
   weaknesses,
   improvements,

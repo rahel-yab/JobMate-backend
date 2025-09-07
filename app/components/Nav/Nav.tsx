@@ -7,7 +7,6 @@ import {
   FiFileText,
   FiBriefcase,
   FiUser,
-  FiMessageSquare,
 } from "react-icons/fi";
 import { AiOutlineRead } from "react-icons/ai";
 import { ChevronLeft, ChevronRight } from "lucide-react";
