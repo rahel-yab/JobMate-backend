@@ -5,13 +5,14 @@ import { useLanguage } from "@/providers/language-provider";
 import { useSendMsgMutation } from "@/lib/redux/api/JobApi";
 import JobChatWindow from "../JobChatWindow";
 import ChatMessage from "../ChatMessage";
+import { JobCardProps } from "./Jobcard";
 
 type Message = {
   id: number;
   sender: "user" | "ai";
   type: "text" | "jobs";
   text?: string;
-  jobs?: any[];
+  jobs?: JobCardProps[];
   time: string;
 };
 
