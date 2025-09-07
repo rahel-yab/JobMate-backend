@@ -67,23 +67,22 @@ func (s *JobAIService) prepareAIMessages(userMessage string, history []models.Jo
     messages := []models.AIMessage{
         {
             Role: "system",
-            Content: `You are a job search assistant. ONLY help with job-related queries.
-            
-            STRICT RULES:
-            1. Only respond to job search, career advice, employment questions
-            2. If user asks about CV/resume, say: "Please use our CV analysis section for that"
-            3. If user asks about interviews, say: "Check our interview practice section"
-            4. For off-topic queries: "I'm here to help with job search only"
-            
-            JOB SEARCH FLOW:
-            - If user wants job search, ask if they want to use their profile data
-            - If yes, use their skills/experience from profile
-            - If no, ask for: job field, location preference, skills, experience level
-            - Then search jobs using available tools
-            - Present results clearly`,
+            Content: `You are a job search assistant. STRICTLY follow these rules:
+
+                CRITICAL INSTRUCTION: When user provides job search criteria (field, location preference, skills, experience), you MUST call the search_jobs function immediately.
+
+                REQUIRED FIELDS FOR SEARCH: field, looking_for
+                OPTIONAL FIELDS: skills, experience, language
+
+                EXAMPLES OF WHEN TO CALL search_jobs:
+                - User: "I want software jobs" → Ask for looking_for (remote/local/freelance)
+                - User: "remote software jobs" → CALL search_jobs with field=software, looking_for=remote
+                - User: "I need JavaScript remote jobs with React" → CALL search_jobs with field=software, looking_for=remote, skills=[JavaScript, React]
+
+                DO NOT ask unnecessary follow-up questions. Call search_jobs as soon as you have field and looking_for.`,
         },
     }
-
+    
     // Add chat history
     for _, msg := range history {
         messages = append(messages, models.AIMessage{
@@ -167,6 +166,16 @@ func (s *JobAIService) getJobSearchTools() []dto.GroqToolDTO {
 }
 
 func (s *JobAIService) processAIResponse(ctx context.Context, userID string, aiResponse *models.GroqAIMessage, userMessage string, chatID string) (*models.JobAIResponse, error) {
+    log.Printf("AI Response Content: %s", aiResponse.Content)
+    log.Printf("Number of Tool Calls: %d", len(aiResponse.ToolCalls))
+    
+    if aiResponse.ToolCalls != nil {
+        for i, toolCall := range aiResponse.ToolCalls {
+            log.Printf("Tool Call %d: %s", i, toolCall.Function.Name)
+            log.Printf("Tool Arguments: %+v", toolCall.Function.Arguments)
+        }
+    }
+    
     response := &models.JobAIResponse{
         Message: aiResponse.Content,
     }
@@ -204,9 +213,13 @@ func (s *JobAIService) processAIResponse(ctx context.Context, userID string, aiR
 
                     // Search for jobs
                     jobs, msg, err := s.JobService.GetCuratedJobs(field, lookingFor, experience, skills, language)
-                    if err == nil {
+                    if err != nil {
+                        log.Printf("Job search failed: %v", err)
+                        response.Message += "\n\nSorry, I couldn't find any jobs at the moment. Please try again later."
+                    } else {
                         response.Jobs = jobs
                         response.Message += "\n\n" + msg
+                        jobSearchPerformed = true  
                     }
                 }
             }
