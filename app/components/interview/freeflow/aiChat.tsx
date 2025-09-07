@@ -52,7 +52,7 @@ const FreeformChatPage: React.FC = () => {
   const t = texts[language];
   const { data: userChatsData, isLoading: chatsLoading } =
     useGetFreeformUserChatsQuery();
-  console.log("userChatsData:", userChatsData);
+ 
 
   useEffect(() => {
     const startSession = async () => {

@@ -67,7 +67,7 @@ const FreeformHistory: React.FC = () => {
   const t = texts[language];
 
   const { data, isLoading, error } = useGetFreeformUserChatsQuery();
-console.log("his_info:",data);
+
   const freeformHistory: FreeformChatItem[] =
     data?.data?.chats
       ?.filter(

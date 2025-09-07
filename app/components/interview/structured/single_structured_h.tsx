@@ -49,7 +49,7 @@ const StructuredsingleHistory: React.FC = () => {
   } = useGetStructuredHistoryQuery(chatId!, {
     skip: !chatId,
   });
-console.log("ddd:",chatHistory);
+
   const structuredQA =
     chatHistory?.data?.questions?.map((question: string, index: number) => {
       const userMessage = chatHistory.data.messages.find(

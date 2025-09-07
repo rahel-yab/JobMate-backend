@@ -42,7 +42,7 @@ const FreeformChatHistory: React.FC = () => {
   const { data, error, isLoading } = useGetFreeformHistoryQuery(chatId ?? "", {
     skip: !chatId,
   });
-console.log("single data:",data);
+
   // Redirect if no chatId
   useEffect(() => {
     if (!chatId) {

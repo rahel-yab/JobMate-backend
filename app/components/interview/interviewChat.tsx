@@ -138,8 +138,7 @@ const InterviewPage: React.FC = () => {
     const s_data=structuredData;
   const { data: freeformData, isLoading: loadingFreeform } =
     useGetFreeformUserChatsQuery();
-console.log("s_data:",s_data);
-console.log("f_data:", freeformData);
+
 
   const structuredHistory: InterviewHistoryItem[] =
     structuredData?.data?.chats
@@ -173,7 +172,7 @@ console.log("f_data:", freeformData);
       {/* Header */}
       <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#217C6A] text-white">
         <div className="flex items-center gap-3">
-          <div className="h-5 w-5 text-white cursor-pointer">←</div>
+          <div className="h-5 w-5 text-white cursor-pointer"  onClick={() => router.push("/dashboard")}>←</div>
           <div className="h-10 w-10 bg-[#0F3A31] text-white rounded-full flex items-center justify-center font-bold">
             JM
           </div>
