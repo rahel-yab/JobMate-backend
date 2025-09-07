@@ -28,7 +28,7 @@ var cvChatTools = []service.AITool{
 						Description: "The ID of the CV to get analysis for. If not provided, uses the current chat's CV.",
 					},
 				},
-				Required: []string{"cv_id"},
+				Required: []string{},
 			},
 		},
 	},
@@ -79,22 +79,30 @@ func NewCVChatUsecase(
 }
 
 func (u *cvChatUsecase) SendMessage(ctx context.Context, userID string, message string, cvID string, chatID string) (*model.CVChatMessage, error) {
+	log.Printf("[DEBUG] SendMessage called with userID=%s, cvID=%s, chatID=%s, message=%q", userID, cvID, chatID, message)
+
 	// Find or create CV chat session
 	chats, err := u.CVChatRepository.GetCVChatsByUserID(ctx, userID)
 	if err != nil {
+		log.Printf("[ERROR] Failed to get user CV chats: %v", err)
 		return nil, fmt.Errorf("failed to get user CV chats: %w", err)
 	}
+
+	log.Printf("[DEBUG] Found %d chats for user %s", len(chats), userID)
 
 	if chatID == "" {
 		if len(chats) == 0 {
 			// Create new chat session
 			chatID, err = u.CVChatRepository.CreateCVChat(ctx, userID, cvID)
 			if err != nil {
+				log.Printf("[ERROR] Failed to create CV chat: %v", err)
 				return nil, fmt.Errorf("failed to create CV chat: %w", err)
 			}
+			log.Printf("[DEBUG] Created new chat session with ID %s", chatID)
 		} else {
 			// Use the most recent chat
 			chatID = chats[len(chats)-1].ID
+			log.Printf("[DEBUG] Using most recent chat session with ID %s", chatID)
 		}
 	}
 
@@ -104,30 +112,38 @@ func (u *cvChatUsecase) SendMessage(ctx context.Context, userID string, message 
 		Content:   message,
 		Timestamp: time.Now(),
 	}
+	log.Printf("[DEBUG] Appending user message to chatID=%s: %q", chatID, message)
 
 	err = u.CVChatRepository.AppendMessage(ctx, chatID, userMessage)
 	if err != nil {
+		log.Printf("[ERROR] Failed to save user message: %v", err)
 		return nil, fmt.Errorf("failed to save user message: %w", err)
 	}
 
 	// Get chat history for context
 	chat, err := u.CVChatRepository.GetCVChatByID(ctx, chatID)
 	if err != nil {
+		log.Printf("[ERROR] Failed to get chat history for chatID=%s: %v", chatID, err)
 		return nil, fmt.Errorf("failed to get chat history: %w", err)
 	}
+	log.Printf("[DEBUG] Retrieved chat history: %d messages", len(chat.Messages))
 
 	// Build AI messages with CV-specific system prompt
 	aiMessages := u.buildCVAIMessages(chat.Messages, cvID)
+	log.Printf("[DEBUG] Built %d AI messages for chatID=%s", len(aiMessages), chatID)
 
 	// Call AI with CV-specific tools
 	aiResponse, err := u.AIService.GetChatCompletion(ctx, aiMessages, cvChatTools)
 	if err != nil {
-		fmt.Printf("AI Service Error: %v\n", err)
+		log.Printf("[ERROR] AIService.GetChatCompletion failed: %v", err)
 		return u.createFallbackResponse(ctx, chatID, err)
 	}
 
+	log.Printf("[DEBUG] AI response content length=%d, toolCalls=%d", len(aiResponse.Content), len(aiResponse.ToolCalls))
+
 	// Handle tool calls if any
 	if len(aiResponse.ToolCalls) > 0 {
+		log.Printf("[DEBUG] Handling %d tool calls for chatID=%s", len(aiResponse.ToolCalls), chatID)
 		return u.handleCVToolCalls(ctx, chatID, aiResponse.ToolCalls, chat.Messages, cvID)
 	}
 
@@ -137,14 +153,17 @@ func (u *cvChatUsecase) SendMessage(ctx context.Context, userID string, message 
 		Content:   strings.TrimSpace(aiResponse.Content),
 		Timestamp: time.Now(),
 	}
+	log.Printf("[DEBUG] Appending AI message to chatID=%s: %q", chatID, aiMessage.Content)
 
 	err = u.CVChatRepository.AppendMessage(ctx, chatID, aiMessage)
 	if err != nil {
+		log.Printf("[ERROR] Failed to save AI message: %v", err)
 		return nil, fmt.Errorf("failed to save AI message: %w", err)
 	}
 
 	return &aiMessage, nil
 }
+
 
 func (u *cvChatUsecase) CreateCVChatSession(ctx context.Context, userID string, cvID string) (string, error) {
 	return u.CVChatRepository.CreateCVChat(ctx, userID, cvID)
@@ -272,31 +291,33 @@ func (u *cvChatUsecase) getExistingCVAnalysis(ctx context.Context, cvID string) 
 // buildCVAIMessages creates AI messages with CV-specific system prompt including CV ID
 func (u *cvChatUsecase) buildCVAIMessages(messages []model.CVChatMessage, cvID string) []service.AIMessage {
 	// CV-specific system prompt with CV ID context
-	systemPrompt := `You are JobMate's CV Expert, a specialized AI assistant focused on CV review, optimization, and career guidance for young job seekers in Ethiopia. 
+	systemPrompt := `
+You are JobMate's CV Expert, specializing in CV review, optimization, and career guidance for young job seekers in Ethiopia.
 
-Your expertise includes:
-- CV structure and formatting best practices
-- ATS (Applicant Tracking System) optimization
-- Skills gap analysis and recommendations
-- Industry-specific CV customization
+Your expertise: 
+- CV structure & formatting
+- ATS optimization
+- Skills gap analysis
+- Industry-specific tailoring
 - Ethiopian job market insights
 
 Guidelines:
-- Keep responses concise and actionable
-- Provide specific, practical advice
-- Focus on CV improvement and career development
-- Be encouraging and supportive
-- Speak in the same language as the user
-- Reference Ethiopian job market context when relevant
+- Be concise, practical, supportive.
+- Match the user’s language.
+- Always relate advice to Ethiopian job context when useful.
 
-Current CV Context: The user is discussing their CV with ID: ` + cvID + `
+IMPORTANT TOOL RULES:
+- For strengths, weaknesses, skill gaps, or analysis details → always call the 'analyze_cv' tool But you do not need a CV ID to call this tool if the user provides a CV ID use that but if not do not bother the user to provide CV ID just call the tool and it will fetch the latest cv of the user and gives you the skill gap,weakness strengths and etc.
+  • This retrieves existing, pre-generated results (summary, skills, feedback, gaps).
+  • After fetching, expand and explain in plain language.
+- Do NOT re-analyze. If the user requests new/fresh analysis, politely tell them to use the app's "Analyze" feature.
+- If CV ID not provided, Do not ask the user for CV ID .
 
-IMPORTANT: When the user asks about their CV analysis, use the 'analyze_cv' tool.
-- This tool will NOT re-analyze the CV.
-- It will fetch the existing, pre-generated analysis results (summary, skills, feedback, gaps).
-- Use this information to answer the user's questions about their strengths, weaknesses, and how to improve.
-
-If the user asks for a completely new analysis, instruct them to use the 'Analyze' button/feature in the app.`
+In short:
+- “Add more insights/details” → call 'analyze_cv' then elaborate.
+- “Re-analyze” → instruct them to use the Analyze feature.
+Current CV Context: CV ID = {cvID}
+`
 
 	aiMessages := []service.AIMessage{
 		{Role: "system", Content: systemPrompt},
