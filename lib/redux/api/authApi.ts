@@ -4,15 +4,21 @@ import { clearAuth, setCredentials } from "../authSlice";
 
 // Base query
 const baseQuery = fetchBaseQuery({
-  baseUrl: "https://jobmate-api-0d1l.onrender.com",
+  baseUrl: "https://g6-jobmate-3.onrender.com",
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as RootState).auth.accessToken;
+    //const token = (getState() as RootState).auth.accessToken;
+
+    const state = getState() as RootState;
+    console.log("Auth state in prepareHeaders:", state.auth);
+    //const token = (getState() as RootState).auth.accessToken;
+    const token = state.auth.user?.acces_token; // ✅ correct path
+    console.log("Token in prepareHeaders:", token);
+
+
     if (token) headers.set("authorization", `Bearer ${token}`);
     return headers;
   },
-});
-
-
+});   
 // handle 401 + automatic refresh
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   let result = await baseQuery(args, api, extraOptions);

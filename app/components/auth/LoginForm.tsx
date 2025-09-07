@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { useLoginMutation } from "@/lib/redux/api/authApi";
@@ -18,19 +18,25 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
 
-  const redirect = searchParams.get("redirect") || "/";
+  const redirect = searchParams.get("redirect") || "/cv";
 
+  const effectRan = useRef(false);
+
+  // Handle Google login callback
   useEffect(() => {
+    if (effectRan.current) return; 
+    effectRan.current = true;
+
     const token = searchParams.get("token");
     const userJson = searchParams.get("user");
 
     if (token && userJson) {
       const user = JSON.parse(userJson);
       dispatch(setCredentials({ user, accessToken: token }));
-      toast.success(" Logged in with Google!");
+      toast.success("Logged in with Google!");
       router.push(redirect);
     }
-  }, [searchParams]);
+  }, [searchParams, dispatch, router, redirect]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,7 +54,7 @@ export default function LoginForm() {
       dispatch(
         setCredentials({
           user: data.user,
-          accessToken: data.user.access_token,
+          accessToken: data.user.acces_token,
         })
       );
       toast.success(" Logged in successfully!");
@@ -64,7 +70,9 @@ export default function LoginForm() {
         <ForgotPassword onClose={() => setShowForgotPassword(false)} />
       ) : (
         <>
-          <h2 className="text-2xl font-bold text-teal-600 text-center">{t("l_welcome")}</h2>
+          <h2 className="text-2xl font-bold text-teal-600 text-center">
+            {t("l_welcome")}
+          </h2>
           <p className="text-gray-500 mb-6 text-center">{t("l_subtitle")}</p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -128,7 +136,10 @@ export default function LoginForm() {
           <div className="mt-4 text-center flex justify-center">
             <p className="text-sm text-gray-500">
               {t("l_noAccount")}{" "}
-              <Link className="text-teal-600 cursor-pointer hover:underline" href="/register">
+              <Link
+                className="text-teal-600 cursor-pointer hover:underline"
+                href="/register"
+              >
                 {t("l_register")}
               </Link>
             </p>

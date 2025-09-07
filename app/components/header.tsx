@@ -7,9 +7,9 @@ import {useState} from "react"
 export default function Header(){
     const { language, setLanguage, t } = useLanguage();
     return (
-      <div className="flex items-center sticky top-0 justify-between h-[80px] shadow px-4 bg-[#217C6A] text-white w-full">
+      <div className="flex items-center sticky z-1000 top-0 justify-between h-[80px] shadow px-4 bg-[#217C6A] text-white w-full">
         <div className="flex items-center gap-3">
-          <Link href="/"><ArrowLeft className="h-5 w-5 text-white cursor-pointer" /></Link>
+          <Link href="/dashboard"><ArrowLeft className="h-5 w-5 text-white cursor-pointer" /></Link>
           <div className="h-10 w-10 bg-[#0F3A31] text-white rounded-full flex items-center justify-center font-bold">
             JM
           </div>

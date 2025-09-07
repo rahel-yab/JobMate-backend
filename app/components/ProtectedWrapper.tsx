@@ -8,7 +8,7 @@ interface ProtectedWrapperProps {
   children: React.ReactNode;
 }
 
-const unprotectedRoutes = ["/login", "/register", "/reset-password",  "/"];
+const unprotectedRoutes = ["/login", "/register", "/reset-password", "/"];
 
 export default function ProtectedWrapper({ children }: ProtectedWrapperProps) {
   const reduxToken = useSelector((state: any) => state.auth.accessToken);
@@ -25,8 +25,8 @@ export default function ProtectedWrapper({ children }: ProtectedWrapperProps) {
       return;
     }
 
-    if (token && unprotectedRoutes.includes(pathname)) {
-      router.replace("/");
+    if (token && ["/login", "/register"].includes(pathname)) {
+      router.replace("/dashboard");
       return;
     }
 
@@ -34,7 +34,8 @@ export default function ProtectedWrapper({ children }: ProtectedWrapperProps) {
   }, [reduxToken, pathname, router]);
 
   // Prevent server/client mismatch by not rendering anything until check is done
-  if (!isReady) return (
+  if (!isReady)
+    return (
       <div className="flex items-center justify-center min-h-screen">
         <h1 className="text-center text-gray-600 text-2xl">Loading...</h1>
       </div>
