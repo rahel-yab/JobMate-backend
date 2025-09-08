@@ -2,6 +2,7 @@ package config
 
 import (
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -21,6 +22,7 @@ type Config struct {
 
 	JWTSecretKey              string
 	JWTExpirationMinutes      int
+	JWTAccessTokenExpiry      time.Duration
 	RefreshTokenSecret        string
 	AccessTokenSecret         string
 	RefreshTokenExpirationMin int
@@ -108,6 +110,7 @@ func LoadConfig() (*Config, error) {
 
 		JWTSecretKey:              viper.GetString("JWT_SECRET_KEY"),
 		JWTExpirationMinutes:      viper.GetInt("JWT_EXPIRATION_MINUTES"),
+		JWTAccessTokenExpiry:       time.Duration(viper.GetInt("JWT_ACCESS_TOKEN_EXPIRY")) * time.Minute,
 		RefreshTokenSecret:        viper.GetString("REFRESH_TOKEN_SECRET"),
 		RefreshTokenExpirationMin: viper.GetInt("REFRESH_TOKEN_EXPIRATION_MINUTES"),
 

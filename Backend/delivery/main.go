@@ -66,7 +66,7 @@ func main() {
 		log.Fatalf("Failed to initialize OTP sender: %v", err)
 	}
 	otpSenderTyped := otpSender
-	jwtService := authinfra.NewJWTService(cfg.JWTSecretKey, fmt.Sprint(cfg.JWTExpirationMinutes))
+	jwtService := authinfra.NewJWTService(cfg.JWTSecretKey, fmt.Sprint(cfg.JWTExpirationMinutes), cfg.JWTAcessTokenExpiry)
 	passwordService := authinfra.NewPasswordService()
 	authMiddleware := authinfra.NewAuthMiddleware(jwtService)
 	oauthService, err := authinfra.NewOAuth2Service(providersConfigs)

@@ -13,12 +13,14 @@ import (
 type JWTService struct {
 	accessSecret 	[]byte
 	refreshSecret 	[]byte
+	accessTokenExpiry time.Duration
 }
 
-func NewJWTService(accessSecret string, refreshSecret string) svc.IJWTService {
+func NewJWTService(accessSecret string, refreshSecret string, accessTokenExpiry time.Duration) svc.IJWTService {
 	return &JWTService{
 		accessSecret: 	[]byte(accessSecret),
 		refreshSecret: 	[]byte(refreshSecret),
+		accessTokenExpiry:  accessTokenExpiry,
 	}
 }
 
@@ -27,7 +29,7 @@ func (j *JWTService) GenerateAccessToken(userID string, preferredLanguage string
 	claims := jwt.MapClaims{
 		"sub": userID,
 		"lang": preferredLanguage,
-		"exp": time.Now().Add(15 * time.Minute).Unix(),
+		"exp": time.Now().Add(j.accessTokenExpiry).Unix(),
 		"iat": time.Now().Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -35,7 +37,7 @@ func (j *JWTService) GenerateAccessToken(userID string, preferredLanguage string
 	if err != nil {
 		return "", 0, err
 	}
-	return tokenString, 15 * time.Minute, nil
+	return tokenString, j.accessTokenExpiry, nil
 }
 
 //generate verification token 
