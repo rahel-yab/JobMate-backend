@@ -1,6 +1,7 @@
 "use client";
 
 import { Clock, MessageCircle } from "lucide-react";
+import { useLanguage } from "@/providers/language-provider";
 
 interface ChatMessage {
   id: number;
@@ -16,7 +17,7 @@ interface ChatHistory {
 }
 
 interface CvHistoryCardProps {
-  history: ChatHistory[];
+  history?: ChatHistory[] | null;
   onSelectChat: (chatId: string) => void;
 }
 
@@ -24,8 +25,24 @@ export default function CvHistoryCard({
   history,
   onSelectChat,
 }: CvHistoryCardProps) {
+  const { language } = useLanguage();
+
+  // Translations
+  const texts = {
+    header: language === "am" ? "የንግግር ታሪክ" : "Chat History",
+    subHeader:
+      language === "am"
+        ? "የቀደሙ የCV ንግግሮችዎን ይጠብቁ ወይም ይቀጥሉ"
+        : "Review or continue your past CV chats",
+    emptyTitle: language === "am" ? "ንግግር ታሪክ አልተገኘም" : "No chat history yet",
+    emptySubtitle:
+      language === "am"
+        ? "የመጀመሪያ የCV ትንታኔዎን ከላይ ይጀምሩ"
+        : "Start your first CV analysis above",
+  };
+
   // Filter chats to only include those with at least one assistant message
-  const chatsWithAssistant = history.filter(
+  const chatsWithAssistant = (history ?? []).filter(
     (h) =>
       Array.isArray(h.messages) &&
       h.messages.some((m: ChatMessage) => m.role === "assistant")
@@ -36,20 +53,16 @@ export default function CvHistoryCard({
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <Clock className="h-5 w-5 text-[#217C6A]" />
-        <h3 className="font-semibold text-lg text-gray-800">Chat History</h3>
+        <h3 className="font-semibold text-lg text-gray-800">{texts.header}</h3>
       </div>
-      <p className="text-sm text-gray-500 mb-5">
-        Review or continue your past CV chats
-      </p>
+      <p className="text-sm text-gray-500 mb-5">{texts.subHeader}</p>
 
       {/* Empty state */}
       {chatsWithAssistant.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 text-center">
           <MessageCircle className="h-12 w-12 text-gray-300 mb-3" />
-          <p className="text-gray-600 font-medium">No chat history yet</p>
-          <p className="text-sm text-gray-400 mt-1">
-            Start your first CV analysis above
-          </p>
+          <p className="text-gray-600 font-medium">{texts.emptyTitle}</p>
+          <p className="text-sm text-gray-400 mt-1">{texts.emptySubtitle}</p>
         </div>
       ) : (
         // Scrollable container

@@ -5,6 +5,7 @@ import { useLogout } from "@/lib/redux/hooks/useLogout";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
+import { useEffect } from "react";
 const jaro = Jaro({
   subsets: ["latin"],
   weight: "400",
@@ -12,17 +13,21 @@ const jaro = Jaro({
 
 export default function Dashboard() {
   const user = useSelector((state: RootState) => state.auth.user);
-  
 
   const logout = useLogout();
   const router = useRouter();
-// Redirect to login if no user
-if (!user) {
-  router.push("/login");
-  return null;}
+  // Redirect to login if no user
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/login");
+    }
+  }, [user, router]);
+
+  if (!user) return null;
 
   const handleLogout = () => {
-    logout(); 
+    logout();
   };
 
   const handleRedirect = (path: string) => {
@@ -72,7 +77,9 @@ if (!user) {
         <p className="text-lg text-gray-600">
           Your AI-powered career companion for Ethiopian youth
         </p>
-        <h2 className="text-xl font-semibold text-green-600 mt-2">Hello {user?.firstName || "User"}!</h2>
+        <h2 className="text-xl font-semibold text-green-600 mt-2">
+          Hello {user?.firstName || "User"}!
+        </h2>
         <p className="text-gray-500 mt-1">
           Choose how you&apos;d like to boost your career today:
         </p>

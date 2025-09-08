@@ -57,6 +57,8 @@ const translations = {
     r_createAccount: "Sign Up",
     r_noAccount: " Already have an account? ",
     r_login: "Sign in",
+    r_firstName: "First Name",
+    r_lastName: "Last Name",
     // otp
     otp_title: "Verify OTP",
     otp_subtitle1: "We’ve sent an OTP to",
@@ -152,6 +154,8 @@ const translations = {
     r_fullName: "ሙሉ ስም",
     r_createAccount: "ተመዝገብ",
     r_haveAccount: "መለያ አለህ? ግባ",
+    r_firstName: "ስም",
+    r_lastName: "የአባት ስም",
 
     // otp
     otp_title: "ኦቲፒ ያረጋግጡ",

@@ -4,19 +4,12 @@ import React, { useEffect, useState } from "react";
 import { formatTime } from "@/lib/utils";
 import CvWindow from "./CvWindow";
 import CVMessage from "./CVMessage";
-import ChatMessage from "../../components/ChatMessage";
+import ChatMessage from "../ChatMessage";
 import ReactMarkdown from "react-markdown";
 import {
   useGetChatHistoryQuery,
   useSendMessageMutation,
 } from "@/lib/redux/api/cvApi";
-import { Message } from "../ChatWindow";
-interface ChatHistoryMessage {
-  id: number;
-  role: "assistant" | "user";
-  content: string;
-  timestamp: string | number | Date;
-}
 
 interface CvExistingChatProps {
   chatId: string;
@@ -30,7 +23,7 @@ export default function CvExistingChat({
   const { data, isLoading } = useGetChatHistoryQuery({ chat_id: chatId });
   const [sendMessage] = useSendMessageMutation();
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
   const [cvId, setCvId] = useState<string | null>(null);
 
@@ -49,7 +42,7 @@ export default function CvExistingChat({
       }
 
       if (data.messages) {
-        const formatted = data.messages.map((m: ChatHistoryMessage) => ({
+        const formatted = data.messages.map((m: any) => ({
           id: m.id,
           sender: m.role === "assistant" ? "ai" : "user",
           text: <ReactMarkdown>{m.content}</ReactMarkdown>,

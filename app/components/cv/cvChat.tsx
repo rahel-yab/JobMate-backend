@@ -40,7 +40,33 @@ interface SkillGap {
 }
 
 export default function CvChat() {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+
+  const t = (key: string) => {
+    const translations: Record<string, { en: string; am: string }> = {
+      cvWelcomeMessage: {
+        en: "Welcome! Upload your CV to get started.",
+        am: "እንኳን ደህና መጡ! ለመጀመር የCVዎን ያስገቡ።",
+      },
+      uploadError: {
+        en: "⚠️ Sorry, something went wrong while uploading your CV. Please try again later.",
+        am: "⚠️ ይቅርታ፣ በCVዎ ላይ ማስገባት ላይ ችግር ተነስቷል። እባክዎን ከዚህ በኋላ ደግመው ይሞክሩ።",
+      },
+      analyzeError: {
+        en: "⚠️ Could not find analysis suggestions for your CV. Please try again.",
+        am: "⚠️ ለCVዎ የትንተና ምክሮች ማግኘት አልቻልንም። እባክዎን ደግመው ይሞክሩ።",
+      },
+      analyzeFail: {
+        en: "⚠️ Sorry, I couldn’t analyze your CV right now. Please try again later.",
+        am: "⚠️ ይቅርታ፣ አሁን ለCVዎ ትንተና ማድረግ አልቻልንም። እባክዎን ከዚህ በኋላ ደግመው ይሞክሩ።",
+      },
+      chatDirect: {
+        en: "Okay, let's chat directly about your CV. Ask me anything!",
+        am: "እሺ፣ በቀጥታ ስለ CVዎ እንገናኝ። ማንኛውንም ጥያቄ ጠይቁኝ!",
+      },
+    };
+    return translations[key]?.[language] || key;
+  };
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -67,66 +93,100 @@ export default function CvChat() {
   }, []);
 
   const handleUpload = async (data: { rawText?: string; file?: File }) => {
-    const res = await uploadCV({
-      rawText: data.rawText,
-      file: data.file,
-    }).unwrap();
+    try {
+      const res = await uploadCV({
+        rawText: data.rawText,
+        file: data.file,
+      }).unwrap();
 
-    const msg: Message = {
-      id: Date.now(),
-      sender: "ai",
-      text: res.success
-        ? `📄 ${res.message}: ${res.data?.fileName || ""}`
-        : `⚠️ ${res.message}`,
-      time: formatTime(new Date()),
-    };
-    console.log(msg);
-    // setMessages((prev) => [...prev, msg]);
+      const msg: Message = {
+        id: Date.now(),
+        sender: "ai",
+        text: res.success
+          ? `📄 ${res.message}: ${res.data?.fileName || ""}`
+          : `⚠️ ${res.message}`,
+        time: formatTime(new Date()),
+      };
+      console.log(msg);
+      // setMessages((prev) => [...prev, msg]);
 
-    if (res.success) {
-      const newCvId = res.data.cvId;
-      localStorage.setItem("cv_id", newCvId);
-      handleAnalyze(newCvId);
+      if (res.success) {
+        const newCvId = res.data.cvId;
+        localStorage.setItem("cv_id", newCvId);
+        handleAnalyze(newCvId);
+      }
+    } catch (error) {
+      console.log(error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: "ai",
+          text: t("uploadError"),
+          time: formatTime(new Date()),
+        },
+      ]);
     }
   };
 
   const handleAnalyze = async (id: string) => {
-    const res = await analyzeCV(id).unwrap();
+    try {
+      const res = await analyzeCV(id).unwrap();
 
-    const suggestions = res.data?.suggestions;
-    if (!suggestions) {
-      console.warn("No suggestions found in response");
-      return;
+      const suggestions = res.data?.suggestions;
+      if (!suggestions) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now(),
+            sender: "ai",
+            text: t("analyzeError"),
+            time: formatTime(new Date()),
+          },
+        ]);
+        return;
+      }
+
+      const { CVs, CVFeedback, SkillGaps } = suggestions;
+
+      const normalizedSkillGaps: SkillGap[] = (SkillGaps || []).map(
+        (gap: any) => ({
+          skillName: gap.SkillName,
+          currentLevel: gap.CurrentLevel,
+          recommendedLevel: gap.RecommendedLevel,
+          importance:
+            gap.Importance?.toLowerCase() === "critical"
+              ? "important"
+              : gap.Importance?.toLowerCase(),
+          improvementSuggestions: gap.ImprovementSuggestions,
+        })
+      );
+
+      const cvMsg: Message = {
+        id: Date.now(),
+        sender: "ai",
+        type: "cv-analysis",
+        summary: CVs?.Summary || "",
+        strengths: CVFeedback?.Strengths || "",
+        weaknesses: CVFeedback?.Weaknesses || "",
+        improvements: CVFeedback?.ImprovementSuggestions || "",
+        skillGaps: normalizedSkillGaps,
+        time: formatTime(new Date()),
+      };
+
+      setMessages((prev) => [...prev, cvMsg]);
+    } catch (error) {
+      console.log(error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: "ai",
+          text: t("analyzeFail"),
+          time: formatTime(new Date()),
+        },
+      ]);
     }
-
-    const { CVs, CVFeedback, SkillGaps } = suggestions;
-
-    const normalizedSkillGaps: SkillGap[] = (SkillGaps || []).map(
-      (gap: any) => ({
-        skillName: gap.SkillName,
-        currentLevel: gap.CurrentLevel,
-        recommendedLevel: gap.RecommendedLevel,
-        importance:
-          gap.Importance?.toLowerCase() === "critical"
-            ? "important"
-            : gap.Importance?.toLowerCase(),
-        improvementSuggestions: gap.ImprovementSuggestions,
-      })
-    );
-
-    const cvMsg: Message = {
-      id: Date.now(),
-      sender: "ai",
-      type: "cv-analysis",
-      summary: CVs?.Summary || "",
-      strengths: CVFeedback?.Strengths || "",
-      weaknesses: CVFeedback?.Weaknesses || "",
-      improvements: CVFeedback?.ImprovementSuggestions || "",
-      skillGaps: normalizedSkillGaps,
-      time: formatTime(new Date()),
-    };
-
-    setMessages((prev) => [...prev, cvMsg]);
   };
 
   const ensureSession = async (cvId?: string) => {

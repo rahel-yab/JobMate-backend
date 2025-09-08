@@ -191,6 +191,7 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Badge } from "@/app/components/ui/Badge";
 import { useGetSuggestionsQuery } from "@/lib/redux/api/cvApi";
 import Link from "next/link";
+import { useLanguage } from "@/providers/language-provider";
 
 interface Course {
   Title: string;
@@ -238,11 +239,35 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
 
 export default function Page() {
   const { data, error, isLoading } = useGetSuggestionsQuery({});
+  const { language } = useLanguage();
+
+  const texts = {
+    loading: language === "am" ? "ምክር በማሰልጠን ላይ..." : "Loading suggestions...",
+    noCVTitle: language === "am" ? "ኮቪ አልተገኘም" : "No CV Found",
+    noCVMessage:
+      language === "am"
+        ? "በግል ሁኔታ ለማስተካከል እባክዎን ኮቪዎን ይጫኑ።"
+        : "Please upload and analyze your CV first to receive personalized course suggestions.",
+    analyzeCV: language === "am" ? "ኮቪ ይተካከሉ" : "Analyze CV",
+    serverIssueTitle: language === "am" ? "የሰርቨር ችግር" : "Server Issue",
+    serverIssueMessage:
+      language === "am"
+        ? "አሁን አገልግሎታችን ችግር አለበት። እባክዎን በኋላ ደግሞ ይሞክሩ።"
+        : "Our servers are having trouble right now. Please try again in a few minutes.",
+    retry: language === "am" ? "ደግመው ይሞክሩ" : "Retry",
+    failed:
+      language === "am"
+        ? "መረጃ ማግኘት አልተቻለም። እባክዎን በኋላ ደግሞ ይሞክሩ።"
+        : "Failed to load suggestions. Please try again later.",
+    dashboard: language === "am" ? "ዳሽቦርድ" : "Dashboard",
+    courseSuggestions: language === "am" ? "የኮርስ ምክር" : "Course Suggestions",
+    generalAdvice: language === "am" ? "አጠቃላይ ምክር" : "General Career Advice",
+  };
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-blue-50">
-        <p className="text-gray-600">Loading suggestions...</p>
+        <p className="text-gray-600">{texts.loading}</p>
       </div>
     );
   }
@@ -251,27 +276,38 @@ export default function Page() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-green-50 to-blue-50 px-6 text-center">
         <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          No CV Found
+          {texts.noCVTitle}
         </h2>
-        <p className="text-gray-600 mb-4">
-          Please upload your CV first to get personalized course suggestions.
-        </p>
+        <p className="text-gray-600 mb-4">{texts.noCVMessage}</p>
         <Link
-          href="/cv/upload"
+          href="/chat/cv"
           className="bg-white text-gray-800 px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition"
         >
-          Upload CV
+          {texts.analyzeCV}
         </Link>
       </div>
     );
   }
-
+  if (error && "status" in error && error.status === 500) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-green-50 to-blue-50 px-6 text-center">
+        <h2 className="text-xl font-semibold text-red-600 mb-2">
+          {texts.serverIssueTitle}
+        </h2>
+        <p className="text-gray-600 mb-4">{texts.serverIssueMessage}</p>
+        <button
+          onClick={() => location.reload()}
+          className="bg-white text-gray-800 px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition"
+        >
+          {texts.retry}
+        </button>
+      </div>
+    );
+  }
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-blue-50">
-        <p className="text-red-600">
-          Failed to load suggestions. Please try again later.
-        </p>
+        <p className="text-red-600">{texts.failed}</p>
       </div>
     );
   }
@@ -289,11 +325,11 @@ export default function Page() {
             className="inline-flex items-center gap-2 text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-lg transition shadow-sm bg-[#ffffff72]"
           >
             <ArrowLeft className="h-5 w-5" />
-            <span className="font-medium">Dashboard</span>
+            <span className="font-medium">{texts.dashboard}</span>
           </Link>
         </div>
         <h1 className="text-3xl font-bold text-center text-slate-700">
-          Course Suggestions
+          {texts.courseSuggestions}
         </h1>
 
         {/* Courses & Advice Grid */}
@@ -306,7 +342,7 @@ export default function Page() {
           {advice.length > 0 && (
             <div className="bg-gradient-to-br from-[#e5fee7c6] to-[#0e772a47] rounded-2xl shadow-md p-6 md:col-span-2">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                General Career Advice
+                {texts.generalAdvice}
               </h3>
               <ul className="list-disc pl-5 space-y-2 text-gray-700 text-sm">
                 {advice.map((item, idx) => (

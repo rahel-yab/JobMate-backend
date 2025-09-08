@@ -62,7 +62,7 @@ export default function CvAnalysisCard({
 
   return (
     <div className="flex justify-start mb-3 ml-8 ">
-      <div className="bg-[#DFF2EE] rounded-2xl p-4 max-w-[80%] w-full">
+      <div className="bg-[#E6FFFA] rounded-2xl p-4 max-w-[80%] w-full">
         {/* Header */}
         <div className="flex items-center gap-2 text-gray-700 font-semibold mb-4">
           <FileText className="h-5 w-5" />

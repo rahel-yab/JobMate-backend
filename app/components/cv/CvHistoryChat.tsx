@@ -6,21 +6,25 @@ import {
   useSendMessageMutation,
 } from "@/lib/redux/api/cvApi";
 import ChatMessage from "../ChatMessage";
-// import { formatTime } from "@/lib/utils";
+import { formatTime } from "@/lib/utils";
 
-interface CvHistoryMessage {
+interface Message {
   id: number;
-  role: string;
+  role: "user" | "ai" | "assistant";
   content: string;
-  timestamp?: string;
-  time?: string; // Only present for AI messages you create in handleSend
+  timestamp: string;
+}
+
+interface ChatHistoryResponse {
+  messages: Message[];
+  cv_id?: string;
 }
 
 export default function CvHistoryChat({ chatId }: { chatId: string }) {
   const { data, isLoading } = useGetChatHistoryQuery({ chat_id: chatId });
   const [sendMessage] = useSendMessageMutation();
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<CvHistoryMessage[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // When data loads, initialize messages and save cv_id in localStorage
@@ -45,7 +49,7 @@ export default function CvHistoryChat({ chatId }: { chatId: string }) {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const userMsg: CvHistoryMessage = {
+    const userMsg: Message = {
       id: Date.now(),
       role: "user",
       content: input,
@@ -63,11 +67,11 @@ export default function CvHistoryChat({ chatId }: { chatId: string }) {
         cv_id,
       }).unwrap();
 
-      const aiMsg: CvHistoryMessage = {
+      const aiMsg: Message = {
         id: Date.now() + 1,
         role: "ai",
         content: res.content,
-        time: res.timestamp,
+        timestamp: res.data.timestamp,
       };
 
       setMessages((prev) => [...prev, aiMsg]);
@@ -90,13 +94,13 @@ export default function CvHistoryChat({ chatId }: { chatId: string }) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto" ref={scrollRef}>
-        {messages.map((msg: CvHistoryMessage) => (
+        {messages.map((msg) => (
           <ChatMessage
             key={msg.id}
             message={{
               sender: msg.role === "user" ? "user" : "ai",
               text: msg.content,
-              time: msg.timestamp || msg.time || "",
+              time: formatTime(new Date(msg.timestamp),
             }}
           />
         ))}
