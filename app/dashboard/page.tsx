@@ -23,13 +23,13 @@ export default function Dashboard() {
         router.push("/cv");
         break;
       case "jobs":
-        router.push("/jobs");
+        router.push("/chat/jobsearch");
         break;
       case "interview":
         router.push("/interview");
         break;
       case "tips":
-        router.push("/tips");
+        router.push("/offline_tips");
         break;
       default:
         break;
@@ -65,7 +65,7 @@ export default function Dashboard() {
           Your AI-powered career companion for Ethiopian youth
         </p>
         <h2 className="text-xl font-semibold text-green-600 mt-2">
-          Hello, Ruth!
+          Hello, Naomi!
         </h2>
         <p className="text-gray-500 mt-1">
           Choose how you&apos;d like to boost your career today:

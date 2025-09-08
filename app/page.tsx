@@ -123,7 +123,9 @@ const Footer = () => {
 
 export default function Home() {
   return (
-    <div className={`${roboto.className} text-sm flex flex-col items-center`}>
+    <div
+      className={`${roboto.className} text-sm flex flex-col items-center bg-white text-black`}
+    >
       <div className="w-full bg-[#f6f6f6] flex flex-col items-center">
         <NavBar />
         <Intro />
