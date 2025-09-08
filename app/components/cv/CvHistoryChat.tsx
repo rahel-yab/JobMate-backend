@@ -1,17 +1,30 @@
 "use client";
+
 import { useState, useEffect, useRef } from "react";
 import {
   useGetChatHistoryQuery,
   useSendMessageMutation,
 } from "@/lib/redux/api/cvApi";
-import ChatMessage from "../ChatMessage";
+import ChatMessage from "../../components/ChatMessage";
 import { formatTime } from "@/lib/utils";
+
+interface Message {
+  id: number;
+  role: "user" | "ai" | "assistant";
+  content: string;
+  timestamp: string;
+}
+
+interface ChatHistoryResponse {
+  messages: Message[];
+  cv_id?: string;
+}
 
 export default function CvHistoryChat({ chatId }: { chatId: string }) {
   const { data, isLoading } = useGetChatHistoryQuery({ chat_id: chatId });
   const [sendMessage] = useSendMessageMutation();
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // When data loads, initialize messages and save cv_id in localStorage
@@ -36,7 +49,7 @@ export default function CvHistoryChat({ chatId }: { chatId: string }) {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const userMsg = {
+    const userMsg: Message = {
       id: Date.now(),
       role: "user",
       content: input,
@@ -54,11 +67,11 @@ export default function CvHistoryChat({ chatId }: { chatId: string }) {
         cv_id,
       }).unwrap();
 
-      const aiMsg = {
+      const aiMsg: Message = {
         id: Date.now() + 1,
         role: "ai",
         content: res.content,
-        time: formatTime(res.data.timestamp),
+        timestamp: res.data.timestamp,
       };
 
       setMessages((prev) => [...prev, aiMsg]);
@@ -81,13 +94,13 @@ export default function CvHistoryChat({ chatId }: { chatId: string }) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto" ref={scrollRef}>
-        {messages.map((msg: any) => (
+        {messages.map((msg) => (
           <ChatMessage
             key={msg.id}
             message={{
               sender: msg.role === "user" ? "user" : "ai",
               text: msg.content,
-              time: formatTime(msg.timestamp),
+              time: formatTime(new Date(msg.timestamp),
             }}
           />
         ))}

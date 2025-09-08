@@ -11,22 +11,25 @@ export default function CvAdvisorCard() {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200 transition hover:shadow-lg h-full flex flex-col">
+    <div className="bg-[#E0F3F1] rounded-2xl p-6 mb-6 shadow-md transition-shadow hover:shadow-lg h-full flex flex-col">
+      {/* Title with icon */}
       <div className="flex items-center gap-2 mb-3">
-        <Lightbulb className="h-6 w-6 text-blue-600" />
+        <Lightbulb className="h-6 w-6 text-[#1F9D8A]" />
         <h2 className="font-bold text-lg text-gray-800">
-          Get Career Suggestions
+          Get Course Suggestions
         </h2>
       </div>
 
+      {/* Description */}
       <p className="text-gray-600 mb-6 text-sm">
-        Discover tailored online courses and career tips designed to strengthen
-        your skills and guide your professional growth.
+        Discover tailored online courses and general tips based on your last CV
+        analysis.
       </p>
 
+      {/* Button */}
       <button
         onClick={handleStart}
-        className="mt-auto w-full bg-blue-600 text-white font-semibold py-3 rounded-md hover:bg-blue-700 transition"
+        className="mt-auto w-full bg-[#1F9D8A] text-white font-semibold py-3 rounded-md hover:bg-[#187967] transition"
       >
         View Suggestions
       </button>

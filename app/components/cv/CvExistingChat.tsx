@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { formatTime } from "@/lib/utils";
 import CvWindow from "./CvWindow";
 import CVMessage from "./CVMessage";
-import ChatMessage from "../ChatMessage";
+import ChatMessage from "../../components/ChatMessage";
 import ReactMarkdown from "react-markdown";
 import {
   useGetChatHistoryQuery,

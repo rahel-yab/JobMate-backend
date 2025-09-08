@@ -70,8 +70,8 @@ export default function ChatWindow({
         <div ref={messagesEndRef} /> {/* scroll anchor */}
       </div>
 
-      <div className="px-4 py-0.5 bg-[#BEE3DC] text-black justify-center">
-        <QuickActions />
+      <div className="px-4 py-4 bg-[#BEE3DC] text-black justify-center">
+        {<QuickActions />}
         <ChatInput input={input} setInput={setInput} onSend={onSend} />
       </div>
     </div>

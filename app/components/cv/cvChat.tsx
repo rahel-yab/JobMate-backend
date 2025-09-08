@@ -5,7 +5,7 @@ import React from "react";
 import { formatTime } from "@/lib/utils";
 import CvWindow from "./CvWindow";
 import CVMessage from "./CVMessage";
-import ChatMessage from "../ChatMessage";
+import ChatMessage from "../../components/ChatMessage";
 import CvAnalysisCard from "./CvAnalysis";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
@@ -17,10 +17,32 @@ import {
 } from "@/lib/redux/api/cvApi";
 import { useLanguage } from "@/providers/language-provider";
 
+// Define types for messages
+interface Message {
+  id: number;
+  sender: "user" | "ai";
+  text?: string | JSX.Element;
+  time: string;
+  type?: "cv-analysis";
+  summary?: string;
+  strengths?: string;
+  weaknesses?: string;
+  improvements?: string;
+  skillGaps?: SkillGap[];
+}
+
+interface SkillGap {
+  skillName: string;
+  currentLevel: number;
+  recommendedLevel: number;
+  importance: "important" | "optional";
+  improvementSuggestions: string[];
+}
+
 export default function CvChat() {
   const { t } = useLanguage();
 
-  const [messages, setMessages] = useState<any[]>([
+  const [messages, setMessages] = useState<Message[]>([
     {
       id: Date.now(),
       sender: "ai",
@@ -28,9 +50,8 @@ export default function CvChat() {
       time: formatTime(new Date()),
     },
   ]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState<string>("");
   const [chatId, setChatId] = useState<string | null>(null);
-  // const [cvId, setCvId] = useState<string | null>(null);
 
   const [uploadCV] = useUploadCVMutation();
   const [analyzeCV] = useAnalyzeCVMutation();
@@ -45,44 +66,32 @@ export default function CvChat() {
     };
   }, []);
 
-  // upload
   const handleUpload = async (data: { rawText?: string; file?: File }) => {
     const res = await uploadCV({
       rawText: data.rawText,
       file: data.file,
     }).unwrap();
 
-    const msg = {
+    const msg: Message = {
       id: Date.now(),
       sender: "ai",
       text: res.success
-        ? `📄 ${res.message}: ${res.deta?.fileName || ""}`
-        : `⚠️ ${res.message}`, // backend failure messages
-      cvId: res?.data?.cvId || "",
-    };
-
-    console.log(msg);
-
-    const msg1 = {
-      id: Date.now(),
-      sender: "ai",
-      text: `Here's your CV analysis with detailed feedback and suggestions for improvement:`,
+        ? `📄 ${res.message}: ${res.data?.fileName || ""}`
+        : `⚠️ ${res.message}`,
       time: formatTime(new Date()),
     };
-    setMessages((prev) => [...prev, msg1]);
+
+    setMessages((prev) => [...prev, msg]);
 
     if (res.success) {
       const newCvId = res.data.cvId;
-      //setCvId(newCvId);
       localStorage.setItem("cv_id", newCvId);
       handleAnalyze(newCvId);
     }
   };
 
-  // analyze CV
   const handleAnalyze = async (id: string) => {
     const res = await analyzeCV(id).unwrap();
-    console.log(res);
 
     const suggestions = res.data?.suggestions;
     if (!suggestions) {
@@ -92,18 +101,20 @@ export default function CvChat() {
 
     const { CVs, CVFeedback, SkillGaps } = suggestions;
 
-    const normalizedSkillGaps = (SkillGaps || []).map((gap: any) => ({
-      skillName: gap.SkillName,
-      currentLevel: gap.CurrentLevel,
-      recommendedLevel: gap.RecommendedLevel,
-      importance:
-        gap.Importance?.toLowerCase() === "critical"
-          ? "important" // normalize "critical" → "important"
-          : gap.Importance?.toLowerCase(),
-      improvementSuggestions: gap.ImprovementSuggestions,
-    }));
+    const normalizedSkillGaps: SkillGap[] = (SkillGaps || []).map(
+      (gap: any) => ({
+        skillName: gap.SkillName,
+        currentLevel: gap.CurrentLevel,
+        recommendedLevel: gap.RecommendedLevel,
+        importance:
+          gap.Importance?.toLowerCase() === "critical"
+            ? "important"
+            : gap.Importance?.toLowerCase(),
+        improvementSuggestions: gap.ImprovementSuggestions,
+      })
+    );
 
-    const cvMsg = {
+    const cvMsg: Message = {
       id: Date.now(),
       sender: "ai",
       type: "cv-analysis",
@@ -128,14 +139,13 @@ export default function CvChat() {
     return chatId;
   };
 
-  // Send message handler
   const handleSend = async () => {
     if (!input.trim()) return;
 
     const text = input;
     setInput("");
 
-    const userMsg = {
+    const userMsg: Message = {
       id: Date.now(),
       sender: "user",
       text,
@@ -152,7 +162,7 @@ export default function CvChat() {
         cv_id,
       }).unwrap();
 
-      const aiMsg = {
+      const aiMsg: Message = {
         id: Date.now(),
         sender: "ai",
         text: <ReactMarkdown>{res.content}</ReactMarkdown>,
@@ -179,16 +189,15 @@ export default function CvChat() {
         msg.type === "cv-analysis" ? (
           <CVMessage
             key={msg.id}
-            summary={msg.summary}
-            strengths={msg.strengths}
-            weaknesses={msg.weaknesses}
-            improvements={msg.improvements}
-            skillGaps={msg.skillGaps}
+            summary={msg.summary!}
+            strengths={msg.strengths!}
+            weaknesses={msg.weaknesses!}
+            improvements={msg.improvements!}
+            skillGaps={msg.skillGaps!}
           />
         ) : (
           <React.Fragment key={msg.id}>
             <ChatMessage message={msg} />
-
             {messages.length === 1 && (
               <CvAnalysisCard
                 onAnalyze={handleUpload}
