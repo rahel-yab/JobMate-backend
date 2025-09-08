@@ -63,7 +63,7 @@ const FiledApp: React.FC = () => {
           </div>
           <div>
             <span className="font-semibold text-lg block">{t.jobMate}</span>
-            <span className="text-sm text-white/70">{t.slogan}</span>
+            <span className="text-sm text-black/70">{t.slogan}</span>
           </div>
         </div>
 
