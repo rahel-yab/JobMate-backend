@@ -1,24 +1,29 @@
 import 'package:equatable/equatable.dart';
 
-enum InterviewSender { user, assistant }
-
 class InterviewMessage extends Equatable {
+  final String? id;
   final String chatId;
-  final InterviewSender sender;
+  final String role; // "user" or "assistant"
   final String content;
   final DateTime timestamp;
-  final String? id;
+  final int? questionIndex; // for structured interviews
 
   const InterviewMessage({
+    this.id,
     required this.chatId,
-    required this.sender,
+    required this.role,
     required this.content,
     required this.timestamp,
-    this.id,
+    this.questionIndex,
   });
 
   @override
-  List<Object?> get props => [chatId, sender, content, timestamp, id];
+  List<Object?> get props => [
+    id,
+    chatId,
+    role,
+    content,
+    timestamp,
+    questionIndex,
+  ];
 }
-
-

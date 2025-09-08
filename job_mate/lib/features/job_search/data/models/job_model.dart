@@ -22,26 +22,28 @@ class JobModel extends Job {
         );
 
   factory JobModel.fromJson(Map<String, dynamic> json) {
-    return JobModel(
-      title: json['Title'],
-      company: json['Company'],
-      location: json['Location'],
-      requirements: List<String>.from(json['Requirements']),
-      type: json['Type'],
-      source: json['Source'],
-      link: json['Link'],
-      language: json['Language'],
-    );
-  }
+  return JobModel(
+    title: json['title'] ?? '',
+    company: json['company'] ?? '',
+    location: json['location'] ?? '',
+    requirements: List<String>.from(json['requirements'] ?? []),
+    type: json['type'] ?? '',
+    source: json['source'] ?? '',
+    link: json['link'] ?? '',
+    language: json['language'] ?? '',
+  );
+}
+
 
   Map<String, dynamic> toJson() => {
-    'Title': title,
-    'Company': company,
-    'Location': location,
-    'Requirements': requirements,
-    'Type': type,
-    'Source': source,
-    'Link': link,
-    'Language': language,
-  };
+  'title': title,
+  'company': company,
+  'location': location,
+  'requirements': requirements,
+  'type': type,
+  'source': source,
+  'link': link,
+  'language': language,
+};
+
 }

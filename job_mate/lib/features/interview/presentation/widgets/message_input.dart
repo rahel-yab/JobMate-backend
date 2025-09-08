@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class MessageInput extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onSend;
+  final String? hintText;
 
   const MessageInput({
     super.key,
     required this.controller,
     required this.onSend,
+    this.hintText,
   });
 
   @override
@@ -26,8 +28,8 @@ class MessageInput extends StatelessWidget {
             Expanded(
               child: TextField(
                 controller: controller,
-                decoration: const InputDecoration(
-                  hintText: "Type your message...",
+                decoration: InputDecoration(
+                  hintText: hintText ?? "Type your message...",
                   border: InputBorder.none,
                 ),
               ),

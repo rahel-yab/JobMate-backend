@@ -83,44 +83,47 @@ class JobChatRemoteDataSourceImpl implements JobChatRemoteDataSource {
   }
 
   ///  Updated: return raw Map instead of ChatModel
-  Future<Map<String, dynamic>> sendChatMessage(String message, {String? chatId}) async {
-    try {
-      final token = await authLocalDataSource.getAccessToken();
-      if (token == null) throw ServerFailure('No authentication token available');
+  // In JobChatRemoteDataSourceImpl, update the sendChatMessage method
+@override
+Future<Map<String, dynamic>> sendChatMessage(String message, {String? chatId}) async {
+  try {
+    final token = await authLocalDataSource.getAccessToken();
+    if (token == null) throw ServerFailure('No authentication token available');
 
-      final requestData = {
-        'message': message,
-        if (chatId != null) 'chat_id': chatId,
-      };
+    final requestData = {
+      'message': message,
+      if (chatId != null) 'chat_id': chatId,
+    };
 
-      print("📡 Sending POST request → /jobs/chat");
-      print("📝 Request Body: $requestData");
+    print("📡 Sending POST request → /jobs/chat");
+    print("📝 Request Body: $requestData");
 
-      final response = await dio.post(
-        '/jobs/chat',
-        data: requestData,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
+    final response = await dio.post(
+      '/jobs/chat',
+      data: requestData,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
 
-      print("✅ Status Code: ${response.statusCode}");
-      print("📥 Response Data: ${response.data}");
+    print("✅ Status Code: ${response.statusCode}");
+    print("📥 Response Data: ${response.data}");
 
-      if (response.data == null || response.data is! Map<String, dynamic>) {
-        throw ServerFailure('Unexpected response format: ${response.data}');
-      }
-
-      return response.data as Map<String, dynamic>;
-    } catch (e) {
-      if (e is DioException) {
-        print("❌ DioException on sendChatMessage → ${e.response}");
-        if (e.response?.statusCode == 400) {
-          throw ServerFailure(
-              'Invalid request: ${e.response?.data['message'] ?? e.message}');
-        } else if (e.response?.statusCode == 401) {
-          throw ServerFailure('Unauthorized: Please log in again');
-        }
-      }
-      throw ServerFailure('Failed to send chat message: $e');
+    if (response.data == null || response.data is! Map<String, dynamic>) {
+      throw ServerFailure('Unexpected response format: ${response.data}');
     }
+
+    // The API returns: {message: "text", jobs: [], chat_id: "id"}
+    return response.data as Map<String, dynamic>;
+  } catch (e) {
+    if (e is DioException) {
+      print("❌ DioException on sendChatMessage → ${e.response}");
+      if (e.response?.statusCode == 400) {
+        throw ServerFailure(
+            'Invalid request: ${e.response?.data['message'] ?? e.message}');
+      } else if (e.response?.statusCode == 401) {
+        throw ServerFailure('Unauthorized: Please log in again');
+      }
+    }
+    throw ServerFailure('Failed to send chat message: $e');
   }
+}
 }

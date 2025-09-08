@@ -1,89 +1,66 @@
-// import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'interview_event.dart';
-// import 'interview_state.dart';
-// import '../../domain/entities/interview_message.dart';
-// import '../../domain/usecases/send_freeform_message.dart';
-// import '../../domain/usecases/start_freeform_session.dart';
-
-// class InterviewBloc extends Bloc<InterviewEvent, InterviewState> {
-//   final StartFreeformSession startFreeformSession;
-//   final SendFreeformMessage sendFreeformMessage;
-
-//   List<InterviewMessage> _messages = [];
-//   String? _chatId;
-
-//   InterviewBloc({
-//     required this.startFreeformSession,
-//     required this.sendFreeformMessage,
-//   }) : super(InterviewInitial()) {
-//     on<StartInterviewSession>((event, emit) async {
-//       emit(InterviewLoading());
-//       final result = await startFreeformSession("freeform");
-//       result.fold(
-//         (failure) => emit(InterviewError("Could not start session")),
-//         (session) {
-//           _chatId = session.chatId;
-//           emit(InterviewLoaded(_messages));
-//         },
-//       );
-//     });
-
-//     on<SendMessage>((event, emit) async {
-//       if (_chatId == null) return;
-//       final result = await sendFreeformMessage(_chatId!, event.message);
-//       result.fold((failure) => emit(InterviewError("Could not send message")), (
-//         msg,
-//       ) {
-//         _messages = List.from(_messages)..add(msg);
-//         emit(InterviewLoaded(_messages));
-//       });
-//     });
-//   }
-// }
-
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/entities/interview_message.dart';
-import '../../domain/usecases/answer_structured_interview.dart';
-import '../../domain/usecases/get_freeform_history.dart';
-import '../../domain/usecases/get_structured_history.dart';
-import '../../domain/usecases/get_user_freeform_chats.dart';
-import '../../domain/usecases/get_user_structured_chats.dart';
-import '../../domain/usecases/send_freeform_message.dart';
-import '../../domain/usecases/start_freeform_session.dart';
-import '../../domain/usecases/start_structured_interview.dart';
+import 'package:job_mate/features/interview/domain/entities/interview_message.dart';
+import 'package:job_mate/features/interview/domain/entities/interview_session.dart';
+import 'package:job_mate/features/interview/domain/usecases/start_freeform_session.dart'
+    as usecase;
+import 'package:job_mate/features/interview/domain/usecases/start_structured_session.dart'
+    as usecase;
+import 'package:job_mate/features/interview/domain/usecases/send_freeform_message.dart'
+    as usecase;
+import 'package:job_mate/features/interview/domain/usecases/send_structured_answer.dart'
+    as usecase;
+import 'package:job_mate/features/interview/domain/usecases/get_freeform_history.dart';
+import 'package:job_mate/features/interview/domain/usecases/get_structured_history.dart';
+import 'package:job_mate/features/interview/domain/usecases/get_user_freeform_chats.dart';
+import 'package:job_mate/features/interview/domain/usecases/get_user_structured_chats.dart';
+import 'package:job_mate/features/interview/domain/usecases/continue_structured_session.dart'
+    as usecase;
 import 'interview_event.dart';
 import 'interview_state.dart';
 
 class InterviewBloc extends Bloc<InterviewEvent, InterviewState> {
-  final StartFreeformSession startFreeformSession;
-  final SendFreeformMessage sendFreeformMessage;
+  final usecase.StartFreeformSession startFreeformSession;
+  final usecase.StartStructuredSession startStructuredSession;
+  final usecase.SendFreeformMessage sendFreeformMessage;
+  final usecase.SendStructuredAnswer sendStructuredAnswer;
   final GetFreeformHistory getFreeformHistory;
-  final StartStructuredInterview startStructuredInterview;
-  final AnswerStructuredInterview answerStructuredInterview;
   final GetStructuredHistory getStructuredHistory;
+  final GetUserFreeformChats getUserFreeformChats;
+  final GetUserStructuredChats getUserStructuredChats;
+  final usecase.ContinueStructuredSession continueStructuredSession;
 
-  List<InterviewMessage> _messages = [];
   String? _chatId;
-  InterviewSender? _currentMode;
+  String? _currentMode;
+  List<InterviewMessage> _messages = [];
+  InterviewSession? _currentSession;
 
   InterviewBloc({
     required this.startFreeformSession,
+    required this.startStructuredSession,
     required this.sendFreeformMessage,
+    required this.sendStructuredAnswer,
     required this.getFreeformHistory,
-    required this.startStructuredInterview,
-    required this.answerStructuredInterview,
     required this.getStructuredHistory,
-  }) : super(InterviewInitial()) {
+    required this.getUserFreeformChats,
+    required this.getUserStructuredChats,
+    required this.continueStructuredSession,
+  }) : super(const InterviewInitial()) {
     // Start Freeform Session
-    on<StartInterviewSession>((event, emit) async {
-      emit(InterviewLoading());
-      final result = await startFreeformSession("freeform");
+    on<StartFreeformSession>((event, emit) async {
+      emit(const InterviewLoading());
+
+      final result = await startFreeformSession(event.sessionType);
       result.fold(
-        (failure) => emit(InterviewError("Could not start session")),
+        (failure) => emit(
+          InterviewError("Could not start session: ${failure.toString()}"),
+        ),
         (session) async {
           _chatId = session.chatId;
-          _currentMode = InterviewSender.user;
-          // Load history if exists
+          _currentMode = 'freeform';
+          _currentSession = session;
+          _messages = [];
+
+          emit(InterviewLoaded(_messages, session: session));
           add(LoadChatHistory(_chatId!));
         },
       );
@@ -91,63 +68,172 @@ class InterviewBloc extends Bloc<InterviewEvent, InterviewState> {
 
     // Start Structured Session
     on<StartStructuredSession>((event, emit) async {
-      emit(InterviewLoading());
-      final result = await startStructuredInterview(event.field);
-      result.fold(
-        (failure) =>
-            emit(InterviewError("Could not start structured interview")),
+      emit(const InterviewLoading());
+
+      final result = await startStructuredSession(event.field);
+      await result.fold(
+        (failure) async => emit(
+          InterviewError("Could not start session: ${failure.toString()}"),
+        ),
         (session) async {
           _chatId = session.chatId;
-          _currentMode =
-              InterviewSender.assistant; // structured assistant-driven
-          add(LoadChatHistory(_chatId!));
+          _currentMode = 'structured';
+          _currentSession = session;
+          _messages = [];
+
+          // Emit initial state and immediately load history to get first question
+          emit(InterviewLoaded(_messages, session: session));
+
+          // For structured interviews, the first question might be available immediately
+          // Try to get it from history or make a continue call
+          final historyResult = await getStructuredHistory(_chatId!);
+          await historyResult.fold(
+            (failure) async {
+              // If no history, try to continue the interview to get first question
+              print('DEBUG: No history found, trying continue endpoint');
+              final continueResult = await continueStructuredSession(_chatId!);
+              await continueResult.fold(
+                (failure) async =>
+                    print('DEBUG: Continue failed: ${failure.toString()}'),
+                (firstQuestion) async {
+                  if (!emit.isDone) {
+                    _messages = [firstQuestion];
+                    emit(InterviewLoaded(_messages, session: session));
+                  }
+                },
+              );
+            },
+            (history) async {
+              if (history.isNotEmpty) {
+                if (!emit.isDone) {
+                  _messages = history;
+                  emit(InterviewLoaded(_messages, session: session));
+                }
+              } else {
+                print('DEBUG: History is empty, trying continue endpoint');
+                final continueResult = await continueStructuredSession(
+                  _chatId!,
+                );
+                await continueResult.fold(
+                  (failure) async =>
+                      print('DEBUG: Continue failed: ${failure.toString()}'),
+                  (firstQuestion) async {
+                    if (!emit.isDone) {
+                      _messages = [firstQuestion];
+                      emit(InterviewLoaded(_messages, session: session));
+                    }
+                  },
+                );
+              }
+            },
+          );
         },
       );
     });
 
     // Send Freeform Message
-    on<SendMessage>((event, emit) async {
-      if (_chatId == null || _currentMode == null) return;
+    on<SendFreeformMessage>((event, emit) async {
+      if (_chatId == null) {
+        emit(const InterviewError("No active chat session"));
+        return;
+      }
 
-      emit(InterviewLoading());
+      // Add user message immediately
+      final userMessage = InterviewMessage(
+        chatId: _chatId!,
+        role: 'user',
+        content: event.message,
+        timestamp: DateTime.now(),
+      );
+      _messages.add(userMessage);
+      emit(InterviewLoaded(_messages, session: _currentSession));
+
       final result = await sendFreeformMessage(_chatId!, event.message);
-      result.fold((failure) => emit(InterviewError("Could not send message")), (
-        msg,
-      ) {
-        _messages = List.from(_messages)..add(msg);
-        emit(InterviewLoaded(_messages));
-      });
-    });
-
-    // Answer Structured Interview
-    on<AnswerStructuredQuestion>((event, emit) async {
-      if (_chatId == null) return;
-
-      emit(InterviewLoading());
-      final result = await answerStructuredInterview(_chatId!, event.answer);
       result.fold(
-        (failure) => emit(InterviewError("Could not submit answer")),
-        (msg) {
-          _messages = List.from(_messages)..add(msg);
-          emit(InterviewLoaded(_messages));
+        (failure) => emit(
+          InterviewError("Could not send message: ${failure.toString()}"),
+        ),
+        (response) {
+          _messages.add(response);
+          emit(InterviewLoaded(_messages, session: _currentSession));
         },
       );
     });
 
-    // Load chat history
-    on<LoadChatHistory>((event, emit) async {
-      emit(InterviewLoading());
-      final result =
-          _currentMode == InterviewSender.user
-              ? await getFreeformHistory(event.chatId)
-              : await getStructuredHistory(event.chatId);
+    // Send Structured Answer
+    on<SendStructuredAnswer>((event, emit) async {
+      if (_chatId == null) {
+        emit(const InterviewError("No active chat session"));
+        return;
+      }
 
-      result.fold((failure) => emit(InterviewError("Could not load history")), (
-        history,
-      ) {
-        _messages = history;
-        emit(InterviewLoaded(_messages));
-      });
+      // Add user answer immediately
+      final userMessage = InterviewMessage(
+        chatId: _chatId!,
+        role: 'user',
+        content: event.answer,
+        timestamp: DateTime.now(),
+      );
+      _messages.add(userMessage);
+      emit(InterviewLoaded(_messages, session: _currentSession));
+
+      final result = await sendStructuredAnswer(_chatId!, event.answer);
+      result.fold(
+        (failure) => emit(
+          InterviewError("Could not send answer: ${failure.toString()}"),
+        ),
+        (response) {
+          _messages.add(response);
+          emit(InterviewLoaded(_messages, session: _currentSession));
+        },
+      );
+    });
+
+    // Load Chat History
+    on<LoadChatHistory>((event, emit) async {
+      if (_currentMode == null) return;
+
+      if (_currentMode == 'freeform') {
+        final result = await getFreeformHistory(event.chatId);
+        result.fold(
+          (failure) => {}, // Ignore history loading errors
+          (history) {
+            _messages = history;
+            emit(InterviewLoaded(_messages, session: _currentSession));
+          },
+        );
+      } else if (_currentMode == 'structured') {
+        final result = await getStructuredHistory(event.chatId);
+        result.fold(
+          (failure) => {}, // Ignore history loading errors
+          (history) {
+            _messages = history;
+            emit(InterviewLoaded(_messages, session: _currentSession));
+          },
+        );
+      }
+    });
+
+    // Load User Chats
+    on<LoadUserChats>((event, emit) async {
+      emit(const InterviewLoading());
+
+      final freeformResult = await getUserFreeformChats();
+      final structuredResult = await getUserStructuredChats();
+
+      List<InterviewSession> allSessions = [];
+
+      freeformResult.fold(
+        (failure) => {},
+        (sessions) => allSessions.addAll(sessions),
+      );
+
+      structuredResult.fold(
+        (failure) => {},
+        (sessions) => allSessions.addAll(sessions),
+      );
+
+      emit(UserChatsLoaded(allSessions));
     });
   }
 }

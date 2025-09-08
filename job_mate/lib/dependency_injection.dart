@@ -35,6 +35,22 @@ import 'package:job_mate/features/cv/domain/usecases/send_chat_message.dart';
 import 'package:job_mate/features/cv/domain/usecases/upload_cv.dart';
 import 'package:job_mate/features/cv/presentation/bloc/cv/cv_bloc.dart';
 import 'package:job_mate/features/cv/presentation/bloc/cv_chat/cv_chat_bloc.dart';
+import 'package:job_mate/features/interview/data/datasources/interview_local_data_source.dart';
+import 'package:job_mate/features/interview/data/datasources/interview_local_data_source_impl.dart';
+import 'package:job_mate/features/interview/data/datasources/interview_remote_data_source.dart';
+import 'package:job_mate/features/interview/data/datasources/interview_remote_data_source_impl.dart';
+import 'package:job_mate/features/interview/data/repositories/interview_repository_impl.dart';
+import 'package:job_mate/features/interview/domain/repositories/interview_repository.dart';
+import 'package:job_mate/features/interview/domain/usecases/continue_structured_session.dart';
+import 'package:job_mate/features/interview/domain/usecases/get_freeform_history.dart';
+import 'package:job_mate/features/interview/domain/usecases/get_structured_history.dart';
+import 'package:job_mate/features/interview/domain/usecases/get_user_freeform_chats.dart';
+import 'package:job_mate/features/interview/domain/usecases/get_user_structured_chats.dart';
+import 'package:job_mate/features/interview/domain/usecases/send_freeform_message.dart';
+import 'package:job_mate/features/interview/domain/usecases/send_structured_answer.dart';
+import 'package:job_mate/features/interview/domain/usecases/start_freeform_session.dart';
+import 'package:job_mate/features/interview/domain/usecases/start_structured_session.dart';
+import 'package:job_mate/features/interview/presentation/blocs/interview_bloc.dart';
 import 'package:job_mate/features/job_search/data/datasource/remote/job_chat_remote_data_source.dart';
 import 'package:job_mate/features/job_search/data/datasource/remote/job_chat_remote_data_source_impl.dart';
 import 'package:job_mate/features/job_search/data/repositories/job_chat_repository_impl.dart';
@@ -46,22 +62,6 @@ import 'package:job_mate/features/job_search/domain/usecases/send_chat_message.d
 import 'package:job_mate/features/job_search/presentation/bloc/job_search_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Interview Feature
-import 'package:job_mate/features/interview/data/datasources/interview_local_data_source.dart';
-import 'package:job_mate/features/interview/data/datasources/interview_local_data_source_impl.dart';
-import 'package:job_mate/features/interview/data/datasources/interview_remote_data_source.dart';
-import 'package:job_mate/features/interview/data/datasources/interview_remote_data_source_impl.dart';
-import 'package:job_mate/features/interview/data/repositories/interview_repository_impl.dart';
-import 'package:job_mate/features/interview/domain/repositories/interview_repository.dart';
-import 'package:job_mate/features/interview/domain/usecases/answer_structured_interview.dart';
-import 'package:job_mate/features/interview/domain/usecases/get_freeform_history.dart';
-import 'package:job_mate/features/interview/domain/usecases/get_structured_history.dart';
-import 'package:job_mate/features/interview/domain/usecases/get_user_freeform_chats.dart';
-import 'package:job_mate/features/interview/domain/usecases/get_user_structured_chats.dart';
-import 'package:job_mate/features/interview/domain/usecases/send_freeform_message.dart';
-import 'package:job_mate/features/interview/domain/usecases/start_freeform_session.dart';
-import 'package:job_mate/features/interview/domain/usecases/start_structured_interview.dart';
-import 'package:job_mate/features/interview/presentation/blocs/interview_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -108,6 +108,13 @@ Future<void> init() async {
       networkInfo: sl<NetworkInfo>(),
     ),
   );
+  // AuthInterceptor (registered after AuthLocalDataSource)
+  sl.registerLazySingleton<AuthInterceptor>(
+    () => AuthInterceptor(localDataSource: sl<AuthLocalDataSource>()),
+  );
+
+  // Add AuthInterceptor to Dio after both are registered
+  sl<Dio>().interceptors.add(sl<AuthInterceptor>());
 
   // Attach AuthInterceptor **after repository is ready**
   // sl<Dio>().interceptors.add(
@@ -220,15 +227,10 @@ Future<void> init() async {
   );
 
   // === Interview Feature ===
+   // === Interview Feature ===
   // Local Data Source
-  // sl.registerLazySingleton<InterviewLocalDataSource>(
-  //   () => InterviewLocalDataSourceImpl(
-  //     sl<SharedPreferences>(),
-  //     preferences: sl<SharedPreferences>(),
-  //   ),
-  // );
-    sl.registerLazySingleton<InterviewLocalDataSource>(
-    () => InterviewLocalDataSourceImpl(prefs:sl<SharedPreferences>()),
+  sl.registerLazySingleton<InterviewLocalDataSource>(
+    () => InterviewLocalDataSourceImpl(sl<SharedPreferences>()),
   );
 
   // Remote Data Source
@@ -249,17 +251,17 @@ Future<void> init() async {
   sl.registerLazySingleton<StartFreeformSession>(
     () => StartFreeformSession(sl<InterviewRepository>()),
   );
+  sl.registerLazySingleton<StartStructuredSession>(
+    () => StartStructuredSession(sl<InterviewRepository>()),
+  );
   sl.registerLazySingleton<SendFreeformMessage>(
     () => SendFreeformMessage(sl<InterviewRepository>()),
   );
+  sl.registerLazySingleton<SendStructuredAnswer>(
+    () => SendStructuredAnswer(sl<InterviewRepository>()),
+  );
   sl.registerLazySingleton<GetFreeformHistory>(
     () => GetFreeformHistory(sl<InterviewRepository>()),
-  );
-  sl.registerLazySingleton<StartStructuredInterview>(
-    () => StartStructuredInterview(sl<InterviewRepository>()),
-  );
-  sl.registerLazySingleton<AnswerStructuredInterview>(
-    () => AnswerStructuredInterview(sl<InterviewRepository>()),
   );
   sl.registerLazySingleton<GetStructuredHistory>(
     () => GetStructuredHistory(sl<InterviewRepository>()),
@@ -270,18 +272,26 @@ Future<void> init() async {
   sl.registerLazySingleton<GetUserStructuredChats>(
     () => GetUserStructuredChats(sl<InterviewRepository>()),
   );
+  sl.registerLazySingleton<ContinueStructuredSession>(
+    () => ContinueStructuredSession(sl<InterviewRepository>()),
+  );
 
   // Bloc
   sl.registerFactory(
     () => InterviewBloc(
       startFreeformSession: sl<StartFreeformSession>(),
+      startStructuredSession: sl<StartStructuredSession>(),
       sendFreeformMessage: sl<SendFreeformMessage>(),
+      sendStructuredAnswer: sl<SendStructuredAnswer>(),
       getFreeformHistory: sl<GetFreeformHistory>(),
-      startStructuredInterview: sl<StartStructuredInterview>(),
-      answerStructuredInterview: sl<AnswerStructuredInterview>(),
       getStructuredHistory: sl<GetStructuredHistory>(),
+      getUserFreeformChats: sl<GetUserFreeformChats>(),
+      getUserStructuredChats: sl<GetUserStructuredChats>(),
+      continueStructuredSession: sl<ContinueStructuredSession>(),
     ),
   );
+
+  
 
   // === Job Search Feature ===
   // ... (previous registrations remain)

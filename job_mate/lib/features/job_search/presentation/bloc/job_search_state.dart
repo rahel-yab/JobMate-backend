@@ -12,8 +12,15 @@ class JobChatLoaded extends JobChatState {
   JobChatLoaded(this.chats, [this.selectedChat]);
 }
 
+class JobChatResponseReceived extends JobChatState {
+  final List<Chat> chats;
+  final Map<String, dynamic> response;
+  JobChatResponseReceived(this.chats, this.response);
+}
+
 class JobChatError extends JobChatState {
   final String message;
   JobChatError(this.message);
 }
+
 class JobChatEmpty extends JobChatState {}

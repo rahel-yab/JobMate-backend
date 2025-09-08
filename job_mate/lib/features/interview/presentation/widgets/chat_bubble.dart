@@ -8,7 +8,7 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isUser = message.sender == InterviewSender.user;
+    final isUser = message.role == 'user';
     final time =
         "${message.timestamp.hour}:${message.timestamp.minute.toString().padLeft(2, '0')}";
 

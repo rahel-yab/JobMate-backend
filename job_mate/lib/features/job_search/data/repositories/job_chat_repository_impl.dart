@@ -42,14 +42,11 @@ class JobChatRepositoryImpl implements JobChatRepository {
     }
   }
 
-  /// 🔥 Updated: return Map<String, dynamic> instead of Chat
   @override
-  Future<Either<Failure, Map<String, dynamic>>> sendChatMessage(
-      String message, {String? chatId}) async {
+  Future<Either<Failure, Map<String, dynamic>>> sendChatMessage(String message, {String? chatId}) async {
     if (await networkInfo.isConnected) {
       try {
-        final response =
-            await remoteDataSource.sendChatMessage(message, chatId: chatId);
+        final response = await remoteDataSource.sendChatMessage(message, chatId: chatId);
         return Right(response);
       } catch (e) {
         return Left(ServerFailure('Send chat message failed: $e'));

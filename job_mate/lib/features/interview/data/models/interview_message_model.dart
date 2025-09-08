@@ -2,36 +2,51 @@ import 'package:job_mate/features/interview/domain/entities/interview_message.da
 
 class InterviewMessageModel extends InterviewMessage {
   const InterviewMessageModel({
-    required super.chatId,
-    required super.sender,
-    required super.content,
-    required super.timestamp,
     super.id,
-  });
+    required super.chatId,
+    required super.role,
+    required super.content,
+    required DateTime timestamp,
+    super.questionIndex,
+  }) : super(timestamp: timestamp);
 
-  factory InterviewMessageModel.fromJson(Map<String, dynamic> json, String chatId) {
-    final role = (json['role'] as String?)?.toLowerCase();
-    final sender = role == 'assistant' ? InterviewSender.assistant : InterviewSender.user;
+  factory InterviewMessageModel.fromJson(Map<String, dynamic> json) {
     return InterviewMessageModel(
-      chatId: chatId,
-      sender: sender,
-      content: json['message'] as String? ?? '',
-      timestamp: json['timestamp'] != null
-          ? DateTime.tryParse(json['timestamp'] as String) ?? DateTime.now()
-          : DateTime.now(),
-      id: json['id'] as String?,
+      id: json['id']?.toString(),
+      chatId: json['chat_id'] ?? '',
+      role: json['role'] ?? 'assistant',
+      content: json['content'] ?? '',
+      timestamp:
+          json['timestamp'] != null
+              ? DateTime.parse(json['timestamp'])
+              : DateTime.now(),
+      questionIndex: json['question_index'],
+    );
+  }
+
+  // For structured interview responses
+  factory InterviewMessageModel.fromStructuredResponse(
+    Map<String, dynamic> json,
+  ) {
+    return InterviewMessageModel(
+      id: json['id']?.toString(),
+      chatId: json['chat_id'] ?? '',
+      role: 'assistant',
+      content:
+          json['next_question'] ?? json['question'] ?? json['content'] ?? '',
+      timestamp: DateTime.now(),
+      questionIndex: json['current_question'] ?? json['question_index'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'chat_id': chatId,
-      'message': content,
-      'role': sender == InterviewSender.assistant ? 'assistant' : 'user',
+      'role': role,
+      'content': content,
       'timestamp': timestamp.toIso8601String(),
-      if (id != null) 'id': id,
+      if (questionIndex != null) 'question_index': questionIndex,
     };
   }
 }
-
-
