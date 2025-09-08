@@ -54,7 +54,7 @@ export default function LoginForm() {
       dispatch(
         setCredentials({
           user: data.user,
-          accessToken: data.user.acces_token,
+          accessToken: data.user.acces_token ?? "",
         })
       );
       toast.success(" Logged in successfully!");

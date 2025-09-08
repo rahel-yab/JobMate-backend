@@ -12,7 +12,8 @@ interface ProtectedWrapperProps {
 const unprotectedRoutes = ["/login", "/register", "/reset-password", "/"];
 
 export default function ProtectedWrapper({ children }: ProtectedWrapperProps) {
-  const reduxToken = useSelector((state: RootState) => state.auth.accessToken);
+
+const reduxToken = useSelector((state: RootState) => state.auth.accessToken);
   const router = useRouter();
   const pathname = usePathname();
 
