@@ -6,11 +6,13 @@ import { useLanguage } from "@/providers/language-provider";
 import toast from "react-hot-toast";
 
 export default function OTPForm({
-  // fullName,
+  firstName,
+  lastName,
   email,
   password,
 }: {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
 }) {
@@ -26,7 +28,7 @@ export default function OTPForm({
     try {
       console.log({ email, password, otp });
 
-      await registerUser({ email, password, otp }).unwrap();
+      await registerUser({ firstName,lastName, email, password, otp }).unwrap();
       toast.success("Registered successfully! You can now login.");
 
       window.location.href = "/login";

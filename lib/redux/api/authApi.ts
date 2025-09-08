@@ -59,7 +59,7 @@ export const authApi = createApi({
     login: builder.mutation<{ access_token: string; user: User }, { email: string; password: string }>({
       query: (body) => ({ url: "/auth/login", method: "POST", body }),
     }),
-    register: builder.mutation<{ user: User; access_token: string }, { email: string; password: string; otp: string }>({
+    register: builder.mutation<{ user: User; access_token: string }, { firstName:string;  lastName:string; email: string; password: string; otp: string }>({
       query: (body) => ({ url: "/auth/register", method: "POST", body }),
     }),
     requestOtp: builder.mutation<{ success: boolean }, { email: string }>({

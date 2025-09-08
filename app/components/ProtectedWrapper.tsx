@@ -12,22 +12,22 @@ interface ProtectedWrapperProps {
 const unprotectedRoutes = ["/login", "/register", "/reset-password", "/"];
 
 export default function ProtectedWrapper({ children }: ProtectedWrapperProps) {
-
-const reduxToken = useSelector((state: RootState) => state.auth.accessToken);
+  const reduxToken = useSelector((state: RootState) => state.auth.accessToken);
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname(); // ✅ declare before use
 
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken") || reduxToken;
+    const cleanPath = pathname.split("?")[0]; // ✅ now safe
 
-    if (!token && !unprotectedRoutes.includes(pathname)) {
-      router.replace(`/login?redirect=${pathname}`);
+    if (!token && !unprotectedRoutes.includes(cleanPath)) {
+      router.replace(`/login?redirect=${cleanPath}`);
       return;
     }
 
-    if (token && ["/login", "/register"].includes(pathname)) {
+    if (token && ["/login", "/register", "/"].includes(cleanPath)) {
       router.replace("/dashboard");
       return;
     }
@@ -35,7 +35,6 @@ const reduxToken = useSelector((state: RootState) => state.auth.accessToken);
     setIsReady(true);
   }, [reduxToken, pathname, router]);
 
-  // Prevent server/client mismatch by not rendering anything until check is done
   if (!isReady)
     return (
       <div className="flex items-center justify-center min-h-screen">
