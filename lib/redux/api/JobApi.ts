@@ -17,7 +17,7 @@ export const jobApi = createApi({
     },
   }),
 
-  endpoints: (builder) => ({
+  endpoints: (builder) => ({ 
     // 1. Get all job chats
     getAllChats: builder.query({
       query: () => ({
