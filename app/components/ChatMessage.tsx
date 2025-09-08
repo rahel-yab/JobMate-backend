@@ -1,4 +1,5 @@
-export default function ChatMessage({ message }: { message: any }) {
+import { Message } from "./ChatWindow";
+export default function ChatMessage({ message }: { message: Message }) {
   const isUser = message.sender === "user";
 
   return (

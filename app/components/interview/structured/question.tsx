@@ -38,8 +38,7 @@ const texts = {
     questionOf: "ጥያቄ",
     of: "ከ",
     complete: "ተጠናቋል",
-    unableStart:
-      "ቃለ ምልልስ ማስጀመር አልተቻለም። እባክዎ እንደገና ይሞክሩ።",
+    unableStart: "ቃለ ምልልስ ማስጀመር አልተቻለም። እባክዎ እንደገና ይሞክሩ።",
     failedSubmit: "መልስ ማስገባት አልተቻለም።",
   },
 };
@@ -62,46 +61,43 @@ const StructuredQuestion: React.FC = () => {
 
   const t = texts[language];
 
-
-
   // RTK Query mutation hooks
   const [startStructuredInterview, { isLoading: starting }] =
     useStartStructuredInterviewMutation();
   const [answerStructuredQuestion, { isLoading: answering }] =
     useAnswerStructuredQuestionMutation();
 
- const hasStartedRef = useRef(false); // ✅ Used to prevent duplicate calls
+  const hasStartedRef = useRef(false); // ✅ Used to prevent duplicate calls
 
-useEffect(() => {
-  if (!field || hasStartedRef.current) return;
+  useEffect(() => {
+    if (!field || hasStartedRef.current) return;
 
-  hasStartedRef.current = true; // ✅ Mark as started *before* API call
+    hasStartedRef.current = true; // ✅ Mark as started *before* API call
 
-  const init = async () => {
-    try {
-      const res = await startStructuredInterview({
-        field,
-        preferred_language: language,
-      }).unwrap();
+    const init = async () => {
+      try {
+        const res = await startStructuredInterview({
+          field,
+          preferred_language: language,
+        }).unwrap();
 
-      const data = res.data;
+        const data = res.data;
 
-      setChatId(data.chat_id);
-      setTotalQuestions(data.total_questions);
-      setQuestion(data.first_question);
-      setQuestionNumber(1);
-      setIsCompleted(false);
-      setErrorMessage("");
-    } catch (error) {
-      console.error("Failed to start structured interview:", error);
-      setErrorMessage(t.unableStart);
-      hasStartedRef.current = false; // ✅ Reset if failed
-    }
-  };
+        setChatId(data.chat_id);
+        setTotalQuestions(data.total_questions);
+        setQuestion(data.first_question);
+        setQuestionNumber(1);
+        setIsCompleted(false);
+        setErrorMessage("");
+      } catch (error) {
+        console.error("Failed to start structured interview:", error);
+        setErrorMessage(t.unableStart);
+        hasStartedRef.current = false; // ✅ Reset if failed
+      }
+    };
 
-  init();
-}, [field, startStructuredInterview, t.unableStart]);
-
+    init();
+  }, [field, startStructuredInterview, t.unableStart, language]);
 
   const handleSubmit = async () => {
     if (!chatId || !userAnswer.trim()) return;

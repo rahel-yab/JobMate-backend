@@ -2,8 +2,21 @@
 
 import { Clock, MessageCircle } from "lucide-react";
 
+interface ChatMessage {
+  id: number;
+  role: "assistant" | "user";
+  content: string;
+  timestamp?: string | number | Date;
+}
+
+interface ChatHistory {
+  chat_id: string;
+  updated_at: string | number | Date;
+  messages: ChatMessage[];
+}
+
 interface CvHistoryCardProps {
-  history: any[];
+  history: ChatHistory[];
   onSelectChat: (chatId: string) => void;
 }
 
@@ -15,7 +28,7 @@ export default function CvHistoryCard({
   const chatsWithAssistant = history.filter(
     (h) =>
       Array.isArray(h.messages) &&
-      h.messages.some((m: any) => m.role === "assistant")
+      h.messages.some((m: ChatMessage) => m.role === "assistant")
   );
 
   return (
@@ -50,7 +63,7 @@ export default function CvHistoryCard({
             ) // ✅ sort by updated_at (newest first)
             .map((h) => {
               const firstAiMsg = h.messages.find(
-                (m: any) => m.role === "assistant"
+                (m: ChatMessage) => m.role === "assistant"
               );
 
               return (
@@ -70,7 +83,7 @@ export default function CvHistoryCard({
                   </div>
 
                   <p className="text-sm text-gray-600 line-clamp-2">
-                    💬 {firstAiMsg.content}
+                    💬 {firstAiMsg?.content || ""}
                   </p>
                 </div>
               );

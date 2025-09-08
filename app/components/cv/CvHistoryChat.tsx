@@ -5,26 +5,22 @@ import {
   useGetChatHistoryQuery,
   useSendMessageMutation,
 } from "@/lib/redux/api/cvApi";
-import ChatMessage from "../../components/ChatMessage";
-import { formatTime } from "@/lib/utils";
+import ChatMessage from "../ChatMessage";
+// import { formatTime } from "@/lib/utils";
 
-interface Message {
+interface CvHistoryMessage {
   id: number;
-  role: "user" | "ai" | "assistant";
+  role: string;
   content: string;
-  timestamp: string;
-}
-
-interface ChatHistoryResponse {
-  messages: Message[];
-  cv_id?: string;
+  timestamp?: string;
+  time?: string; // Only present for AI messages you create in handleSend
 }
 
 export default function CvHistoryChat({ chatId }: { chatId: string }) {
   const { data, isLoading } = useGetChatHistoryQuery({ chat_id: chatId });
   const [sendMessage] = useSendMessageMutation();
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<CvHistoryMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // When data loads, initialize messages and save cv_id in localStorage
@@ -49,7 +45,7 @@ export default function CvHistoryChat({ chatId }: { chatId: string }) {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const userMsg: Message = {
+    const userMsg: CvHistoryMessage = {
       id: Date.now(),
       role: "user",
       content: input,
@@ -67,11 +63,11 @@ export default function CvHistoryChat({ chatId }: { chatId: string }) {
         cv_id,
       }).unwrap();
 
-      const aiMsg: Message = {
+      const aiMsg: CvHistoryMessage = {
         id: Date.now() + 1,
         role: "ai",
         content: res.content,
-        timestamp: res.data.timestamp,
+        time: res.timestamp,
       };
 
       setMessages((prev) => [...prev, aiMsg]);
@@ -94,13 +90,13 @@ export default function CvHistoryChat({ chatId }: { chatId: string }) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto" ref={scrollRef}>
-        {messages.map((msg) => (
+        {messages.map((msg: CvHistoryMessage) => (
           <ChatMessage
             key={msg.id}
             message={{
               sender: msg.role === "user" ? "user" : "ai",
               text: msg.content,
-              time: formatTime(new Date(msg.timestamp),
+              time: msg.timestamp || msg.time || "",
             }}
           />
         ))}

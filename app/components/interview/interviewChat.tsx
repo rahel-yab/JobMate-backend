@@ -8,7 +8,6 @@ import {
   useGetFreeformUserChatsQuery,
   useGetStructuredUserChatsQuery,
 } from "@/lib/redux/api/interviewApi";
-;
 import type { FreeformChat } from "@/lib/redux/api/I_type";
 interface UserChat {
   chat_id: string;
@@ -147,10 +146,9 @@ const InterviewPage: React.FC = () => {
 
   const { data: structuredData, isLoading: loadingStructured } =
     useGetStructuredUserChatsQuery();
-    const s_data=structuredData;
+  // const s_data=structuredData;
   const { data: freeformData, isLoading: loadingFreeform } =
     useGetFreeformUserChatsQuery();
-
 
   const structuredHistory: InterviewHistoryItem[] =
     structuredData?.data?.chats

@@ -6,7 +6,7 @@ import { useLanguage } from "@/providers/language-provider";
 import toast from "react-hot-toast";
 
 export default function OTPForm({
-  fullName,
+  // fullName,
   email,
   password,
 }: {
@@ -26,12 +26,12 @@ export default function OTPForm({
     try {
       console.log({ email, password, otp });
 
-      await registerUser({email, password, otp }).unwrap();
+      await registerUser({ email, password, otp }).unwrap();
       toast.success("Registered successfully! You can now login.");
 
-      window.location.href = "/login"; 
+      window.location.href = "/login";
     } catch {
-      setError(t("otp_failed")); 
+      setError(t("otp_failed"));
     }
   };
 
@@ -42,8 +42,8 @@ export default function OTPForm({
           {t("otp_title")}
         </h2>
         <p className="text-gray-600 text-center mb-6 text-md">
-          {t("otp_subtitle1")}{" "}
-          <span className="font-bold">{email}</span>{" "}{t("otp_subtitle2")}
+          {t("otp_subtitle1")} <span className="font-bold">{email}</span>{" "}
+          {t("otp_subtitle2")}
         </p>
 
         <form onSubmit={handleRegister} className="flex flex-col gap-5">

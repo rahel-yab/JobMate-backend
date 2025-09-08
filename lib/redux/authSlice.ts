@@ -1,8 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+interface User {
+  id?: string;
+  email?: string;
+  acces_token?: string; // matches backend response spelling
+}
+
 interface AuthState {
-  user: any | null;
-  accessToken: string | null| undefined;
+  user: User | null;
+  accessToken: string | null | undefined;
 }
 
 const initialState: AuthState = {
@@ -13,10 +19,8 @@ const initialState: AuthState = {
   accessToken:
     typeof window !== "undefined" && localStorage.getItem("accessToken")
       ? localStorage.getItem("accessToken")
-      : null, 
+      : null,
 };
-
-
 
 const authSlice = createSlice({
   name: "auth",
@@ -24,7 +28,7 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (
       state,
-      action: PayloadAction<{ user: any; accessToken: string }>
+      action: PayloadAction<{ user: User; accessToken: string }>
     ) => {
       state.user = action.payload.user;
       state.accessToken = action.payload.accessToken;
