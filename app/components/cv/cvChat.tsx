@@ -26,19 +26,19 @@ interface RawSkillGap {
   ImprovementSuggestions: string;
 }
 
-// Define types for messages
-interface Message {
-  id: number;
-  sender: "user" | "ai";
-  text?: string | JSX.Element;
-  time: string;
-  type?: "cv-analysis";
-  summary?: string;
-  strengths?: string;
-  weaknesses?: string;
-  improvements?: string;
-  skillGaps?: SkillGap[];
-}
+// // Define types for messages
+// interface Message {
+//   id: number;
+//   sender: "user" | "ai";
+//   text?: string | JSX.Element;
+//   time: string;
+//   type?: "cv-analysis";
+//   summary?: string;
+//   strengths?: string;
+//   weaknesses?: string;
+//   improvements?: string;
+//   skillGaps?: SkillGap[];
+// }
 
 interface SkillGap {
   skillName: string;

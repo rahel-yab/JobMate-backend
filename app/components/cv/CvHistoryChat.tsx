@@ -45,7 +45,7 @@ export default function CvHistoryChat({ chatId }: { chatId: string }) {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const userMsg: Message = {
+    const userMsg: CvHistoryMessage = {
       id: Date.now(),
       role: "user",
       content: input,
@@ -63,7 +63,7 @@ export default function CvHistoryChat({ chatId }: { chatId: string }) {
         cv_id,
       }).unwrap();
 
-      const aiMsg: Message = {
+      const aiMsg: CvHistoryMessage = {
         id: Date.now() + 1,
         role: "ai",
         content: res.content,
