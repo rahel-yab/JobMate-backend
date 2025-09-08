@@ -26,7 +26,7 @@ export default function JobSearchChat() {
       id: uniqueId(),
       type: "text",
       sender: "ai",
-      text: t("generalWelcomeMessage"),
+      text: t("jobWelcomeMessage"),
       time: formatTime(new Date()),
     },
   ]);

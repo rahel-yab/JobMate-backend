@@ -1,4 +1,5 @@
 "use client";
+import { SkillGap } from "@/lib/types/chat";
 
 import {
   CheckCircle,
@@ -17,14 +18,15 @@ type SkillGap = {
 };
 
 type CVMessageProps = {
-  summary?: string;
-  strengths?: string;
-  weaknesses?: string;
-  improvements?: string;
+  summary: string;
+  strengths: string;
+  weaknesses: string;
+  improvements: string;
   skillGaps?: SkillGap[] | null;
 };
 
 export default function CVMessage({
+  summary,
   strengths,
   weaknesses,
   improvements,
@@ -38,7 +40,7 @@ export default function CVMessage({
       <div className="h-7 w-7 p-3 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 text-xs"></div>
 
       {/* Main content */}
-      <div className="bg-white shadow rounded-xl p-6 space-y-6 flex-1">
+      <div className="bg-[#E6FFFA] shadow rounded-xl p-6 space-y-6 flex-1">
         {/* Header */}
         <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
           <CheckCircle className="text-green-600 w-5 h-5" />

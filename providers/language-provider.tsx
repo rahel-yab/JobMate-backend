@@ -30,6 +30,8 @@ const translations = {
     cv_writing: "CV Writing",
     interview_prep: "Interview Prep",
     job_boards: "Job Boards",
+    jobWelcomeMessage:
+      "Hello! I’m JobMate, your AI career buddy. Tell me what type of job you’re looking for, and I’ll help find opportunities for you.",
     skill_enhancements: "Skill Enhancements",
     market_insights: "Market Insights",
     motivation: "Motivation",
@@ -124,6 +126,8 @@ const translations = {
     cv_writing: "CV አጻጻፍ",
     interview_prep: "ቃለ መጠይቅ ዝግጅት ",
     job_boards: "የስራ ማስታወቂያ ሰሌዳዎች",
+    jobWelcomeMessage:
+      "ሰላም! እኔ JobMate ነኝ፣ የአንተ የAI የስራ ጓደኛ። አንተ ምን አይነት ስራ እየፈለግህ እንደሆነ ንገረኝ፣ እኔም እድሎችን እርዳለሁ እንዲያገኝ።",
     skill_enhancements: "ክህሎትን ማሳደግ",
     market_insights: "የሥራ ገበያ ግንዛቤዎች",
     motivation: "ራስን ማንቃት",

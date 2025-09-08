@@ -5,7 +5,7 @@ import { JobCardProps } from "@/app/components/jobSearch/Jobcard";
 export const jobApi = createApi({
   reducerPath: "jobApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://jobmate-api-0d1l.onrender.com",
+    baseUrl: "https://g6-jobmate-3.onrender.com",
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as RootState;
       const token = state.auth.user?.acces_token;

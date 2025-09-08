@@ -22,29 +22,22 @@ export default function QuickActions() {
 
   const actions = [
     {
-      key: "chat",
-      path: "/chat/general",
-      label: language === "en" ? "Chat" : "ችሎታዎች",
-      short: language === "en" ? "chat" : "ችሎታዎች",
-      icon: <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />,
-    },
-    {
       key: "cv",
-      path: "/chat/cv",
+      path: "/cv",
       label: t("cvReview"),
       short: "CV",
       icon: <FileText className="h-3 w-3 sm:h-4 sm:w-4" />,
     },
     {
       key: "jobs",
-      path: "/chat/jobs",
+      path: "/chat/jobsearch",
       label: t("findJobs"),
       short: language === "en" ? "Jobs" : "ስራ",
       icon: <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />,
     },
     {
       key: "interview",
-      path: "/chat/interview",
+      path: "/interview",
       label: t("interviewPractice"),
       short: language === "en" ? "Interview" : "ቃለመጠይቅ",
       icon: <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />,

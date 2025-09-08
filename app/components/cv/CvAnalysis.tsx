@@ -75,7 +75,7 @@ export default function CvAnalysisCard({
             onClick={() => setMode("paste")}
             className={`px-4 py-1 rounded-md shadow-md border text-sm ${
               mode === "paste"
-                ? "bg-[#217C6A] text-white border-[#217C6A] hover:bg-[#195d50]"
+                ? "hover:bg-[#217C6A] text-white border-[#217C6A] bg-[#007459]"
                 : "bg-white text-gray-700 border-gray-300"
             }`}
           >
@@ -135,8 +135,8 @@ export default function CvAnalysisCard({
           disabled={isDisabled}
           className={`w-full mt-4 font-semibold py-3 rounded-md transition ${
             isDisabled
-              ? "bg-[#369784] text-gray-200 cursor-not-allowed"
-              : "hover:bg-[#217C6A] bg-[#195d50] text-white"
+              ? "bg-[#6f958c] text-[#7ebeaf] cursor-not-allowed"
+              : "hover:bg-[#217C6A] bg-[#007459] text-white"
           }`}
         >
           {isAnalyzing ? "Analyzing..." : "Analyze My CV"}

@@ -51,7 +51,7 @@ const Nav = () => {
       {/* Nav Items */}
       <div className="mt-6 flex flex-col gap-4">
         <NavItem
-          href="/chat/cv"
+          href="/cv"
           icon={<FiFileText className="text-[#114b0a]" />}
           label={isOpen ? "CV Feedback" : ""}
         />

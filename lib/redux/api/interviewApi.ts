@@ -8,7 +8,7 @@ import type {
 export const interviewApi = createApi({
   reducerPath: "interviewApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://jobmate-api-0d1l.onrender.com",
+    baseUrl: "https://g6-jobmate-3.onrender.com",
     prepareHeaders: (headers, { getState }) => {
       // 🔑 attach JWT from state if available
       // const state = getState() as RootState;

@@ -26,7 +26,7 @@ export default function ChatInput({ input, setInput, onSend }: ChatInputProps) {
       />
       <button
         onClick={onSend}
-        className="bg-[#0F3A31] hover:bg-[#217C6A] p-3 rounded-lg text-white flex items-center justify-center"
+        className="bg-[#5BBBAA] hover:bg-[#217C6A] p-3 rounded-lg text-white flex items-center justify-center"
       >
         <Send className="h-5 w-5" />
       </button>
