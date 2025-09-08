@@ -18,25 +18,28 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
 
-  const redirect = searchParams.get("redirect") || "/cv";
+  const redirect = searchParams.get("redirect") || "/dashboard";
 
   const effectRan = useRef(false);
 
   // Handle Google login callback
   useEffect(() => {
-    if (effectRan.current) return; 
-    effectRan.current = true;
+  if (effectRan.current) return;
+  effectRan.current = true;
 
-    const token = searchParams.get("token");
-    const userJson = searchParams.get("user");
+  const token = searchParams.get("token");
+  const userJson = searchParams.get("user");
 
-    if (token && userJson) {
-      const user = JSON.parse(userJson);
-      dispatch(setCredentials({ user, accessToken: token }));
-      toast.success("Logged in with Google!");
-      router.push(redirect);
-    }
-  }, [searchParams, dispatch, router, redirect]);
+  if (token && userJson) {
+    const user = JSON.parse(userJson);
+    dispatch(setCredentials({ user, accessToken: token }));
+    localStorage.setItem("accessToken", token); // make sure it's in localStorage
+    toast.success("Logged in with Google!");
+    const redirect = searchParams.get("redirect") || "/dashboard";
+    router.replace(redirect); // cleanly redirect
+  }
+}, [searchParams, dispatch, router]);
+
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -58,6 +61,8 @@ export default function LoginForm() {
         })
       );
       toast.success(" Logged in successfully!");
+      console.log(data.user)
+
       router.push(redirect);
     } catch {
       setError("Login failed. Please check your credentials.");

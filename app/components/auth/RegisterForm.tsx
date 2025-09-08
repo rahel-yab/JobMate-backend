@@ -6,7 +6,6 @@ import { User, Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { useRequestOtpMutation } from "@/lib/redux/api/authApi";
 import { useLanguage } from "@/providers/language-provider";
-// import toast from "react-hot-toast";
 
 export default function RegisterForm() {
   const validatePassword = (pwd: string) => {
@@ -20,10 +19,11 @@ export default function RegisterForm() {
   };
 
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
-
   const { t } = useLanguage();
   const [step, setStep] = useState<"details" | "otp">("details");
-  const [fullName, setFullName] = useState("");
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -35,7 +35,6 @@ export default function RegisterForm() {
     setError("");
 
     try {
-      // const res =
       await requestOtp({ email }).unwrap();
       setStep("otp");
     } catch {
@@ -44,33 +43,55 @@ export default function RegisterForm() {
   };
 
   if (step === "otp") {
-    return <OTPForm fullName={fullName} email={email} password={password} />;
+    return (
+      <OTPForm
+        firstName={firstName}
+        lastName={lastName}
+        email={email}
+        password={password}
+      />
+    );
   }
 
   return (
     <div className="w-full max-w-lg p-8 rounded-xl bg-white shadow-lg font-serif">
-      <h2 className="text-2xl font-bold text-teal-600 text-center">
-        {t("r_join")}
-      </h2>
+      <h2 className="text-2xl font-bold text-teal-600 text-center">{t("r_join")}</h2>
       <p className="text-gray-500 mb-6 text-center">{t("r_create")}</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
+        {/* First Name */}
         <div className="flex items-center gap-2 border rounded px-3 border-gray-300">
           <User className="text-gray-500 w-5 h-5" />
           <input
             type="text"
-            id="fullName"
-            name="fullName"
-            placeholder={t("r_fullName")}
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            id="firstName"
+            name="firstName"
+            placeholder={t("r_firstName")}
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
             required
             className="flex-1 p-3 outline-none text-gray-700"
           />
         </div>
 
+        {/* Last Name */}
+        <div className="flex items-center gap-2 border rounded px-3 border-gray-300">
+          <User className="text-gray-500 w-5 h-5" />
+          <input
+            type="text"
+            id="lastName"
+            name="lastName"
+            placeholder={t("r_lastName")}
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+            className="flex-1 p-3 outline-none text-gray-700"
+          />
+        </div>
+
+        {/* Email */}
         <div className="flex items-center gap-2 border rounded px-3 border-gray-300">
           <Mail className="text-gray-500 w-5 h-5" />
           <input
@@ -85,6 +106,7 @@ export default function RegisterForm() {
           />
         </div>
 
+        {/* Password */}
         <div className="flex flex-col gap-1 w-full">
           <div className="flex items-center gap-2 border rounded px-3 border-gray-300">
             <Lock className="text-gray-500 w-5 h-5" />
@@ -103,11 +125,9 @@ export default function RegisterForm() {
             />
           </div>
 
-          {/* Single-line password error message */}
           {password && passwordErrors.length > 0 && (
             <p className="text-xs text-red-500 mt-1">
-              {" "}
-              Atleast {passwordErrors.join(", ")}
+              At least {passwordErrors.join(", ")}
             </p>
           )}
         </div>
@@ -124,10 +144,7 @@ export default function RegisterForm() {
       <div className="mt-4 text-center flex justify-center">
         <p className="text-sm text-gray-500">
           {t("r_noAccount")}{" "}
-          <Link
-            className="text-teal-600 cursor-pointer hover:underline"
-            href="/login"
-          >
+          <Link className="text-teal-600 cursor-pointer hover:underline" href="/login">
             {t("r_login")}
           </Link>
         </p>
