@@ -80,12 +80,12 @@ const FreeformChatHistory: React.FC = () => {
   }, [error, router, t.loadError]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-blue-50 font-sans text-gray-800">
+    <div className="min-h-screen bg-white font-sans text-gray-800">
       {/* Header */}
-      <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#217C6A] text-white">
+      <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#E6FFFA] text-black">
         <div className="flex items-center gap-3">
           <div
-            className="h-5 w-5 text-white cursor-pointer"
+            className="h-5 w-5 text-black cursor-pointer"
             onClick={() => router.push("/interview")}
           >
             ←
@@ -95,7 +95,7 @@ const FreeformChatHistory: React.FC = () => {
           </div>
           <div>
             <span className="font-semibold text-lg block">{t.jobMate}</span>
-            <span className="text-sm text-white/70">{t.slogan}</span>
+            <span className="text-sm text-black/70">{t.slogan}</span>
           </div>
         </div>
         <div className="flex items-center bg-white rounded-md shadow-md px-2 gap-1 py-1">
@@ -129,14 +129,22 @@ const FreeformChatHistory: React.FC = () => {
               <div
                 key={idx}
                 className={`flex ${
-                  msg.sender === "ai" ? "justify-start" : "justify-end"
-                }`}
+                  msg.sender === "ai"
+                    ? "items-start justify-start"
+                    : "justify-end"
+                } gap-2`}
               >
+                {/* Show JM logo only for AI messages */}
+                {msg.sender === "ai" && (
+                  <div className="h-8 w-8 bg-[#0F3A31] text-white rounded-full flex items-center justify-center font-bold text-sm mt-1">
+                    JM
+                  </div>
+                )}
                 <div
                   className={`max-w-xs md:max-w-md p-3 rounded-xl ${
                     msg.sender === "ai"
-                      ? "bg-blue-100 text-gray-800 rounded-bl-none"
-                      : "bg-blue-600 text-white rounded-br-none"
+                      ? "bg-[#E6FFFA] text-black  rounded-bl-none"
+                      : "bg-[#28957F] text-white rounded-br-none"
                   }`}
                 >
                   {msg.text}

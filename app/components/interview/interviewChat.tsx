@@ -179,12 +179,12 @@ const InterviewPage: React.FC = () => {
 
   return (
     //{bg-gray-50}
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-blue-50 font-sans text-gray-800">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-blue-50  font-sans text-gray-800">
       {/* Header */}
-      <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#217C6A] text-white">
-        <div className="flex items-center gap-3">
+      <header className="flex items-center justify-between h-[80px] shadow px-4  bg-[#E6FFFA] text-black">
+        <div className=" flex items-center gap-3">
           <div
-            className="h-5 w-5 text-white cursor-pointer"
+            className="h-5 w-5 text-black cursor-pointer"
             onClick={() => router.push("/dashboard")}
           >
             ←
@@ -196,7 +196,7 @@ const InterviewPage: React.FC = () => {
             <span className="font-semibold text-lg block">
               {translations[language].jobMate}
             </span>
-            <span className="text-sm text-white/70">
+            <span className="text-sm text-black/70">
               {translations[language].tagline}
             </span>
           </div>
