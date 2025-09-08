@@ -17,10 +17,10 @@ type SkillGap = {
 };
 
 type CVMessageProps = {
-  summary: string;
-  strengths: string;
-  weaknesses: string;
-  improvements: string;
+  summary?: string;
+  strengths?: string;
+  weaknesses?: string;
+  improvements?: string;
   skillGaps?: SkillGap[] | null;
 };
 

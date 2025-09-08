@@ -4,14 +4,14 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import CvIntroCard from "@/app/components/cv/CvIntroCard";
-import CvBenefitsCard from "@/app/components/cv/CvBenefitsCard";
+// import CvBenefitsCard from "@/app/components/cv/CvBenefitsCard";
 import CvHistoryCard from "@/app/components/cv/CvHistoryCard";
 import { useGetUserChatsQuery } from "@/lib/redux/api/cvApi";
 import CvExistingChat from "@/app/components/cv/CvExistingChat";
 import CvAdvisorCard from "../components/cv/CvAdvisorCard";
 
 export default function CvPage() {
-  const { data: chats = [], isLoading, refetch } = useGetUserChatsQuery();
+  const { data: chats = [], isLoading, refetch } = useGetUserChatsQuery({});
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
 
   // On mount, check if there's a persisted chatId in sessionStorage

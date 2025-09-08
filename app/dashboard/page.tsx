@@ -68,7 +68,7 @@ export default function Dashboard() {
           Hello, Ruth!
         </h2>
         <p className="text-gray-500 mt-1">
-          Choose how you'd like to boost your career today:
+          Choose how you&apos;d like to boost your career today:
         </p>
       </div>
 

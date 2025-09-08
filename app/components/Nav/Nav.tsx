@@ -3,13 +3,11 @@
 import { useState, useEffect } from "react";
 import NavItem from "./NavItem";
 import { Jaro } from "next/font/google";
-import {
-  FiFileText,
-  FiBriefcase,
-  FiUser,
-} from "react-icons/fi";
+import { FiFileText, FiBriefcase, FiUser } from "react-icons/fi";
 import { AiOutlineRead } from "react-icons/ai";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+// import { useRouter } from "next/navigation";
+import { useLogout } from "@/lib/redux/hooks/useLogout";
 
 const jaro = Jaro({
   subsets: ["latin"],
@@ -18,7 +16,12 @@ const jaro = Jaro({
 
 const Nav = () => {
   const [isOpen, setIsOpen] = useState(false);
+  // const router = useRouter();
+  const logout = useLogout();
 
+  const handleLogout = () => {
+    logout(); // clears tokens, resets state, redirects
+  };
   // ensure client and server match, then open
   useEffect(() => setIsOpen(false), []);
 
@@ -48,26 +51,36 @@ const Nav = () => {
       {/* Nav Items */}
       <div className="mt-6 flex flex-col gap-4">
         <NavItem
-          href="/cv-feedback"
+          href="/chat/cv"
           icon={<FiFileText className="text-[#114b0a]" />}
           label={isOpen ? "CV Feedback" : ""}
         />
         <NavItem
-          href="/available-job"
+          href="/chat/jobsearch"
           icon={<FiBriefcase className="text-[#114b0a]" />}
           label={isOpen ? "Available Job" : ""}
         />
         <NavItem
-          href="/interview-practice"
+          href="/interview"
           icon={<FiUser className="text-[#114b0a]" />}
           label={isOpen ? "Interview Practice" : ""}
         />
         <NavItem
-          href="/offline-resources"
+          href="/offline_tips"
           icon={<AiOutlineRead className="text-[#114b0a]" />}
           label={isOpen ? "Offline Resources" : ""}
         />
       </div>
+      {isOpen && (
+        <div className="px-4 py-4 mt-auto">
+          <button
+            onClick={handleLogout}
+            className="px-3 py-1 text-sm border border-red-500 text-red-600 rounded-md hover:bg-red-50 transition w-full"
+          >
+            Sign Out
+          </button>
+        </div>
+      )}
     </div>
   );
 };

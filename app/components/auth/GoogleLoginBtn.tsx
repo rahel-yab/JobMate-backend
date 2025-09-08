@@ -1,18 +1,18 @@
 "use client";
 import { FcGoogle } from "react-icons/fc";
-import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
-import { setCredentials } from "@/lib/redux/authSlice";
-import toast from "react-hot-toast";
+// import { useRouter } from "next/navigation";
+// import { useDispatch } from "react-redux";
+// import { setCredentials } from "@/lib/redux/authSlice";
+// import toast from "react-hot-toast";
 
 export default function GoogleLoginButton() {
-  const router = useRouter();
-  const dispatch = useDispatch();
+  // const router = useRouter();
+  // const dispatch = useDispatch();
 
   const handleGoogleLogin = () => {
-  window.location.href = "https://jobmate-api-0d1l.onrender.com/oauth/google/login";
-};
-
+    window.location.href =
+      "https://jobmate-api-0d1l.onrender.com/oauth/google/login";
+  };
 
   return (
     <button

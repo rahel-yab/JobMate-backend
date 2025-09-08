@@ -16,6 +16,15 @@ import {
   useSendMessageMutation,
 } from "@/lib/redux/api/cvApi";
 import { useLanguage } from "@/providers/language-provider";
+import { Message } from "../ChatWindow";
+
+interface RawSkillGap {
+  SkillName: string;
+  CurrentLevel: number;
+  RecommendedLevel: number;
+  Importance?: string;
+  ImprovementSuggestions: string;
+}
 
 // Define types for messages
 interface Message {
@@ -76,8 +85,17 @@ export default function CvChat() {
       id: Date.now(),
       sender: "ai",
       text: res.success
-        ? `📄 ${res.message}: ${res.data?.fileName || ""}`
-        : `⚠️ ${res.message}`,
+        ? `📄 ${res.message}: ${res.deta?.fileName || ""}`
+        : `⚠️ ${res.message}`, // backend failure messages
+      cvId: res?.data?.cvId || "",
+    };
+
+    console.log(msg);
+
+    const msg1: Message = {
+      id: Date.now(),
+      sender: "ai",
+      text: `Here's your CV analysis with detailed feedback and suggestions for improvement:`,
       time: formatTime(new Date()),
     };
 
@@ -101,18 +119,16 @@ export default function CvChat() {
 
     const { CVs, CVFeedback, SkillGaps } = suggestions;
 
-    const normalizedSkillGaps: SkillGap[] = (SkillGaps || []).map(
-      (gap: any) => ({
-        skillName: gap.SkillName,
-        currentLevel: gap.CurrentLevel,
-        recommendedLevel: gap.RecommendedLevel,
-        importance:
-          gap.Importance?.toLowerCase() === "critical"
-            ? "important"
-            : gap.Importance?.toLowerCase(),
-        improvementSuggestions: gap.ImprovementSuggestions,
-      })
-    );
+    const normalizedSkillGaps = (SkillGaps || []).map((gap: RawSkillGap) => ({
+      skillName: gap.SkillName,
+      currentLevel: gap.CurrentLevel,
+      recommendedLevel: gap.RecommendedLevel,
+      importance:
+        gap.Importance?.toLowerCase() === "critical"
+          ? "important" // normalize "critical" → "important"
+          : gap.Importance?.toLowerCase(),
+      improvementSuggestions: gap.ImprovementSuggestions,
+    }));
 
     const cvMsg: Message = {
       id: Date.now(),
@@ -179,6 +195,7 @@ export default function CvChat() {
           time: formatTime(new Date()),
         },
       ]);
+      console.error("Error sending message:", err);
     }
   };
 
@@ -202,7 +219,8 @@ export default function CvChat() {
               <CvAnalysisCard
                 onAnalyze={handleUpload}
                 onChatInstead={async () => {
-                  const cid = await ensureSession();
+                  // const cid =
+                  await ensureSession();
                   setMessages((prev) => [
                     ...prev,
                     {

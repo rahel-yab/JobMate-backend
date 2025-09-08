@@ -22,8 +22,6 @@ interface FreeformChat {
   updated_at: string;
 }
 
-
-
 const texts = {
   en: {
     jobMate: "JobMate",
@@ -59,74 +57,72 @@ const FreeformChatPage: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const t = texts[language];
-  const { data: userChatsData,} =
-    useGetFreeformUserChatsQuery();
- 
+  const { data: userChatsData } = useGetFreeformUserChatsQuery();
 
- useEffect(() => {
-   let isMounted = true;
-   let hasStarted = false;
+  useEffect(() => {
+    let isMounted = true;
+    let hasStarted = false;
 
-   const startSession = async () => {
-     if (!userChatsData || sessionId || hasStarted) return;
-     hasStarted = true;
+    const startSession = async () => {
+      if (!userChatsData || sessionId || hasStarted) return;
+      hasStarted = true;
 
-     try {
-       const userChats = userChatsData?.data?.chats;
+      try {
+        const userChats = userChatsData?.data?.chats;
 
-       if (!Array.isArray(userChats)) return;
+        if (!Array.isArray(userChats)) return;
 
-       const existingSession = userChats.find(
-         (chat: FreeformChat) =>
-           chat.session_type.toLowerCase() === sessionType.toLowerCase()
-       );
+        const existingSession = userChats.find(
+          (chat: FreeformChat) =>
+            chat.session_type.toLowerCase() === sessionType.toLowerCase()
+        );
 
-       if (existingSession) {
-         if (!isMounted) return;
-         setSessionId(existingSession.chat_id);
-         setMessages([
-           {
-             sender: "ai",
-             text:
-               language === "en"
-                 ? "Welcome back! You can continue your conversation."
-                 : "እንኳን ደህና መጣችሁ! ቀደም ሲል ያለበትን ውይይት ይቀጥሉ።",
-           },
-         ]);
-       } else {
-         const res = await createSession({
-           user_id: "demo-user-id", // Replace this with real ID
-           session_type: sessionType,
-         }).unwrap();
+        if (existingSession) {
+          if (!isMounted) return;
+          setSessionId(existingSession.chat_id);
+          setMessages([
+            {
+              sender: "ai",
+              text:
+                language === "en"
+                  ? "Welcome back! You can continue your conversation."
+                  : "እንኳን ደህና መጣችሁ! ቀደም ሲል ያለበትን ውይይት ይቀጥሉ።",
+            },
+          ]);
+        } else {
+          const res = await createSession({
+            user_id: "demo-user-id", // Replace this with real ID
+            session_type: sessionType,
+          }).unwrap();
 
-         const chatId = res?.data?.chat_id;
-         const initialMessage = res?.data?.message;
+          const chatId = res?.data?.chat_id;
+          const initialMessage = res?.data?.message;
 
-         if (chatId && isMounted) {
-           setSessionId(chatId);
-           setMessages([
-             {
-               sender: "ai",
-               text:
-                 initialMessage ||
-                 (language === "en"
-                   ? "Hello! I'm your AI interview coach. What would you like to explore today?"
-                   : "ሰላም! እኔ የኤ.አይ ቃለ መጠይቅ አማራጭዎ ነኝ። ዛሬ ምን ማወቅ እፈልጋለሁ?"),
-             },
-           ]);
-         }
-       }
-     } catch (error) {
-       console.error("Failed to start or load session:", error);
-     }
-   };
+          if (chatId && isMounted) {
+            setSessionId(chatId);
+            setMessages([
+              {
+                sender: "ai",
+                text:
+                  initialMessage ||
+                  (language === "en"
+                    ? "Hello! I'm your AI interview coach. What would you like to explore today?"
+                    : "ሰላም! እኔ የኤ.አይ ቃለ መጠይቅ አማራጭዎ ነኝ። ዛሬ ምን ማወቅ እፈልጋለሁ?"),
+              },
+            ]);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to start or load session:", error);
+      }
+    };
 
-   startSession();
+    startSession();
 
-   return () => {
-     isMounted = false;
-   };
- }, [userChatsData, sessionType]);
+    return () => {
+      isMounted = false;
+    };
+  }, [userChatsData, sessionType, createSession, language, sessionId]);
 
   // useEffect(() => {
   //   const startSession = async () => {

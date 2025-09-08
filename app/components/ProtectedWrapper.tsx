@@ -3,6 +3,7 @@
 import { useSelector } from "react-redux";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { RootState } from "@/lib/redux/store";
 
 interface ProtectedWrapperProps {
   children: React.ReactNode;
@@ -11,7 +12,7 @@ interface ProtectedWrapperProps {
 const unprotectedRoutes = ["/login", "/register", "/reset-password", "/"];
 
 export default function ProtectedWrapper({ children }: ProtectedWrapperProps) {
-  const reduxToken = useSelector((state: any) => state.auth.accessToken);
+  const reduxToken = useSelector((state: RootState) => state.auth.accessToken);
   const router = useRouter();
   const pathname = usePathname();
 
