@@ -16,7 +16,12 @@ class MessageInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: const Color(0xFFEAF6F4), // light green background
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: EdgeInsets.only(
+        left: 12,
+        right: 12,
+        top: 10,
+        bottom: MediaQuery.of(context).viewPadding.bottom + 10,
+      ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(

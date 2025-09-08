@@ -273,8 +273,10 @@ class InterviewRemoteDataSourceImpl implements InterviewRemoteDataSource {
       );
 
       if (response.statusCode == 200) {
+        final responseMap = response.data as Map<String, dynamic>;
+        final data = responseMap['data'] ?? responseMap;
         return InterviewMessageModel.fromStructuredResponse(
-          response.data as Map<String, dynamic>,
+          data as Map<String, dynamic>,
         );
       }
       throw DioException(

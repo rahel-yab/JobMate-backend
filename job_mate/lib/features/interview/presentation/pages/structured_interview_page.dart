@@ -9,7 +9,6 @@ import '../blocs/interview_state.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/message_input.dart';
 import '../widgets/chat_header.dart';
-import '../../domain/entities/interview_message.dart';
 
 class StructuredInterviewPage extends StatefulWidget {
   final String field;
@@ -71,7 +70,8 @@ class _StructuredInterviewPageState extends State<StructuredInterviewPage> {
                       questionsAnswered++;
                     }
                   }
-                  _currentQuestionIndex = questionsAnswered;
+                  _currentQuestionIndex =
+                      (questionsAnswered).clamp(0, _totalQuestions - 1);
                 }
 
                 return Column(
@@ -80,7 +80,7 @@ class _StructuredInterviewPageState extends State<StructuredInterviewPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Question ${_currentQuestionIndex + 1} of $_totalQuestions',
+                          'Question ${(_currentQuestionIndex + 1).clamp(1, _totalQuestions)} of $_totalQuestions',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -98,7 +98,8 @@ class _StructuredInterviewPageState extends State<StructuredInterviewPage> {
                     ),
                     const SizedBox(height: 8),
                     LinearProgressIndicator(
-                      value: _currentQuestionIndex / _totalQuestions,
+                      value:
+                          (_currentQuestionIndex / _totalQuestions).clamp(0.0, 1.0),
                       backgroundColor: Colors.grey[300],
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Color(0xFF1976D2),
@@ -131,13 +132,24 @@ class _StructuredInterviewPageState extends State<StructuredInterviewPage> {
                 }
 
                 if (state is InterviewLoaded) {
-                  return ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    itemCount: state.messages.length,
-                    itemBuilder: (context, index) {
-                      return ChatBubble(message: state.messages[index]);
-                    },
+                  return Stack(
+                    children: [
+                      ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        itemCount: state.messages.length,
+                        itemBuilder: (context, index) {
+                          return ChatBubble(message: state.messages[index]);
+                        },
+                      ),
+                      if (state.messages.isNotEmpty &&
+                          state.messages.last.role == 'user')
+                        const Positioned(
+                          left: 16,
+                          bottom: 8,
+                          child: _TypingDots(),
+                        ),
+                    ],
                   );
                 }
 
@@ -159,7 +171,12 @@ class _StructuredInterviewPageState extends State<StructuredInterviewPage> {
 
               if (isCompleted) {
                 return Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    top: 16,
+                    bottom: MediaQuery.of(context).viewPadding.bottom + 16,
+                  ),
                   child: Column(
                     children: [
                       const Text(
@@ -357,6 +374,59 @@ class _StructuredInterviewPageState extends State<StructuredInterviewPage> {
           ],
         ),
       ),
+    );
+  }
+}
+
+// Simple three-dot typing indicator used in structured chat
+class _TypingDots extends StatefulWidget {
+  const _TypingDots();
+  @override
+  State<_TypingDots> createState() => _TypingDotsState();
+}
+
+class _TypingDotsState extends State<_TypingDots>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (_, __) {
+        final t = _controller.value;
+        int active = (t * 3).floor() % 3 + 1;
+        return Row(
+          children: List.generate(3, (i) {
+            final on = i < active;
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: on ? const Color(0xFF144A3F) : Colors.grey[400],
+                  shape: BoxShape.circle,
+                ),
+              ),
+            );
+          }),
+        );
+      },
     );
   }
 }

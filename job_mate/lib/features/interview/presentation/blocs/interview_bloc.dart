@@ -60,7 +60,7 @@ class InterviewBloc extends Bloc<InterviewEvent, InterviewState> {
           _currentSession = session;
           _messages = [];
 
-          emit(InterviewLoaded(_messages, session: session));
+          emit(InterviewLoaded(List<InterviewMessage>.from(_messages), session: session));
           add(LoadChatHistory(_chatId!));
         },
       );
@@ -82,7 +82,7 @@ class InterviewBloc extends Bloc<InterviewEvent, InterviewState> {
           _messages = [];
 
           // Emit initial state and immediately load history to get first question
-          emit(InterviewLoaded(_messages, session: session));
+          emit(InterviewLoaded(List<InterviewMessage>.from(_messages), session: session));
 
           // For structured interviews, the first question might be available immediately
           // Try to get it from history or make a continue call
@@ -97,8 +97,16 @@ class InterviewBloc extends Bloc<InterviewEvent, InterviewState> {
                     print('DEBUG: Continue failed: ${failure.toString()}'),
                 (firstQuestion) async {
                   if (!emit.isDone) {
-                    _messages = [firstQuestion];
-                    emit(InterviewLoaded(_messages, session: session));
+                    // Always include a synthetic session-start message so the chat opens consistently
+                    final intro = InterviewMessage(
+                      chatId: session.chatId,
+                      role: 'assistant',
+                      content:
+                          'INTERVIEW SESSION STARTED\n\nField: ${session.field ?? 'software_engineering'}\nTotal Questions: ${session.totalQuestions ?? 6}\n\nLet\'s begin with the first question:',
+                      timestamp: DateTime.now(),
+                    );
+                    _messages = [intro, firstQuestion];
+                    emit(InterviewLoaded(List<InterviewMessage>.from(_messages), session: session));
                   }
                 },
               );
@@ -106,8 +114,9 @@ class InterviewBloc extends Bloc<InterviewEvent, InterviewState> {
             (history) async {
               if (history.isNotEmpty) {
                 if (!emit.isDone) {
-                  _messages = history;
-                  emit(InterviewLoaded(_messages, session: session));
+                  // Ensure we own a List<InterviewMessage> not a covariant List<InterviewMessageModel>
+                  _messages = List<InterviewMessage>.from(history);
+                  emit(InterviewLoaded(List<InterviewMessage>.from(_messages), session: session));
                 }
               } else {
                 print('DEBUG: History is empty, trying continue endpoint');
@@ -119,8 +128,15 @@ class InterviewBloc extends Bloc<InterviewEvent, InterviewState> {
                       print('DEBUG: Continue failed: ${failure.toString()}'),
                   (firstQuestion) async {
                     if (!emit.isDone) {
-                      _messages = [firstQuestion];
-                      emit(InterviewLoaded(_messages, session: session));
+                      final intro = InterviewMessage(
+                        chatId: session.chatId,
+                        role: 'assistant',
+                        content:
+                            'INTERVIEW SESSION STARTED\n\nField: ${session.field ?? 'software_engineering'}\nTotal Questions: ${session.totalQuestions ?? 6}\n\nLet\'s begin with the first question:',
+                        timestamp: DateTime.now(),
+                      );
+                      _messages = [intro, firstQuestion];
+                      emit(InterviewLoaded(List<InterviewMessage>.from(_messages), session: session));
                     }
                   },
                 );
@@ -146,7 +162,8 @@ class InterviewBloc extends Bloc<InterviewEvent, InterviewState> {
         timestamp: DateTime.now(),
       );
       _messages.add(userMessage);
-      emit(InterviewLoaded(_messages, session: _currentSession));
+      // Emit a new list instance so UI rebuilds
+      emit(InterviewLoaded(List<InterviewMessage>.from(_messages), session: _currentSession));
 
       final result = await sendFreeformMessage(_chatId!, event.message);
       result.fold(
@@ -155,7 +172,7 @@ class InterviewBloc extends Bloc<InterviewEvent, InterviewState> {
         ),
         (response) {
           _messages.add(response);
-          emit(InterviewLoaded(_messages, session: _currentSession));
+          emit(InterviewLoaded(List<InterviewMessage>.from(_messages), session: _currentSession));
         },
       );
     });
@@ -175,7 +192,7 @@ class InterviewBloc extends Bloc<InterviewEvent, InterviewState> {
         timestamp: DateTime.now(),
       );
       _messages.add(userMessage);
-      emit(InterviewLoaded(_messages, session: _currentSession));
+      emit(InterviewLoaded(List<InterviewMessage>.from(_messages), session: _currentSession));
 
       final result = await sendStructuredAnswer(_chatId!, event.answer);
       result.fold(
@@ -184,7 +201,7 @@ class InterviewBloc extends Bloc<InterviewEvent, InterviewState> {
         ),
         (response) {
           _messages.add(response);
-          emit(InterviewLoaded(_messages, session: _currentSession));
+          emit(InterviewLoaded(List<InterviewMessage>.from(_messages), session: _currentSession));
         },
       );
     });
@@ -198,8 +215,9 @@ class InterviewBloc extends Bloc<InterviewEvent, InterviewState> {
         result.fold(
           (failure) => {}, // Ignore history loading errors
           (history) {
-            _messages = history;
-            emit(InterviewLoaded(_messages, session: _currentSession));
+            // Copy into a fresh List<InterviewMessage> to avoid covariant list runtime errors
+            _messages = List<InterviewMessage>.from(history);
+            emit(InterviewLoaded(List<InterviewMessage>.from(_messages), session: _currentSession));
           },
         );
       } else if (_currentMode == 'structured') {
@@ -207,8 +225,9 @@ class InterviewBloc extends Bloc<InterviewEvent, InterviewState> {
         result.fold(
           (failure) => {}, // Ignore history loading errors
           (history) {
-            _messages = history;
-            emit(InterviewLoaded(_messages, session: _currentSession));
+            // Copy into a fresh List<InterviewMessage> to avoid covariant list runtime errors
+            _messages = List<InterviewMessage>.from(history);
+            emit(InterviewLoaded(List<InterviewMessage>.from(_messages), session: _currentSession));
           },
         );
       }
