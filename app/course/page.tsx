@@ -202,12 +202,9 @@ interface Course {
 
 const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
   return (
-    <div className="bg-[#F3F5F9] rounded-2xl shadow-md p-6 transition-shadow hover:shadow-lg">
+    <div className="bg-gradient-to-br from-[#f3fdf369] to-[#056e212a] rounded-2xl shadow-md p-6 transition-shadow hover:shadow-lg">
       <div className="flex items-start justify-between mb-3">
-        <Badge
-          variant="outline"
-          className="mb-2 bg-white text-black border-gray-300 shadow-sm"
-        >
+        <Badge className="mb-2 bg-[#23848d6b] text-white  ">
           Online Course
         </Badge>
 
@@ -215,14 +212,14 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
           href={course.URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 rounded-full bg-white text-gray-800 px-3 py-1 text-sm font-medium shadow-md hover:shadow-lg hover:bg-gray-100 transition"
+          className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-gray-800 px-3 py-1 text-sm font-medium shadow-md hover:shadow-lg hover:bg-gray-100 transition"
         >
           <ExternalLink className="h-3 w-3" />
           View Resource
         </a>
       </div>
 
-      <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-snug">
+      <h3 className="text-lg font-semibold text-slate-700 mb-2 leading-snug">
         {course.Title}
       </h3>
 
@@ -234,7 +231,7 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
         <span className="font-medium">Skill:</span> {course.Skill}
       </p>
 
-      <p className="text-sm text-gray-700">{course.Description}</p>
+      <p className="text-sm text-slate-700">{course.Description}</p>
     </div>
   );
 };
@@ -289,12 +286,15 @@ export default function Page() {
         <div>
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-lg transition shadow-sm bg-white"
+            className="inline-flex items-center gap-2 text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-lg transition shadow-sm bg-[#ffffff72]"
           >
             <ArrowLeft className="h-5 w-5" />
             <span className="font-medium">Dashboard</span>
           </Link>
         </div>
+        <h1 className="text-3xl font-bold text-center text-slate-700">
+          Course Suggestions
+        </h1>
 
         {/* Courses & Advice Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -304,7 +304,7 @@ export default function Page() {
 
           {/* General Advice spans full width */}
           {advice.length > 0 && (
-            <div className="bg-[#F3F5F9] rounded-2xl shadow-md p-6 md:col-span-2">
+            <div className="bg-gradient-to-br from-[#e5fee7c6] to-[#0e772a47] rounded-2xl shadow-md p-6 md:col-span-2">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
                 General Career Advice
               </h3>
