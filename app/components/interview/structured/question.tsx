@@ -7,6 +7,9 @@ import {
   useStartStructuredInterviewMutation,
   useAnswerStructuredQuestionMutation,
 } from "@/lib/redux/api/interviewApi"; // Adjust path
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm"; // optional for tables, strikethrough, etc.
+import rehypeHighlight from "rehype-highlight"; 
 
 const texts = {
   en: {
@@ -145,10 +148,10 @@ const StructuredQuestion: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-blue-50 font-sans text-gray-800">
       {/* Header */}
-      <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#217C6A] text-white">
+      <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#E6FFFA] text-black">
         <div className="flex items-center gap-3">
           <div
-            className="h-5 w-5 text-white cursor-pointer"
+            className="h-5 w-5 text-black cursor-pointer"
             onClick={() => router.push("/interview")}
           >
             ←
@@ -158,7 +161,7 @@ const StructuredQuestion: React.FC = () => {
           </div>
           <div>
             <span className="font-semibold text-lg block">{t.jobMate}</span>
-            <span className="text-sm text-white/70">{t.slogan}</span>
+            <span className="text-sm text-black/70">{t.slogan}</span>
           </div>
         </div>
 
@@ -246,7 +249,14 @@ const StructuredQuestion: React.FC = () => {
             <h2 className="text-xl font-semibold text-green-700 mb-4">
               {t.feedback}
             </h2>
-            <pre className="whitespace-pre-wrap text-green-800">{feedback}</pre>
+            <div className="prose prose-green max-w-none text-green-800">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeHighlight]}
+              >
+                {feedback}
+              </ReactMarkdown>
+            </div>
           </div>
         )}
       </main>

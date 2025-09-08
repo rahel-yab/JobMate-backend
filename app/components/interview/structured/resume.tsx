@@ -6,6 +6,10 @@ import {
   useLazyResumeStructuredInterviewQuery,
   useAnswerStructuredQuestionMutation,
 } from "@/lib/redux/api/interviewApi";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm"; // optional for tables, strikethrough, etc.
+import rehypeHighlight from "rehype-highlight"; 
+
 
 const texts = {
   en: {
@@ -149,10 +153,10 @@ const ResumeInterview: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-blue-50 font-sans text-gray-800">
       {/* Header */}
-      <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#217C6A] text-white">
+      <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#E6FFFA] text-black">
         <div className="flex items-center gap-3">
           <div
-            className="h-5 w-5 text-white cursor-pointer"
+            className="h-5 w-5 text-black cursor-pointer"
             onClick={() => router.push("/interview")}
           >
             ←
@@ -162,7 +166,7 @@ const ResumeInterview: React.FC = () => {
           </div>
           <div>
             <span className="font-semibold text-lg block">{t.jobMate}</span>
-            <span className="text-sm text-white/70">{t.slogan}</span>
+            <span className="text-sm text-black/70">{t.slogan}</span>
           </div>
         </div>
 
@@ -223,9 +227,14 @@ const ResumeInterview: React.FC = () => {
                 <h3 className="text-lg font-semibold text-green-700 mb-2">
                   {t.feedback}
                 </h3>
-                <pre className="whitespace-pre-wrap text-green-800 mb-4">
-                  {feedback}
-                </pre>
+                <div className="prose prose-green max-w-none text-green-800">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeHighlight]}
+                  >
+                    {feedback}
+                  </ReactMarkdown>
+                </div>
               </>
             ) : (
               <p className="text-gray-700">{t.complete} ✅</p>

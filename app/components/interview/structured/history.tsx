@@ -161,10 +161,10 @@ const StructuredHistory: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-blue-50 font-sans text-gray-800">
       {/* Header */}
-      <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#217C6A] text-white">
+      <header className="flex items-center justify-between h-[80px] shadow px-4 bg-[#E6FFFA] text-black">
         <div className="flex items-center gap-3">
           <div
-            className="h-5 w-5 text-white cursor-pointer"
+            className="h-5 w-5 text-black cursor-pointer"
             onClick={() => router.push("/interview")}
           >
             ←
@@ -174,7 +174,7 @@ const StructuredHistory: React.FC = () => {
           </div>
           <div>
             <span className="font-semibold text-lg block">{t.jobMate}</span>
-            <span className="text-sm text-white/70">{t.slogan}</span>
+            <span className="text-sm text-black">{t.slogan}</span>
           </div>
         </div>
 
