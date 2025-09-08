@@ -64,9 +64,7 @@ export default function Dashboard() {
         <p className="text-lg text-gray-600">
           Your AI-powered career companion for Ethiopian youth
         </p>
-        <h2 className="text-xl font-semibold text-green-600 mt-2">
-          Hello, Naomi!
-        </h2>
+        <h2 className="text-xl font-semibold text-green-600 mt-2">Hello!</h2>
         <p className="text-gray-500 mt-1">
           Choose how you&apos;d like to boost your career today:
         </p>
