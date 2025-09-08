@@ -1,10 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-interface User {
-  id?: string;
-  email?: string;
-  acces_token?: string; // matches backend response spelling
-}
+import type { User } from "../types/auth";
 
 interface AuthState {
   user: User | null;
@@ -27,21 +22,21 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (
-      state,
-      action: PayloadAction<{ user: User; accessToken: string }>
-    ) => {
-      state.user = action.payload.user;
-      state.accessToken = action.payload.accessToken;
+  state,
+  action: PayloadAction<{ user: User; accessToken?: string }>
+) => {
+  state.user = action.payload.user;
+  state.accessToken = action.payload.user.acces_token;
 
-      // Save in localStorage
-      localStorage.setItem("accessToken", action.payload.accessToken);
-      localStorage.setItem("user", JSON.stringify(action.payload.user));
-    },
+  if (action.payload.user.acces_token) {
+    localStorage.setItem("accessToken", action.payload.user.acces_token);
+  }
+  localStorage.setItem("user", JSON.stringify(action.payload.user));
+},
+
     clearAuth: (state) => {
       state.user = null;
       state.accessToken = null;
-
-      // Remove from localStorage
       localStorage.removeItem("accessToken");
       localStorage.removeItem("user");
     },

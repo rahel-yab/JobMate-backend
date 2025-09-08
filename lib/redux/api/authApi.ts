@@ -1,144 +1,81 @@
-// import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-// import type { RootState } from "../store";
-// import { clearAuth, setCredentials } from "../authSlice";
-
-// // Base query
-// const baseQuery = fetchBaseQuery({
-//   baseUrl: "https://g6-jobmate-3.onrender.com",
-//   prepareHeaders: (headers, { getState }) => {
-//     //const token = (getState() as RootState).auth.accessToken;
-
-//     const state = getState() as RootState;
-//     console.log("Auth state in prepareHeaders:", state.auth);
-//     //const token = (getState() as RootState).auth.accessToken;
-//     const token = state.auth.user?.acces_token; // ✅ correct path
-//     console.log("Token in prepareHeaders:", token);
-
-//     if (token) headers.set("authorization", `Bearer ${token}`);
-//     return headers;
-//   },
-// });
-// // handle 401 + automatic refresh
-// const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
-//   let result = await baseQuery(args, api, extraOptions);
-
-//   if (result.error && result.error.status === 401) {
-//     // refresh token
-//     const refreshResult: any = await baseQuery(
-//       { url: "/auth/refresh", method: "POST", credentials: "include" },
-//       api,
-//       extraOptions
-//     );
-
-//     if (refreshResult.data) {
-//       // Update store with new token
-//       api.dispatch(
-//         setCredentials({
-//           user: refreshResult.data.user || api.getState().auth.user,
-//           accessToken: refreshResult.data.access_token,
-//         })
-//       );
-//       // Retry original request with new token
-//       result = await baseQuery(args, api, extraOptions);
-//     } else {
-//       // Refresh failed → log out
-//       api.dispatch(clearAuth());
-//     }
-//   }
-
-//   return result;
-// };
-
-// export const authApi = createApi({
-//   reducerPath: "authApi",
-//   baseQuery: baseQueryWithReauth,
-//   endpoints: (builder) => ({
-//     login: builder.mutation<any, { email: string; password: string }>({
-//       query: (body) => ({ url: "/auth/login", method: "POST", body }),
-//     }),
-//     register: builder.mutation<
-//       any,
-//       { email: string; password: string; otp: string }
-//     >({
-//       query: (body) => ({ url: "/auth/register", method: "POST", body }),
-//     }),
-//     requestOtp: builder.mutation<any, { email: string }>({
-//       query: (body) => ({ url: "/auth/request-otp", method: "POST", body }),
-//     }),
-//     logout: builder.mutation<void, void>({
-//       query: () => ({ url: "/auth/logout", method: "POST" }),
-//     }),
-
-//     requestPasswordReset: builder.mutation<any, { email: string }>({
-//       query: (body) => ({
-//         url: "/auth/request-password-reset-otp",
-//         method: "POST",
-//         body,
-//       }),
-//     }),
-//     resetPassword: builder.mutation<
-//       any,
-//       { email: string; otp: string; new_password: string }
-//     >({
-//       query: ({ email, otp, new_password }) => ({
-//         url: "/auth/reset-password",
-//         method: "POST",
-//         body: { email, otp, new_password },
-//       }),
-//     }),
-//   }),
-// });
-
-// export const {
-//   useLoginMutation,
-//   useRegisterMutation,
-//   useRequestOtpMutation,
-//   useLogoutMutation,
-//   useRequestPasswordResetMutation,
-//   useResetPasswordMutation,
-// } = authApi;
-
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import {
+  createApi,
+  fetchBaseQuery,
+  FetchArgs,
+  FetchBaseQueryError,
+  BaseQueryApi,
+} from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../store";
-// import { clearAuth, setCredentials } from "../authSlice";
+import { clearAuth, setCredentials } from "../authSlice";
+import { User } from "@/lib/types/auth";
 
-// Base query
-
+// Base query with headers
 const baseQuery = fetchBaseQuery({
   baseUrl: "https://g6-jobmate-3.onrender.com",
-  prepareHeaders: (headers, { getState }) => {
-    const state = getState() as RootState;
+  prepareHeaders: (headers, api) => {
+    const state = api.getState() as RootState;
     const token = state.auth.user?.acces_token;
-
     if (token) headers.set("authorization", `Bearer ${token}`);
     return headers;
   },
 });
 
+// Handle 401 + auto refresh
+const baseQueryWithReauth = async (
+  args: string | FetchArgs,
+  api: BaseQueryApi,
+  extraOptions: object
+) => {
+  let result = await baseQuery(args, api, extraOptions);
+
+  if ((result as { error?: FetchBaseQueryError }).error?.status === 401) {
+    const refreshResult = await baseQuery(
+      { url: "/auth/refresh", method: "POST", credentials: "include" },
+      api,
+      extraOptions
+    );
+
+    if ("data" in refreshResult) {
+      api.dispatch(
+        setCredentials({
+          user: (refreshResult.data as { user: User }).user || (api.getState() as RootState).auth.user!,
+          accessToken: (refreshResult.data as { access_token: string }).access_token,
+        })
+      );
+      result = await baseQuery(args, api, extraOptions);
+    } else {
+      api.dispatch(clearAuth());
+    }
+  }
+
+  return result;
+};
+
+// API endpoints
 export const authApi = createApi({
   reducerPath: "authApi",
-  baseQuery, // ✅ Just use baseQuery directly
+  baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
-    login: builder.mutation({
+    login: builder.mutation<{ access_token: string; user: User }, { email: string; password: string }>({
       query: (body) => ({ url: "/auth/login", method: "POST", body }),
     }),
-    register: builder.mutation({
+    register: builder.mutation<{ user: User; access_token: string }, { email: string; password: string; otp: string }>({
       query: (body) => ({ url: "/auth/register", method: "POST", body }),
     }),
-    requestOtp: builder.mutation({
+    requestOtp: builder.mutation<{ success: boolean }, { email: string }>({
       query: (body) => ({ url: "/auth/request-otp", method: "POST", body }),
     }),
     logout: builder.mutation<void, void>({
       query: () => ({ url: "/auth/logout", method: "POST" }),
     }),
-    requestPasswordReset: builder.mutation({
+    requestPasswordReset: builder.mutation<{ success: boolean }, { email: string }>({
       query: (body) => ({
         url: "/auth/request-password-reset-otp",
         method: "POST",
         body,
       }),
     }),
-    resetPassword: builder.mutation({
+    resetPassword: builder.mutation<{ success: boolean }, { email: string; otp: string; new_password: string }>({
       query: ({ email, otp, new_password }) => ({
         url: "/auth/reset-password",
         method: "POST",
