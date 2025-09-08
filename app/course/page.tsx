@@ -204,7 +204,7 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
   return (
     <div className="bg-gradient-to-br from-[#f3fdf369] to-[#056e212a] rounded-2xl shadow-md p-6 transition-shadow hover:shadow-lg">
       <div className="flex items-start justify-between mb-3">
-        <Badge variant="" className="mb-2 bg-[#23848d6b] text-white  ">
+        <Badge className="mb-2 bg-[#23848d6b] text-white  ">
           Online Course
         </Badge>
 
