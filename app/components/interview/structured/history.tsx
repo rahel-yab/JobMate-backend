@@ -146,9 +146,15 @@ const StructuredHistory: React.FC = () => {
           <div className="flex justify-end mt-3">
             <button
               className="px-4 py-1.5 bg-white border border-blue-600 text-blue-600 text-sm font-medium rounded hover:bg-blue-50 transition-colors"
-              onClick={() =>
-                router.push(`/interview/structured/history/?chatid=${item.id}`)
-              }
+              onClick={() => {
+                if (item.status === "In Progress") {
+                  router.push(`/interview/structured/resume?chatid=${item.id}`);
+                } else {
+                  router.push(
+                    `/interview/structured/history/?chatid=${item.id}`
+                  );
+                }
+              }}
             >
               {item.status === "In Progress" ? t.continue : t.viewDetails}
             </button>
