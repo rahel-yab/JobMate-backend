@@ -25,7 +25,6 @@ interface UserChat {
   updated_at: string;
 }
 
-
 // ✅ Format time ago
 const formatTimeAgo = (timestamp: string): string => {
   const updatedDate = new Date(timestamp);
@@ -81,7 +80,7 @@ const StructuredHistory: React.FC = () => {
   const {
     data: chatHistory,
     isLoading,
-    error,
+    // error,
   } = useGetStructuredUserChatsQuery();
 
   // ✅ Extract & sort history items

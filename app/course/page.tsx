@@ -240,7 +240,7 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
 };
 
 export default function Page() {
-  const { data, error, isLoading } = useGetSuggestionsQuery();
+  const { data, error, isLoading } = useGetSuggestionsQuery({});
 
   if (isLoading) {
     return (

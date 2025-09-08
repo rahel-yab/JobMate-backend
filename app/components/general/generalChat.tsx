@@ -5,12 +5,13 @@ import ChatWindow from "@/app/components/ChatWindow";
 import { useSendMessageMutation } from "@/lib/redux/api/generalApi";
 import ChatMessage from "../ChatMessage";
 import { useLanguage } from "@/providers/language-provider";
+import { Message } from "../ChatWindow";
 
 export default function GeneralChat() {
   const { t } = useLanguage();
-  const [messages, setMessages] = useState<any[]>([
+  const [messages, setMessages] = useState<Message[]>([
     {
-      id: Date.now(),
+      id: Date.now().toString(),
       type: "text",
       sender: "ai",
       text: t("generalWelcomeMessage"),
@@ -26,8 +27,8 @@ export default function GeneralChat() {
     const text = input;
     setInput("");
 
-    const userMsg: any = {
-      id: Date.now(),
+    const userMsg: Message = {
+      id: Date.now().toString(),
       type: "text",
       sender: "user",
       text,
@@ -42,8 +43,8 @@ export default function GeneralChat() {
         is_from_user: true,
       }).unwrap();
 
-      const aiMsg: any = {
-        id: Date.now(),
+      const aiMsg: Message = {
+        id: Date.now().toString(),
         type: "text",
         sender: "ai",
         text: res.reply,
@@ -54,7 +55,7 @@ export default function GeneralChat() {
       setMessages((prev) => [
         ...prev,
         {
-          id: Date.now(),
+          id: Date.now().toString(),
           type: "text",
           sender: "ai",
           text: "Something went wrong. Try again.",

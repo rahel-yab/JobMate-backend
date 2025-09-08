@@ -10,6 +10,13 @@ import {
   useGetChatHistoryQuery,
   useSendMessageMutation,
 } from "@/lib/redux/api/cvApi";
+import { Message } from "../ChatWindow";
+interface ChatHistoryMessage {
+  id: number;
+  role: "assistant" | "user";
+  content: string;
+  timestamp: string | number | Date;
+}
 
 interface CvExistingChatProps {
   chatId: string;
@@ -23,7 +30,7 @@ export default function CvExistingChat({
   const { data, isLoading } = useGetChatHistoryQuery({ chat_id: chatId });
   const [sendMessage] = useSendMessageMutation();
 
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [cvId, setCvId] = useState<string | null>(null);
 
@@ -42,7 +49,7 @@ export default function CvExistingChat({
       }
 
       if (data.messages) {
-        const formatted = data.messages.map((m: any) => ({
+        const formatted = data.messages.map((m: ChatHistoryMessage) => ({
           id: m.id,
           sender: m.role === "assistant" ? "ai" : "user",
           text: <ReactMarkdown>{m.content}</ReactMarkdown>,

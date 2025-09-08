@@ -4,6 +4,7 @@ import { useLanguage } from "@/providers/language-provider";
 import QuickActions from "../QuickActions";
 import ChatInput from "./ChatInput";
 import { useRef, useEffect } from "react";
+import { Message } from "../ChatWindow";
 
 export default function ChatWindow({
   messages,
@@ -13,8 +14,8 @@ export default function ChatWindow({
   onSend,
   onBack,
 }: {
-  messages: any[];
-  renderMessage: (msg: any) => React.ReactNode;
+  messages: Message[];
+  renderMessage: (msg: Message) => React.ReactNode;
   input: string;
   setInput: (val: string) => void;
   onSend: () => void;

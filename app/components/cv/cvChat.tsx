@@ -16,11 +16,20 @@ import {
   useSendMessageMutation,
 } from "@/lib/redux/api/cvApi";
 import { useLanguage } from "@/providers/language-provider";
+import { Message } from "../ChatWindow";
+
+interface RawSkillGap {
+  SkillName: string;
+  CurrentLevel: number;
+  RecommendedLevel: number;
+  Importance?: string;
+  ImprovementSuggestions: string;
+}
 
 export default function CvChat() {
   const { t } = useLanguage();
 
-  const [messages, setMessages] = useState<any[]>([
+  const [messages, setMessages] = useState<Message[]>([
     {
       id: Date.now(),
       sender: "ai",
@@ -63,7 +72,7 @@ export default function CvChat() {
 
     console.log(msg);
 
-    const msg1 = {
+    const msg1: Message = {
       id: Date.now(),
       sender: "ai",
       text: `Here's your CV analysis with detailed feedback and suggestions for improvement:`,
@@ -92,7 +101,7 @@ export default function CvChat() {
 
     const { CVs, CVFeedback, SkillGaps } = suggestions;
 
-    const normalizedSkillGaps = (SkillGaps || []).map((gap: any) => ({
+    const normalizedSkillGaps = (SkillGaps || []).map((gap: RawSkillGap) => ({
       skillName: gap.SkillName,
       currentLevel: gap.CurrentLevel,
       recommendedLevel: gap.RecommendedLevel,
@@ -169,6 +178,7 @@ export default function CvChat() {
           time: formatTime(new Date()),
         },
       ]);
+      console.error("Error sending message:", err);
     }
   };
 
@@ -193,7 +203,8 @@ export default function CvChat() {
               <CvAnalysisCard
                 onAnalyze={handleUpload}
                 onChatInstead={async () => {
-                  const cid = await ensureSession();
+                  // const cid =
+                  await ensureSession();
                   setMessages((prev) => [
                     ...prev,
                     {

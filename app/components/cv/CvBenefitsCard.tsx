@@ -10,7 +10,9 @@ const benefits = [
 export default function CvBenefitsCard() {
   return (
     <div className="bg-white rounded-2xl p-6 mb-6 shadow-md border border-gray-100">
-      <h3 className="font-bold text-lg text-gray-800 mb-4">What You'll Get</h3>
+      <h3 className="font-bold text-lg text-gray-800 mb-4">
+        What You&apos;ll Get
+      </h3>
 
       {/* 1-column grid */}
       <div className="grid grid-cols-1 gap-y-4">

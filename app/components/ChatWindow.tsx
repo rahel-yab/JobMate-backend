@@ -4,6 +4,28 @@ import { useLanguage } from "@/providers/language-provider";
 import QuickActions from "./QuickActions";
 import ChatInput from "./ChatInput";
 
+export interface SkillGapp {
+  skillName: string;
+  currentLevel: number;
+  recommendedLevel: number;
+  importance: string;
+  improvementSuggestions: string;
+}
+
+export interface Message {
+  id?: number | string;
+  sender?: string;
+  text?: string | React.ReactNode;
+  time?: string;
+  type?: string;
+  summary?: string;
+  strengths?: string;
+  weaknesses?: string;
+  improvements?: string;
+  skillGaps?: SkillGapp[];
+  cvId?: string;
+}
+
 export default function ChatWindow({
   messages,
   input,
@@ -12,11 +34,11 @@ export default function ChatWindow({
   renderMessage,
   onBack,
 }: {
-  messages: any[];
+  messages: Message[];
   input: string;
   setInput: (val: string) => void;
   onSend: () => void;
-  renderMessage: (msg: any) => React.ReactNode;
+  renderMessage: (msg: Message) => React.ReactNode;
   onBack?: () => void;
 }) {
   const { language, setLanguage, t } = useLanguage();

@@ -15,9 +15,9 @@ interface JobCardProps {
   source?: string;
 }
 
-interface Message {
-  id: string;
-  type: "text" | "jobs";
+export interface Message {
+  id?: string | number;
+  type?: "text" | "jobs";
   text?: string;
   jobs?: JobCardProps[];
 }
