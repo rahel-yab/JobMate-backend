@@ -90,7 +90,7 @@ func (ctrl *OAuth2Controller) HandleCallback(c *gin.Context) {
   }
 
   
-  frontendURL := "http://localhost:3000"  //or deployed frontend
+  frontendURL := "https://jobmate-kappa.vercel.app"  //or deployed frontend
   redirectURL := fmt.Sprintf("%s/login?token=%s&user=%s",
     frontendURL,
     url.QueryEscape(result.AccessToken),
