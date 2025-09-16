@@ -1,11 +1,26 @@
 # JobMate: AI-Powered Career Buddy for Africa
+---
+## My Contributions
 
+### Key Features Implemented:
+- **Groq API Integration**: Built AI-powered chat functionality for CV analysis and interview preparation
+- **Interview Systems**: Developed both structured and free-form interview features with dynamic Q&A capabilities
+- **JWT Authentication**: Implemented secure token management including refresh and access token handling
+- **Chat Interface**: Created interactive chat features for CV guidance and interview practice
+
+### Technical Stack:
+- Go backend with Clean Architecture
+- Groq AI integration
+- JWT-based authentication
+- MongoDB integration
+  
+---
+# Overview
 JobMate is an AI-powered career buddy built to tackle youth unemployment in Africa. By combining CV analysis, job matching, and interview prep into one platform, JobMate helps young Africans bridge skill gaps and connect to global opportunities.
 
 It’s available as both a web app (Next.js) and a mobile app (Flutter).
 
 ---
-
 ## 🚀 Problem
 
 Youth unemployment in Africa is at crisis levels, especially in urban areas. Existing job boards don’t:
