@@ -1,0 +1,356 @@
+{
+  "appTitle": "JobMate",
+  "@appTitle": {
+    "description": "The title of the JobMate application"
+  },
+  "welcomeMessage": "Hi! I'm JobMate, your career buddy!",
+  "@welcomeMessage": {
+    "description": "Welcome message shown when the app starts"
+  },
+  "howCanIHelp": "How can I help you today?",
+  "@howCanIHelp": {
+    "description": "Question asking how JobMate can assist the user"
+  },
+  "cvReview": "Review my CV",
+  "@cvReview": {
+    "description": "Button text for CV review feature"
+  },
+  "findJobs": "Find jobs",
+  "@findJobs": {
+    "description": "Button text for job search feature"
+  },
+  "practiceInterview": "Practice interview",
+  "@practiceInterview": {
+    "description": "Button text for interview practice feature"
+  },
+  "uploadCv": "Upload CV",
+  "@uploadCv": {
+    "description": "Button text for uploading CV file"
+  },
+  "describeBackground": "Describe your background",
+  "@describeBackground": {
+    "description": "Button text for describing background instead of uploading CV"
+  },
+  "cvFeedback": "CV Feedback",
+  "@cvFeedback": {
+    "description": "Title for CV feedback section"
+  },
+  "jobSuggestions": "Job Suggestions",
+  "@jobSuggestions": {
+    "description": "Title for job suggestions section"
+  },
+  "interviewQuestions": "Interview Questions",
+  "@interviewQuestions": {
+    "description": "Title for interview questions section"
+  },
+  "login": "Login",
+  "@login": {
+    "description": "Login button text"
+  },
+  "register": "Register",
+  "@register": {
+    "description": "Register button text"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "Email field label"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Password field label"
+  },
+  "submit": "Submit",
+  "@submit": {
+    "description": "Submit button text"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  "hello": "Hello {userName}",
+  "@hello": {
+    "description": "Greeting message with user name",
+    "placeholders": {
+      "userName": {
+        "type": "String",
+        "example": "John"
+      }
+    }
+  },
+  "cvImprovementTips": "Here are some tips to improve your CV:",
+  "@cvImprovementTips": {
+    "description": "Introduction text for CV improvement suggestions"
+  },
+  "jobOpportunities": "Here are some job opportunities for you:",
+  "@jobOpportunities": {
+    "description": "Introduction text for job opportunities"
+  },
+  "interviewPracticeMode": "Let's practice some interview questions!",
+  "@interviewPracticeMode": {
+    "description": "Introduction text for interview practice mode"
+  },
+  "welcomeBack": "Welcome Back",
+  "@welcomeBack": {
+    "description": "Welcome back message for returning users"
+  },
+  "whatWouldYouLikeToDo": "What would you like to do?",
+  "@whatWouldYouLikeToDo": {
+    "description": "Question asking what the user wants to do"
+  },
+  "cvAnalysis": "CV Analysis",
+  "@cvAnalysis": {
+    "description": "Title for CV analysis feature"
+  },
+  "getFeedbackOnResume": "Get feedback on your resume",
+  "@getFeedbackOnResume": {
+    "description": "Description for CV analysis feature"
+  },
+  "jobSearch": "Job Search",
+  "@jobSearch": {
+    "description": "Title for job search feature"
+  },
+  "findPerfectJobMatches": "Find perfect job matches",
+  "@findPerfectJobMatches": {
+    "description": "Description for job search feature"
+  },
+  "interviewPrep": "Interview Prep",
+  "@interviewPrep": {
+    "description": "Title for interview preparation feature"
+  },
+  "practiceWithMockInterviews": "Practice with mock interviews",
+  "@practiceWithMockInterviews": {
+    "description": "Description for interview preparation feature"
+  },
+  "skillBoost": "Skill Boost",
+  "@skillBoost": {
+    "description": "Title for skill improvement feature"
+  },
+  "getPersonalizedLearningPlan": "Get personalized learning plan",
+  "@getPersonalizedLearningPlan": {
+    "description": "Description for skill improvement feature"
+  },
+  "yourAiCareerBuddy": "Your AI Career Buddy",
+  "@yourAiCareerBuddy": {
+    "description": "App tagline"
+  },
+  "signInToContinue": "Sign in to continue your career journey",
+  "@signInToContinue": {
+    "description": "Sign in prompt message"
+  },
+  "dontHaveAccount": "Don't have an account?",
+  "@dontHaveAccount": {
+    "description": "Question for users without account"
+  },
+  "signUpHere": "Sign up here",
+  "@signUpHere": {
+    "description": "Link to sign up page"
+  },
+  "welcomeToJobmate": "Welcome to JobMate",
+  "@welcomeToJobmate": {
+    "description": "Welcome message for new users"
+  },
+  "createAccountToStart": "Create your account to start your career journey",
+  "@createAccountToStart": {
+    "description": "Sign up prompt message"
+  },
+  "firstName": "First Name",
+  "@firstName": {
+    "description": "First name field label"
+  },
+  "lastName": "Last Name",
+  "@lastName": {
+    "description": "Last name field label"
+  },
+  "confirmPassword": "Confirm Password",
+  "@confirmPassword": {
+    "description": "Confirm password field label"
+  },
+  "requestOtp": "Request OTP",
+  "@requestOtp": {
+    "description": "Request OTP button text"
+  },
+  "enterOtp": "Enter OTP",
+  "@enterOtp": {
+    "description": "OTP field label"
+  },
+  "alreadyHaveAccount": "Already have an account?",
+  "@alreadyHaveAccount": {
+    "description": "Question for existing users"
+  },
+  "signInHere": "Sign in here",
+  "@signInHere": {
+    "description": "Link to sign in page"
+  },
+  "cvHelpMessage": "I would be happy to help you with your CV.\nYou can upload your current CV or describe your background below.",
+  "@cvHelpMessage": {
+    "description": "CV analysis help message"
+  },
+  "cvTab": "CV",
+  "@cvTab": {
+    "description": "CV tab label"
+  },
+  "jobsTab": "Jobs",
+  "@jobsTab": {
+    "description": "Jobs tab label"
+  },
+  "interviewTab": "Interview",
+  "@interviewTab": {
+    "description": "Interview tab label"
+  },
+  "skillsTab": "Skills",
+  "@skillsTab": {
+    "description": "Skills tab label"
+  },
+  "comingSoon": "This section is coming soon",
+  "@comingSoon": {
+    "description": "Coming soon message"
+  },
+  "userNotAuthenticated": "User not authenticated. Please log in.",
+  "@userNotAuthenticated": {
+    "description": "Authentication error message"
+  },
+  "yourAiCareerCompanion": "Your AI Career Companion!",
+  "@yourAiCareerCompanion": {
+    "description": "Splash screen tagline"
+  },
+  "aiPowered": "AI powered",
+  "@aiPowered": {
+    "description": "AI powered feature description"
+  },
+  "careerFocus": "Career Focus",
+  "@careerFocus": {
+    "description": "Career focus feature description"
+  },
+  "pleaseEnterEmailFirst": "Please enter your email first",
+  "@pleaseEnterEmailFirst": {
+    "description": "Email validation message"
+  },
+  "smartInsights": "Smart Insights",
+  "@smartInsights": {
+    "description": "Smart insights feature description"
+  },
+  "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Get started button text"
+  },
+  "signIn": "Sign in",
+  "@signIn": {
+    "description": "Sign in button text"
+  },
+  "emailAddress": "Email Address",
+  "@emailAddress": {
+    "description": "Email address field label"
+  },
+  "enterYourEmail": "Enter your email",
+  "@enterYourEmail": {
+    "description": "Email field hint text"
+  },
+  "enterYourPassword": "Enter your password",
+  "@enterYourPassword": {
+    "description": "Password field hint text"
+  },
+  "pleaseEnterYourEmail": "Please enter your email",
+  "@pleaseEnterYourEmail": {
+    "description": "Email validation message"
+  },
+  "pleaseEnterYourPassword": "Please enter your password",
+  "@pleaseEnterYourPassword": {
+    "description": "Password validation message"
+  },
+  "forgotPassword": "Forgot Password?",
+  "@forgotPassword": {
+    "description": "Forgot password link text"
+  },
+  "signUp": "Sign up",
+  "@signUp": {
+    "description": "Sign up link text"
+  },
+  "enterYourFirstName": "Enter your first name",
+  "@enterYourFirstName": {
+    "description": "First name field hint text"
+  },
+  "enterYourLastName": "Enter your last name",
+  "@enterYourLastName": {
+    "description": "Last name field hint text"
+  },
+  "createPassword": "Create a password (min 8 chars, e.g., Tsige@123)",
+  "@createPassword": {
+    "description": "Password creation hint text"
+  },
+  "confirmYourPassword": "Confirm your password",
+  "@confirmYourPassword": {
+    "description": "Confirm password field hint text"
+  },
+  "oneTimePassword": "One Time Password",
+  "@oneTimePassword": {
+    "description": "OTP field label"
+  },
+  "otpCode": "#OTP Code",
+  "@otpCode": {
+    "description": "OTP field hint text"
+  },
+  "sendCode": "Send Code",
+  "@sendCode": {
+    "description": "Send OTP button text"
+  },
+  "required": "Required",
+  "@required": {
+    "description": "Required field validation message"
+  },
+  "passwordMinLength": "Password must be at least 8 characters",
+  "@passwordMinLength": {
+    "description": "Password minimum length validation message"
+  },
+  "passwordUppercase": "Password must contain an uppercase letter",
+  "@passwordUppercase": {
+    "description": "Password uppercase validation message"
+  },
+  "passwordNumber": "Password must contain a number",
+  "@passwordNumber": {
+    "description": "Password number validation message"
+  },
+  "passwordSpecialChar": "Password must contain a special character",
+  "@passwordSpecialChar": {
+    "description": "Password special character validation message"
+  },
+  "passwordsDoNotMatch": "Passwords do not match",
+  "@passwordsDoNotMatch": {
+    "description": "Password mismatch validation message"
+  },
+  "registrationFailedServer": "Registration failed: Server error. Please try again later.",
+  "@registrationFailedServer": {
+    "description": "Server error message for registration"
+  },
+  "registrationFailedInvalid": "Registration failed: Invalid email, password, or OTP.",
+  "@registrationFailedInvalid": {
+    "description": "Invalid data error message for registration"
+  },
+  "registrationFailedUnexpected": "Registration failed: An unexpected error occurred.",
+  "@registrationFailedUnexpected": {
+    "description": "Unexpected error message for registration"
+  },
+  "jobSearch": "Job Search",
+  "@jobSearch": {
+    "description": "Job search feature title"
+  },
+  "findPerfectJobMatches": "Find perfect job matches",
+  "@findPerfectJobMatches": {
+    "description": "Job search feature description"
+  },
+  "interviewPrep": "Interview Prep",
+  "@interviewPrep": {
+    "description": "Interview preparation feature title"
+  },
+  "practiceWithMockInterviews": "Practice with mock interviews",
+  "@practiceWithMockInterviews": {
+    "description": "Interview preparation feature description"
+  },
+  "skillBoost": "Skill Boost",
+  "@skillBoost": {
+    "description": "Skill boost feature title"
+  },
+  "getPersonalizedLearningPlan": "Get personalized learning plan",
+  "@getPersonalizedLearningPlan": {
+    "description": "Skill boost feature description"
+  }
+}
