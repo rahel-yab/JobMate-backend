@@ -82,4 +82,8 @@ go run main.go
 - **Backend & AI**: Go + Gemini Flash 1.5 engineers  
 - **Web Frontend**: Next.js developers  
 - **Mobile Frontend**: Flutter developers  
-- **Community Testers**: A2SV students & Addis Ababa graduates  
+- **Community Testers**: A2SV students & Addis Ababa graduates
+
+## 🌍 Vision
+
+JobMate is more than a job board—it’s a career empowerment platform built for Africa. By connecting African youth to global opportunities, we aim to reduce unemployment and unlock talent across the continent.
