@@ -140,13 +140,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         icon: Icons.record_voice_over,
                         route: Routes.interviewPrep,
                       ),
-                      _buildFeatureCard(
-                        context,
-                        title: l10n.skillBoost,
-                        description: l10n.getPersonalizedLearningPlan,
-                        icon: Icons.school,
-                        route: Routes.home, // Replace with real route if exists
-                      ),
+                      // _buildFeatureCard(
+                      //   context,
+                      //   title: l10n.skillBoost,
+                      //   description: l10n.getPersonalizedLearningPlan,
+                      //   icon: Icons.school,
+                      //   route: Routes.home, // Replace with real route if exists
+                      // ),
                     ],
                   ),
                 ),
